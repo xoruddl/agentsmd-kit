@@ -1,7 +1,7 @@
 import { access, constants, mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { checkRepository, installPreset, resolvePresets } from "@agentsmd/core";
+import { checkRepository, installEntryFiles, installPreset, resolvePresets } from "@agentsmd/core";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { javaPreset } from "../src/index.js";
 
@@ -9,9 +9,12 @@ let target: string;
 
 beforeEach(async () => {
   target = await mkdtemp(join(tmpdir(), "agentsmd-preset-java-"));
-  for (const preset of resolvePresets(javaPreset)) {
+  const presets = resolvePresets(javaPreset);
+  for (const preset of presets) {
     await installPreset(preset, target);
   }
+  // AGENTS.md와 훅 실행기는 init이 고른 프리셋에 맞게 만든다.
+  await installEntryFiles(presets, target);
 });
 
 afterEach(async () => {
