@@ -1,9 +1,9 @@
 # @agentsmd/preset-typescript
 
-[`agentsmd`](https://www.npmjs.com/package/agentsmd)의 TypeScript·React 프론트엔드 프리셋입니다.
+[`@agentsmd/cli`](https://www.npmjs.com/package/@agentsmd/cli)의 TypeScript·React 프론트엔드 프리셋입니다.
 
 ```bash
-npx agentsmd init --preset typescript
+npx @agentsmd/cli init --preset typescript
 ```
 
 - 문서 지도(`AGENTS.md`)와 규칙: 필수 tsconfig 옵션, `any`·`as`·`!` 금지, 외부 값 경계 검증, 폴더·컴포넌트·접근성, Testing Library·MSW 테스트, 환경변수·보안

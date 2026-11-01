@@ -1,6 +1,6 @@
 # @agentsmd/core
 
-[`agentsmd`](https://www.npmjs.com/package/agentsmd) CLI의 검사 로직과 프리셋 설치 로직입니다.
+[`@agentsmd/cli`](https://www.npmjs.com/package/@agentsmd/cli)의 검사 로직과 프리셋 설치 로직입니다.
 CLI 없이 코드에서 검사하고 싶을 때 씁니다.
 
 ```ts
