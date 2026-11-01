@@ -1,0 +1,26 @@
+{
+  "name": "@agentsmd/preset-java",
+  "version": "0.1.0",
+  "description": "Java·Gradle 프로젝트용 AI 작업 지침 프리셋 (AGENTS.md, 문서, Git 훅, CI)",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "files"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@agentsmd/core": "workspace:*"
+  }
+}

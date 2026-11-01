@@ -38,6 +38,12 @@ importers:
 
   packages/core: {}
 
+  packages/preset-java:
+    dependencies:
+      '@agentsmd/core':
+        specifier: workspace:*
+        version: link:../core
+
 packages:
 
   '@cacheable/memory@2.2.0':
