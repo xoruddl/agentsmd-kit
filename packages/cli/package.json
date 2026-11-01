@@ -19,6 +19,7 @@
   },
   "dependencies": {
     "@agentsmd/core": "workspace:*",
-    "@agentsmd/preset-java": "workspace:*"
+    "@agentsmd/preset-java": "workspace:*",
+    "@agentsmd/preset-typescript": "workspace:*"
   }
 }

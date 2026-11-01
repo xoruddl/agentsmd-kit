@@ -38,6 +38,9 @@ importers:
       '@agentsmd/preset-java':
         specifier: workspace:*
         version: link:../preset-java
+      '@agentsmd/preset-typescript':
+        specifier: workspace:*
+        version: link:../preset-typescript
 
   packages/core: {}
 

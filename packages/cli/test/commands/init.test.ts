@@ -50,6 +50,17 @@ describe("runInit", () => {
     expect(out).toContain("함께 설치한 프리셋: git");
   });
 
+  it("TypeScript 프리셋도 Git 프리셋과 함께 설치하고 check를 통과한다", async () => {
+    await expect(runInit(["--preset", "typescript", "--skip-hooks"], io())).resolves.toBe(0);
+
+    await expect(readFile(join(root, "docs/typescript.md"), "utf8")).resolves.toContain("strict");
+    await expect(readFile(join(root, "docs/git-conventions.md"), "utf8")).resolves.toContain(
+      "merge 커밋",
+    );
+    expect(out).toContain("함께 설치한 프리셋: git");
+    await expect(checkRepository({ root })).resolves.toEqual([]);
+  });
+
   it("설치 직후의 저장소는 check 규칙을 모두 통과한다", async () => {
     await runInit(["--preset", "java", "--skip-hooks"], io());
     await expect(checkRepository({ root })).resolves.toEqual([]);
