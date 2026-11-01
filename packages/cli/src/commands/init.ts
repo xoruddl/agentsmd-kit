@@ -1,6 +1,6 @@
 import { resolve } from "node:path";
 import { parseArgs } from "node:util";
-import { installPreset, type InstallResult, type Preset } from "@agentsmd/core";
+import { installPreset, resolvePresets, type InstallResult, type Preset } from "@agentsmd/core";
 import { configureHooksPath, type HooksResult } from "../git-hooks.js";
 import type { ExitCode, Io } from "../io.js";
 import { findPreset, PRESETS } from "../presets.js";
@@ -56,22 +56,47 @@ export async function runInit(args: readonly string[], io: Io): Promise<ExitCode
   }
 
   const root = resolve(io.cwd, values.root ?? ".");
-  const result = await installPreset(preset, root, { force: values.force === true });
+  // 요구되는 프리셋(예: 공통 Git 프리셋)부터 설치한다.
+  const presets = resolvePresets(preset);
+  const result = await installAll(presets, root, values.force === true);
+  const hooksPath = presets.find((p) => p.hooksPath !== undefined)?.hooksPath;
   const hooks =
-    preset.hooksPath === undefined || values["skip-hooks"] === true
+    hooksPath === undefined || values["skip-hooks"] === true
       ? undefined
-      : await configureHooksPath(root, preset.hooksPath);
+      : await configureHooksPath(root, hooksPath);
 
-  io.stdout(formatReport(preset, result, hooks));
+  io.stdout(formatReport(presets, result, hooksPath, hooks));
   return 0;
 }
 
+async function installAll(
+  presets: readonly Preset[],
+  root: string,
+  force: boolean,
+): Promise<InstallResult> {
+  const written: string[] = [];
+  const skipped: string[] = [];
+  for (const preset of presets) {
+    const result = await installPreset(preset, root, { force });
+    written.push(...result.written);
+    skipped.push(...result.skipped);
+  }
+  return { written, skipped };
+}
+
+/** 마지막 프리셋이 사용자가 고른 프리셋이고, 그 앞은 함께 설치된 프리셋이다. */
 function formatReport(
-  preset: Preset,
+  presets: readonly Preset[],
   result: InstallResult,
+  hooksPath: string | undefined,
   hooks: HooksResult | undefined,
 ): string {
-  const lines = [`${preset.name} 프리셋: 파일 ${String(result.written.length)}개를 설치했습니다.`];
+  const chosen = presets.at(-1)?.name ?? "";
+  const lines = [`${chosen} 프리셋: 파일 ${String(result.written.length)}개를 설치했습니다.`];
+  const included = presets.slice(0, -1).map((preset) => preset.name);
+  if (included.length > 0) {
+    lines.push(`함께 설치한 프리셋: ${included.join(", ")}`);
+  }
 
   if (result.skipped.length > 0) {
     lines.push(
@@ -81,12 +106,15 @@ function formatReport(
   }
 
   if (hooks === "configured") {
-    lines.push(`Git 훅을 연결했습니다: core.hooksPath=${preset.hooksPath ?? ""}`);
+    lines.push(`Git 훅을 연결했습니다: core.hooksPath=${hooksPath ?? ""}`);
   } else if (hooks === "not-a-repo") {
     lines.push("Git 저장소가 아니어서 훅을 연결하지 않았습니다. git init 후 다시 실행하세요.");
   }
 
-  const steps = [...(preset.nextSteps ?? []), "agentsmd check 로 문서 지도를 검사하세요."];
+  const steps = [
+    ...presets.flatMap((preset) => preset.nextSteps ?? []),
+    "agentsmd check 로 문서 지도를 검사하세요.",
+  ];
   lines.push("", "다음 단계:", ...steps.map((step, index) => `  ${String(index + 1)}. ${step}`));
   return `${lines.join("\n")}\n`;
 }

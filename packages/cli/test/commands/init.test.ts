@@ -40,6 +40,15 @@ describe("runInit", () => {
     expect(out).toContain("Git 훅을 연결했습니다");
   });
 
+  it("요구되는 프리셋까지 함께 설치하고 알린다", async () => {
+    await runInit(["--preset", "java", "--skip-hooks"], io());
+
+    await expect(readFile(join(root, ".claude/settings.json"), "utf8")).resolves.toContain(
+      "--no-verify",
+    );
+    expect(out).toContain("함께 설치한 프리셋: git");
+  });
+
   it("설치 직후의 저장소는 check 규칙을 모두 통과한다", async () => {
     await runInit(["--preset", "java", "--skip-hooks"], io());
     await expect(checkRepository({ root })).resolves.toEqual([]);
@@ -61,7 +70,8 @@ describe("runInit", () => {
 
   it("설치 후 사람이 할 일을 번호로 안내한다", async () => {
     await runInit(["--preset", "java", "--skip-hooks"], io());
-    expect(out).toContain("1. docs/project-direction.md 에 프로젝트 목표와 범위를 채우세요.");
+    expect(out).toMatch(/ {2}1\. \S/);
+    expect(out).toContain("docs/project-direction.md 에 프로젝트 목표와 범위를 채우세요.");
     expect(out).toContain("agentsmd check 로 문서 지도를 검사하세요.");
   });
 
