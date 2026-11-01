@@ -1,12 +1,6 @@
 import { resolve } from "node:path";
 import { parseArgs } from "node:util";
-import {
-  installEntryFiles,
-  installPreset,
-  resolvePresets,
-  type InstallResult,
-  type Preset,
-} from "@agentsmd/core";
+import { installEntryFiles, installPreset, type InstallResult, type Preset } from "@agentsmd/core";
 import { configureHooksPath, type HooksResult } from "../git-hooks.js";
 import { makeHooksExecutable } from "../hook-permissions.js";
 import type { ExitCode, Io } from "../io.js";
@@ -67,7 +61,7 @@ export async function runInit(args: readonly string[], io: Io): Promise<ExitCode
   }
 
   const root = resolve(io.cwd, values.root ?? ".");
-  const presets = withRequired(selection.presets);
+  const { presets } = selection;
   const result = await installAll(presets, root, values.force === true);
   const hooksPath = presets.find((p) => p.hooksPath !== undefined)?.hooksPath;
   if (hooksPath !== undefined) {
@@ -81,14 +75,6 @@ export async function runInit(args: readonly string[], io: Io): Promise<ExitCode
 
   io.stdout(formatReport(presets, result, hooksPath, hooks));
   return 0;
-}
-
-/** 고른 프리셋이 요구하는 프리셋을 앞에 붙인다. 여러 프리셋이 같은 프리셋을 요구해도 한 번만 넣는다. */
-function withRequired(presets: readonly Preset[]): Preset[] {
-  const expanded = presets.flatMap((preset) => resolvePresets(preset));
-  return expanded.filter(
-    (preset, index) => expanded.findIndex((other) => other.name === preset.name) === index,
-  );
 }
 
 /** 프리셋 파일을 설치한 뒤, 고른 프리셋 조합에 맞춘 AGENTS.md·CLAUDE.md·훅 실행기를 만든다. */

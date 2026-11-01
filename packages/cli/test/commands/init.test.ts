@@ -50,6 +50,17 @@ describe("runInit", () => {
     await expect(checkRepository({ root })).resolves.toEqual([]);
   });
 
+  it("언어 프리셋만 고르면 Git 규칙은 설치하지 않는다", async () => {
+    await expect(runInit(["--preset", "typescript", "--skip-hooks"], io())).resolves.toBe(0);
+
+    expect(out).toMatch(/^typescript 프리셋: /);
+    await expect(readFile(join(root, "docs/git-conventions.md"), "utf8")).rejects.toThrow();
+    await expect(readFile(join(root, "AGENTS.md"), "utf8")).resolves.not.toContain(
+      "git-conventions",
+    );
+    await expect(checkRepository({ root })).resolves.toEqual([]);
+  });
+
   it("Git 프리셋만 골라도 설치하고 check를 통과한다", async () => {
     await expect(runInit(["--preset", "git", "--skip-hooks"], io())).resolves.toBe(0);
 
