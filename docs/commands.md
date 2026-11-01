@@ -6,6 +6,7 @@
 
 ```bash
 agentsmd init --preset java
+agentsmd init --preset typescript
 ```
 
 | 옵션              | 설명                                   | 기본값 |
@@ -17,15 +18,19 @@ agentsmd init --preset java
 
 동작 순서:
 
-1. 프리셋 파일을 같은 경로 구조로 복사한다. 이미 있는 파일은 건너뛰고 목록으로 알린다.
-   사람이 다듬어 둔 지침을 지우지 않기 위해서다.
-2. 프리셋에 훅 디렉터리가 있으면 `git config core.hooksPath`로 연결한다.
+1. 고른 프리셋이 요구하는 프리셋(공통 Git 프리셋)부터 차례로, 같은 경로 구조로 복사한다.
+   이미 있는 파일은 건너뛰고 목록으로 알린다. 사람이 다듬어 둔 지침을 지우지 않기 위해서다.
+2. 설치한 프리셋에 훅 디렉터리가 있으면 `git config core.hooksPath`로 연결한다.
    Git 저장소가 아니면 연결하지 않고 안내만 남긴다.
-3. 프리셋이 정한 "설치 후 사람이 할 일"을 번호로 안내한다.
+3. 설치한 프리셋들이 정한 "설치 후 사람이 할 일"을 번호로 안내한다.
 
-| 프리셋 | 내용                                                                                                         |
-| ------ | ------------------------------------------------------------------------------------------------------------ |
-| `java` | `AGENTS.md`, `CLAUDE.md`, `docs/` 12개, 커밋 훅 2개, PR 템플릿, Gradle CI, CodeRabbit 설정, Claude Code 설정 |
+| 프리셋       | 내용                                                                                                                          |
+| ------------ | ----------------------------------------------------------------------------------------------------------------------------- |
+| `java`       | `AGENTS.md`, Java 코드 규칙 문서, Spotless 검사(`pre-commit.d/spotless`), Gradle CI, CodeRabbit 설정                          |
+| `typescript` | `AGENTS.md`, 타입·구조·테스트·보안·린트 문서, Prettier 검사(`pre-commit.d/prettier`), pnpm CI, `.nvmrc`, CodeRabbit 설정      |
+| `git` (자동) | Git 작업 규칙·작업 흐름·리뷰 판단·문체 문서, `commit-msg`·`pre-commit` 훅, Conventions 검사, 이슈·PR 템플릿, Claude Code 설정 |
+
+`git` 프리셋은 문서 지도가 없어 단독으로 고르지 않는다. `java`·`typescript`를 고르면 함께 설치된다.
 
 ## agentsmd check
 
