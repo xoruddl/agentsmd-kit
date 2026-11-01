@@ -18,6 +18,7 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@agentsmd/core": "workspace:*"
+    "@agentsmd/core": "workspace:*",
+    "@agentsmd/preset-java": "workspace:*"
   }
 }

@@ -35,6 +35,9 @@ importers:
       '@agentsmd/core':
         specifier: workspace:*
         version: link:../core
+      '@agentsmd/preset-java':
+        specifier: workspace:*
+        version: link:../preset-java
 
   packages/core: {}
 
