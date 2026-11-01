@@ -1,13 +1,20 @@
-# agentsmd
+# @agentsmd/cli
 
 AI 코딩 에이전트용 작업 지침(`AGENTS.md`)을 설치하고, 지침이 저장소와 어긋나지 않았는지 검사하는 CLI입니다.
 
 ```bash
 # 지침 파일을 설치하고 Git 훅을 연결한다 (공통 Git 규칙이 함께 설치된다)
-npx agentsmd init --preset typescript   # 또는 --preset java
+npx @agentsmd/cli init --preset typescript   # 또는 --preset java
 
 # 문서 지도가 저장소와 맞는지 검사한다 (문제가 있으면 종료 코드 1)
-npx agentsmd check
+npx @agentsmd/cli check
+```
+
+전역으로 설치하면 `agentsmd` 명령으로 씁니다.
+
+```bash
+npm install -g @agentsmd/cli
+agentsmd check
 ```
 
 ## 왜 필요한가
@@ -21,7 +28,7 @@ npx agentsmd check
 `agentsmd check`는 이 세 가지를 `파일:줄` 형식으로 알려 주고, CI에 넣으면 머지 전에 막습니다.
 
 ```text
-$ npx agentsmd check
+$ agentsmd check
 AGENTS.md:12  [broken-link]  링크 대상이 없습니다: docs/api.md
 CLAUDE.md  [claude-import]  @AGENTS.md 로 문서 지도를 불러오지 않습니다
 docs/requirements.md  [unlisted-doc]  문서 지도(AGENTS.md)에서 안내하지 않는 문서입니다
