@@ -1,17 +1,20 @@
 import { runCheck } from "./commands/check.js";
+import { runInit } from "./commands/init.js";
 import type { ExitCode, Io } from "./io.js";
 
 type Command = (args: readonly string[], io: Io) => Promise<ExitCode>;
 
 const COMMANDS: Readonly<Record<string, Command>> = {
   check: runCheck,
+  init: runInit,
 };
 
 export const USAGE = `사용법: agentsmd <명령> [옵션]
 
-AI 코딩 에이전트용 작업 지침(AGENTS.md)을 검사합니다.
+AI 코딩 에이전트용 작업 지침(AGENTS.md)을 설치하고 검사합니다.
 
 명령:
+  init    프리셋으로 지침 파일을 설치하고 Git 훅을 연결합니다
   check   AGENTS.md 문서 지도가 저장소와 맞는지 검사합니다
 
 명령별 옵션: agentsmd <명령> --help
