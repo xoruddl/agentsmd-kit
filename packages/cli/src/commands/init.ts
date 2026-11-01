@@ -2,6 +2,7 @@ import { resolve } from "node:path";
 import { parseArgs } from "node:util";
 import { installPreset, resolvePresets, type InstallResult, type Preset } from "@agentsmd/core";
 import { configureHooksPath, type HooksResult } from "../git-hooks.js";
+import { makeHooksExecutable } from "../hook-permissions.js";
 import type { ExitCode, Io } from "../io.js";
 import { findPreset, PRESETS } from "../presets.js";
 
@@ -60,6 +61,10 @@ export async function runInit(args: readonly string[], io: Io): Promise<ExitCode
   const presets = resolvePresets(preset);
   const result = await installAll(presets, root, values.force === true);
   const hooksPath = presets.find((p) => p.hooksPath !== undefined)?.hooksPath;
+  if (hooksPath !== undefined) {
+    // npm 패키지에서 풀린 훅은 실행 권한이 없으므로, 훅 연결 여부와 상관없이 권한을 맞춘다.
+    await makeHooksExecutable(root, hooksPath);
+  }
   const hooks =
     hooksPath === undefined || values["skip-hooks"] === true
       ? undefined
