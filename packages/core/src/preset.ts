@@ -2,6 +2,8 @@
  * `init`으로 설치할 수 있는 지침 파일 묶음.
  *
  * 프리셋 패키지는 이 형태의 객체 하나를 내보낸다. 파일 내용은 `filesDir` 아래에 설치될 경로 그대로 둔다.
+ * 프리셋끼리는 서로 의존하지 않는다. 함께 쓰려면 사용자가 여러 프리셋을 고르고,
+ * 여러 프리셋이 함께 쓰는 AGENTS.md·CLAUDE.md·훅 실행기는 `installEntryFiles`가 조합에 맞게 만든다.
  */
 export interface Preset {
   /** `--preset` 옵션에 쓰는 이름. 예: `java` */
@@ -20,8 +22,6 @@ export interface Preset {
   readonly verify?: string;
   /** 파일을 설치한 뒤 사람이 직접 해야 하는 일. 설치 결과 끝에 안내한다. */
   readonly nextSteps?: readonly string[];
-  /** 이 프리셋보다 먼저 설치해야 하는 프리셋. 예: 언어 프리셋이 공통 Git 프리셋을 요구한다. */
-  readonly requires?: readonly Preset[];
 }
 
 /** 문서 지도의 한 줄. 어떤 문서를 언제 읽는지 알려 준다. */

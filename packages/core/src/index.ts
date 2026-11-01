@@ -7,5 +7,4 @@ export { installPreset } from "./install.js";
 export type { InstallOptions, InstallResult } from "./install.js";
 export { PRE_COMMIT_HOOK } from "./pre-commit-hook.js";
 export type { DocMapEntry, Preset } from "./preset.js";
-export { resolvePresets } from "./resolve-presets.js";
 export type { DocLink, DocMap, Finding, RuleId } from "./types.js";
