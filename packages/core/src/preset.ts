@@ -10,4 +10,8 @@ export interface Preset {
   readonly description: string;
   /** 설치할 파일들이 있는 디렉터리의 절대 경로. */
   readonly filesDir: string;
+  /** 프리셋에 Git 훅이 있으면 그 디렉터리. 설치 대상 기준 상대 경로. `core.hooksPath`로 연결한다. */
+  readonly hooksPath?: string;
+  /** 파일을 설치한 뒤 사람이 직접 해야 하는 일. 설치 결과 끝에 안내한다. */
+  readonly nextSteps?: readonly string[];
 }

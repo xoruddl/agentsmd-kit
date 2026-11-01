@@ -11,4 +11,10 @@ export const javaPreset = {
   name: "java",
   description: "Java·Gradle 프로젝트용 지침, 커밋 훅, Spotless·Gradle CI",
   filesDir: fileURLToPath(new URL("../files", import.meta.url)),
+  hooksPath: ".githooks",
+  nextSteps: [
+    "docs/project-direction.md 에 프로젝트 목표와 범위를 채우세요.",
+    "Gradle 프로젝트라면 docs/lint-and-ci.md 의 Spotless 설정을 build.gradle.kts 에 추가하세요.",
+    "지침 도입 커밋만 파일 수 한도를 올려 한 번에 커밋하세요: HARNESS_MAX_FILES=99 git commit ...",
+  ],
 } satisfies Preset;
