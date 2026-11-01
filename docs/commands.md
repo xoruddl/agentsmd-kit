@@ -26,8 +26,8 @@ agentsmd init --preset typescript
 
 | 프리셋       | 내용                                                                                                                          |
 | ------------ | ----------------------------------------------------------------------------------------------------------------------------- |
-| `java`       | `AGENTS.md`, Java 코드 규칙 문서, Spotless 검사(`pre-commit.d/spotless`), Gradle CI, CodeRabbit 설정                          |
-| `typescript` | `AGENTS.md`, 타입·구조·테스트·보안·린트 문서, Prettier 검사(`pre-commit.d/prettier`), pnpm CI, `.nvmrc`, CodeRabbit 설정      |
+| `java`       | `AGENTS.md`, Java 코드 규칙 문서, Spotless 검사(`pre-commit.d/spotless`), Gradle CI                                           |
+| `typescript` | `AGENTS.md`, 타입·구조·테스트·보안·린트 문서, Prettier 검사(`pre-commit.d/prettier`), pnpm CI, `.nvmrc`                       |
 | `git` (자동) | Git 작업 규칙·작업 흐름·리뷰 판단·문체 문서, `commit-msg`·`pre-commit` 훅, Conventions 검사, 이슈·PR 템플릿, Claude Code 설정 |
 
 `git` 프리셋은 문서 지도가 없어 단독으로 고르지 않는다. `java`·`typescript`를 고르면 함께 설치된다.
