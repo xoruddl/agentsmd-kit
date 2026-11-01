@@ -3,7 +3,8 @@ name: CI
 on:
   pull_request:
   push:
-    branches: [main]
+    # 머지 결과가 깨지지 않았는지 머지된 뒤에도 확인한다
+    branches: [main, develop]
 
 permissions:
   contents: read
