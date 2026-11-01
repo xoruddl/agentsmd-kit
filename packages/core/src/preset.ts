@@ -14,4 +14,6 @@ export interface Preset {
   readonly hooksPath?: string;
   /** 파일을 설치한 뒤 사람이 직접 해야 하는 일. 설치 결과 끝에 안내한다. */
   readonly nextSteps?: readonly string[];
+  /** 이 프리셋보다 먼저 설치해야 하는 프리셋. 예: 언어 프리셋이 공통 Git 프리셋을 요구한다. */
+  readonly requires?: readonly Preset[];
 }
