@@ -2,19 +2,15 @@
 
 ## Git 훅
 
-설치 (clone 후 1회):
+공통 훅(커밋 형식, 파일 수)은 [git-conventions.md](git-conventions.md) 의 자동 검사를 따른다.
+Java 프리셋은 포맷 검사 하나를 더한다.
 
-```bash
-git config core.hooksPath .githooks
-```
-
-| 훅 | 검사 |
+| 파일 | 검사 |
 | --- | --- |
-| `pre-commit` | 스테이징 파일 수 ≤ `HARNESS_MAX_FILES` (기본 1), `gradlew` 있으면 `spotlessCheck` |
-| `commit-msg` | 커밋 컨벤션 형식, 제목 50자, 마침표, AI 서명 |
+| `.githooks/pre-commit.d/spotless` | `gradlew` 가 있고 `.java` 가 스테이징됐으면 `spotlessCheck` |
 
-- 빌드가 깨져서 묶어야 할 때만: `HARNESS_MAX_FILES=2 git commit ...` (최대 3)
-- 하네스 최초 도입 커밋만 예외: `HARNESS_MAX_FILES=99`
+- 공통 `pre-commit` 훅이 파일 수를 검사한 뒤 이 스크립트를 실행한다.
+- 클론한 뒤 훅이 동작하지 않으면 `git config core.hooksPath .githooks` 로 연결한다.
 - `--no-verify` 금지.
 
 ## 린트 (Spotless + palantir-java-format)
