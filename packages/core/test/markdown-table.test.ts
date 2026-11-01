@@ -1,12 +1,22 @@
 import { format } from "prettier";
 import { describe, expect, it } from "vitest";
-import { displayWidth, formatTable } from "../src/markdown-table.js";
+import { displayWidth, formatTable, parseTableRow } from "../src/markdown-table.js";
 
 describe("displayWidth", () => {
   it("한글은 2칸, 영문·기호는 1칸으로 센다", () => {
     expect(displayWidth("abc")).toBe(3);
     expect(displayWidth("문서")).toBe(4);
     expect(displayWidth("이슈·PR")).toBe(7);
+  });
+});
+
+describe("parseTableRow", () => {
+  it("양 끝 세로선을 떼고 칸마다 공백을 다듬는다", () => {
+    expect(parseTableRow("| [a](a.md)   | 읽는 시점 |")).toEqual(["[a](a.md)", "읽는 시점"]);
+  });
+
+  it("이스케이프한 세로선은 칸 안의 글자로 둔다", () => {
+    expect(parseTableRow("| a \\| b | c |")).toEqual(["a \\| b", "c"]);
   });
 });
 

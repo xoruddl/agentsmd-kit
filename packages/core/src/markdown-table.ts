@@ -21,6 +21,15 @@ export function formatTable(
   ].join("\n");
 }
 
+/** 표의 한 줄을 칸으로 나눈다. `\|`로 이스케이프한 세로선은 칸 구분으로 보지 않는다. */
+export function parseTableRow(line: string): string[] {
+  const inner = line
+    .trim()
+    .replace(/^\|/, "")
+    .replace(/(?<!\\)\|$/, "");
+  return inner.split(/(?<!\\)\|/).map((cell) => cell.trim());
+}
+
 function pad(text: string, width: number): string {
   return text + " ".repeat(width - displayWidth(text));
 }

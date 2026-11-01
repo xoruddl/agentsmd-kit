@@ -1,5 +1,8 @@
-import { formatTable } from "./markdown-table.js";
+import { findSection, insertSection, lastContentLine } from "./markdown-sections.js";
+import { formatTable, parseTableRow } from "./markdown-table.js";
+import { parseDocMap } from "./parse-doc-map.js";
 import type { DocMapEntry, Preset } from "./preset.js";
+import { resolveLink } from "./resolve-link.js";
 
 /** Claude Code가 AGENTS.md를 읽도록 불러오기만 하는 CLAUDE.md. 규칙이 두 곳으로 갈라지지 않게 한다. */
 export const CLAUDE_MD = `@AGENTS.md
@@ -7,46 +10,206 @@ export const CLAUDE_MD = `@AGENTS.md
 <!-- 규칙은 이 파일에 쓰지 않는다. AGENTS.md 와 docs/ 에만 작성한다. -->
 `;
 
-/**
- * 고른 프리셋들의 문서·규칙·검증 명령을 합쳐 AGENTS.md를 만든다.
- *
- * 프리셋마다 AGENTS.md를 따로 두면 함께 설치할 때 한쪽이 덮이거나 건너뛰어져 지도에서 문서가 빠진다.
- * 그래서 각 프리셋은 자기 문서 목록만 갖고, 지도는 설치할 때 합쳐 만든다.
- * 같은 문서를 여러 프리셋이 올리면 먼저 나온 한 줄만 남긴다.
- */
+/** 프리셋이 아무것도 넣지 않은 AGENTS.md. 여기에 프리셋을 합치면 새 지도가 된다. */
+const SKELETON = `# AGENTS.md
+
+에이전트 작업 지침의 진입점. 작업 전 이 파일을 읽고, 작업 종류에 맞는 문서를 연다.
+
+## 지침 관리
+
+- 지침 추가·변경 요청은 메모리에 저장하지 않는다. 이 파일이나 \`docs/\` 에 반영한다.
+- 새 문서를 만들면 위 문서 지도에 한 줄 추가한다.
+- 문서 수정도 코드와 같은 커밋 규칙을 따른다.
+`;
+
+const DOCS = "문서 지도";
+const RULES = "핵심 규칙";
+const VERIFY = "검증";
+/** 절을 새로 만들 때 이 순서를 지킨다. */
+const SECTION_ORDER = [DOCS, RULES, VERIFY, "지침 관리"];
+
+const RULES_INTRO = "문서를 다 읽지 못했더라도 아래는 반드시 지킨다.";
+const VERIFY_INTRO = "작업을 마치기 전에 실행하고 결과를 그대로 보고한다. 실패를 숨기지 않는다.";
+const LIST_ITEM = /^(\d+)\.\s+(.*)$|^[-*]\s+(.*)$/;
+const FENCE = /^\s{0,3}(`{3,}|~{3,})/;
+
+/** 합치면서 새로 넣은 항목. */
+export interface AgentsMdAdditions {
+  /** 문서 지도에 넣은 문서 경로. */
+  readonly docs: readonly string[];
+  readonly rules: readonly string[];
+  readonly verify: readonly string[];
+}
+
+export interface MergedAgentsMd {
+  readonly content: string;
+  readonly added: AgentsMdAdditions;
+}
+
+/** 고른 프리셋들의 문서·규칙·검증 명령으로 새 AGENTS.md를 만든다. */
 export function renderAgentsMd(presets: readonly Preset[]): string {
-  const docs = uniqueByPath(presets.flatMap((preset) => preset.docs ?? []));
-  const rules = presets.flatMap((preset) => preset.rules ?? []);
-  const verify = presets.flatMap((preset) => (preset.verify === undefined ? [] : [preset.verify]));
+  return mergeAgentsMd(SKELETON, presets).content;
+}
 
-  const sections = [
-    "# AGENTS.md\n\n에이전트 작업 지침의 진입점. 작업 전 이 파일을 읽고, 작업 종류에 맞는 문서를 연다.",
-  ];
-  if (docs.length > 0) {
-    const rows = docs.map((doc) => [`[${doc.path}](${doc.path})`, doc.when]);
-    sections.push(`## 문서 지도\n\n${formatTable(["문서", "읽는 시점"], rows)}`);
-  }
-  if (rules.length > 0) {
-    const list = rules.map((rule, index) => `${String(index + 1)}. ${rule}`).join("\n");
-    sections.push(`## 핵심 규칙\n\n문서를 다 읽지 못했더라도 아래는 반드시 지킨다.\n\n${list}`);
-  }
-  if (verify.length > 0) {
-    sections.push(
-      "## 검증\n\n작업을 마치기 전에 실행하고 결과를 그대로 보고한다. 실패를 숨기지 않는다.\n\n" +
-        `\`\`\`bash\n${verify.join("\n")}\n\`\`\``,
-    );
-  }
-  sections.push(
-    [
-      "## 지침 관리",
-      "",
-      "- 지침 추가·변경 요청은 메모리에 저장하지 않는다. 이 파일이나 `docs/` 에 반영한다.",
-      "- 새 문서를 만들면 위 문서 지도에 한 줄 추가한다.",
-      "- 문서 수정도 코드와 같은 커밋 규칙을 따른다.",
-    ].join("\n"),
+/**
+ * 이미 있는 AGENTS.md에 프리셋의 문서·규칙·검증 명령 가운데 빠진 것만 넣는다.
+ *
+ * 프리셋을 나눠 설치해도 지도에서 문서가 빠지지 않게 하려는 것이다. 설치 순서와 상관없이 같은 항목이 모이고,
+ * 같은 프리셋을 다시 합치면 아무것도 바뀌지 않는다. 사람이 고쳐 둔 줄은 지우거나 바꾸지 않는다.
+ *
+ * - 문서: 이미 링크된 문서는 건너뛰고, `## 문서 지도` 표 끝에 행을 더한다. 표 정렬은 다시 맞춘다.
+ * - 규칙: 같은 문장이 없으면 `## 핵심 규칙` 목록 끝에 이어 붙인다.
+ * - 검증: 같은 명령 줄이 없으면 `## 검증` 코드 블록에 더한다.
+ *
+ * 절이나 표, 목록이 없으면 새로 만든다.
+ */
+export function mergeAgentsMd(existing: string, presets: readonly Preset[]): MergedAgentsMd {
+  let lines = existing.split(/\r?\n/);
+
+  const linked = new Set(
+    parseDocMap("AGENTS.md", existing).links.flatMap(
+      (link) => resolveLink("AGENTS.md", link.target) ?? [],
+    ),
   );
+  const docs = uniqueByPath(presets.flatMap((preset) => preset.docs ?? [])).filter(
+    (doc) => !linked.has(doc.path),
+  );
+  lines = addDocs(lines, docs);
 
-  return `${sections.join("\n\n")}\n`;
+  const rules = missingItems(
+    listItems(lines),
+    presets.flatMap((preset) => preset.rules ?? []),
+  );
+  lines = addRules(lines, rules);
+
+  const verify = missingItems(
+    codeBlockLines(lines),
+    presets.flatMap((preset) => (preset.verify === undefined ? [] : [preset.verify])),
+  );
+  lines = addVerify(lines, verify);
+
+  const content = `${lines.join("\n").replace(/\s+$/, "")}\n`;
+  return { content, added: { docs: docs.map((doc) => doc.path), rules, verify } };
+}
+
+function addDocs(lines: string[], docs: readonly DocMapEntry[]): string[] {
+  if (docs.length === 0) {
+    return lines;
+  }
+  const newRows = docs.map((doc) => [`[${doc.path}](${doc.path})`, doc.when]);
+  const section = findSection(lines, DOCS);
+  if (section === undefined) {
+    return insertSection(lines, DOCS, docsTable(newRows), later(DOCS));
+  }
+
+  const tableStart = findIndexIn(lines, section.start + 1, section.end, isTableLine);
+  if (tableStart === undefined) {
+    const at = lastContentLine(lines, section) + 1;
+    return splice(lines, at, 0, ["", ...docsTable(newRows)]);
+  }
+  const tableEnd =
+    findIndexIn(lines, tableStart, section.end, (line) => !isTableLine(line)) ?? section.end;
+  const [header = [], , ...rows] = lines.slice(tableStart, tableEnd).map(parseTableRow);
+  const table = formatTable(header, [...rows, ...newRows]).split("\n");
+  return splice(lines, tableStart, tableEnd - tableStart, table);
+}
+
+function addRules(lines: string[], rules: readonly string[]): string[] {
+  if (rules.length === 0) {
+    return lines;
+  }
+  const section = findSection(lines, RULES);
+  if (section === undefined) {
+    return insertSection(lines, RULES, [RULES_INTRO, "", ...numbered(rules, 1)], later(RULES));
+  }
+
+  const lastItem = findLastIndexIn(lines, section.start + 1, section.end, (line) =>
+    LIST_ITEM.test(line),
+  );
+  if (lastItem === undefined) {
+    const at = lastContentLine(lines, section) + 1;
+    return splice(lines, at, 0, ["", ...numbered(rules, 1)]);
+  }
+  // 목록의 마지막 항목이 여러 줄이면 들여쓴 이어지는 줄 뒤에 넣는다.
+  let at = lastItem + 1;
+  while (at < section.end && /^\s+\S/.test(lines[at] ?? "")) {
+    at++;
+  }
+  const number = /^(\d+)\./.exec(lines[lastItem] ?? "")?.[1];
+  const items =
+    number === undefined ? rules.map((rule) => `- ${rule}`) : numbered(rules, Number(number) + 1);
+  return splice(lines, at, 0, items);
+}
+
+function addVerify(lines: string[], commands: readonly string[]): string[] {
+  if (commands.length === 0) {
+    return lines;
+  }
+  const block = ["```bash", ...commands, "```"];
+  const section = findSection(lines, VERIFY);
+  if (section === undefined) {
+    return insertSection(lines, VERIFY, [VERIFY_INTRO, "", ...block], later(VERIFY));
+  }
+
+  const open = findIndexIn(lines, section.start + 1, section.end, (line) => FENCE.test(line));
+  const close =
+    open === undefined
+      ? undefined
+      : findIndexIn(lines, open + 1, section.end, (line) => FENCE.test(line));
+  if (close === undefined) {
+    const at = lastContentLine(lines, section) + 1;
+    return splice(lines, at, 0, ["", ...block]);
+  }
+  return splice(lines, close, 0, [...commands]);
+}
+
+function docsTable(rows: readonly (readonly string[])[]): string[] {
+  return formatTable(["문서", "읽는 시점"], rows).split("\n");
+}
+
+function numbered(items: readonly string[], from: number): string[] {
+  return items.map((item, index) => `${String(from + index)}. ${item}`);
+}
+
+/** `## 핵심 규칙` 목록의 항목 문장. 번호·글머리표는 뗀다. */
+function listItems(lines: readonly string[]): string[] {
+  const section = findSection(lines, RULES);
+  if (section === undefined) {
+    return [];
+  }
+  return lines.slice(section.start + 1, section.end).flatMap((line) => {
+    const match = LIST_ITEM.exec(line);
+    const text = match?.[2] ?? match?.[3];
+    return text === undefined ? [] : [text.trim()];
+  });
+}
+
+/** `## 검증` 절의 코드 블록 안 줄. */
+function codeBlockLines(lines: readonly string[]): string[] {
+  const section = findSection(lines, VERIFY);
+  if (section === undefined) {
+    return [];
+  }
+  let inFence = false;
+  return lines.slice(section.start + 1, section.end).flatMap((line) => {
+    if (FENCE.test(line)) {
+      inFence = !inFence;
+      return [];
+    }
+    return inFence ? [line.trim()] : [];
+  });
+}
+
+/** 이미 있는 항목과 같은 것, 앞에서 이미 나온 것을 뺀다. */
+function missingItems(existing: readonly string[], candidates: readonly string[]): string[] {
+  const seen = new Set(existing);
+  return candidates.filter((item) => {
+    if (seen.has(item.trim())) {
+      return false;
+    }
+    seen.add(item.trim());
+    return true;
+  });
 }
 
 function uniqueByPath(entries: readonly DocMapEntry[]): DocMapEntry[] {
@@ -58,4 +221,49 @@ function uniqueByPath(entries: readonly DocMapEntry[]): DocMapEntry[] {
     seen.add(entry.path);
     return true;
   });
+}
+
+function later(title: string): string[] {
+  return SECTION_ORDER.slice(SECTION_ORDER.indexOf(title) + 1);
+}
+
+function isTableLine(line: string): boolean {
+  return line.trimStart().startsWith("|");
+}
+
+function findIndexIn(
+  lines: readonly string[],
+  from: number,
+  to: number,
+  test: (line: string) => boolean,
+): number | undefined {
+  for (let index = from; index < to; index++) {
+    if (test(lines[index] ?? "")) {
+      return index;
+    }
+  }
+  return undefined;
+}
+
+function findLastIndexIn(
+  lines: readonly string[],
+  from: number,
+  to: number,
+  test: (line: string) => boolean,
+): number | undefined {
+  for (let index = to - 1; index >= from; index--) {
+    if (test(lines[index] ?? "")) {
+      return index;
+    }
+  }
+  return undefined;
+}
+
+function splice(
+  lines: readonly string[],
+  start: number,
+  deleteCount: number,
+  items: readonly string[],
+): string[] {
+  return [...lines.slice(0, start), ...items, ...lines.slice(start + deleteCount)];
 }
