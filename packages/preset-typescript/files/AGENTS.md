@@ -9,7 +9,7 @@
 | [docs/project-direction.md](docs/project-direction.md) | 모든 작업 시작 전 (필수). 범위 밖 작업이면 먼저 질문 |
 | [docs/workflow.md](docs/workflow.md) | 모든 작업 시작 전 (필수) |
 | [docs/git-conventions.md](docs/git-conventions.md) | 이슈·브랜치·커밋·PR·머지 |
-| [docs/code-review.md](docs/code-review.md) | PR 리뷰(CodeRabbit) 확인 |
+| [docs/code-review.md](docs/code-review.md) | PR 리뷰 확인·반영 |
 | [docs/typescript.md](docs/typescript.md) | 코드 작성·리뷰 (항상). 컴파일러 옵션, 타입 규칙 |
 | [docs/structure.md](docs/structure.md) | 파일·컴포넌트를 만들 때. 폴더, 컴포넌트, 접근성 |
 | [docs/testing.md](docs/testing.md) | 테스트를 쓸 때 |

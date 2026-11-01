@@ -9,7 +9,7 @@
 | [docs/project-direction.md](docs/project-direction.md) | 모든 작업 시작 전 (필수). 범위 밖 작업이면 먼저 질문 |
 | [docs/workflow.md](docs/workflow.md) | 모든 작업 시작 전 (필수) |
 | [docs/git-conventions.md](docs/git-conventions.md) | 이슈·브랜치·커밋·PR·머지 |
-| [docs/code-review.md](docs/code-review.md) | PR 리뷰(CodeRabbit) 확인 |
+| [docs/code-review.md](docs/code-review.md) | PR 리뷰 확인·반영 |
 | [docs/code-style.md](docs/code-style.md) | 코드 작성, 주석 |
 | [docs/clean-code.md](docs/clean-code.md) | 코드 작성, 설계 |
 | [docs/clean-code-examples.md](docs/clean-code-examples.md) | 코드 작성 시 참고 예시 |
