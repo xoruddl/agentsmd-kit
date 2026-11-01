@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
-import { checkRepository, installPreset, resolvePresets } from "@agentsmd/core";
+import { checkRepository, installEntryFiles, installPreset, resolvePresets } from "@agentsmd/core";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { typescriptPreset } from "../src/index.js";
 
@@ -30,9 +30,12 @@ async function stage(path: string, content: string): Promise<void> {
 beforeEach(async () => {
   repo = await mkdtemp(join(tmpdir(), "agentsmd-preset-ts-"));
   await exec("git", ["init", "-q"], { cwd: repo });
-  for (const preset of resolvePresets(typescriptPreset)) {
+  const presets = resolvePresets(typescriptPreset);
+  for (const preset of presets) {
     await installPreset(preset, repo);
   }
+  // AGENTS.md와 훅 실행기는 init이 고른 프리셋에 맞게 만든다.
+  await installEntryFiles(presets, repo);
 });
 
 afterEach(async () => {

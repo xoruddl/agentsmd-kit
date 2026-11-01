@@ -16,6 +16,27 @@ export const typescriptPreset = {
   requires: [gitPreset],
   description: "TypeScript·React 프론트엔드용 타입·구조·테스트·보안 규칙, Prettier 훅, pnpm CI",
   filesDir: fileURLToPath(new URL("../files", import.meta.url)),
+  // Prettier 검사(pre-commit.d/prettier)를 연결한다.
+  hooksPath: ".githooks",
+  docs: [
+    {
+      path: "docs/project-direction.md",
+      when: "모든 작업 시작 전 (필수). 범위 밖 작업이면 먼저 질문",
+    },
+    { path: "docs/typescript.md", when: "코드 작성·리뷰 (항상). 컴파일러 옵션, 타입 규칙" },
+    { path: "docs/structure.md", when: "파일·컴포넌트를 만들 때. 폴더, 컴포넌트, 접근성" },
+    { path: "docs/testing.md", when: "테스트를 쓸 때" },
+    { path: "docs/env-and-security.md", when: "환경변수·외부 입력·의존성을 다룰 때" },
+    { path: "docs/lint-and-ci.md", when: "스크립트·린트·훅·CI 설정" },
+  ],
+  rules: [
+    "`any`, `as` 단언, `!` 로 타입 오류를 덮지 않는다.",
+    "API 응답·저장소 값·URL 파라미터·환경변수는 들어오는 곳에서 검증한다.",
+    "클릭할 수 있는 요소는 `<button>`·`<a>` 로 만든다. 이미지에는 `alt`, 입력에는 `label`.",
+    "기능은 테스트와 함께 쓴다. 버그 수정은 재현 테스트부터 쓴다.",
+    "새 의존성은 사용자에게 묻고 추가한다.",
+  ],
+  verify: "pnpm lint && pnpm format:check && pnpm typecheck && pnpm test && pnpm build",
   nextSteps: [
     "docs/project-direction.md 에 프로젝트 목표와 범위를 채우세요.",
     "tsconfig 에 docs/typescript.md 의 필수 컴파일러 옵션을 켜세요.",
