@@ -34,3 +34,7 @@ jobs:
       - run: pnpm lint
       - run: pnpm typecheck
       - run: pnpm test
+
+      # 이 도구로 이 저장소의 AGENTS.md를 검사한다. 문서를 추가하고 지도를 고치지 않으면 여기서 실패한다.
+      - name: agentsmd check
+        run: node packages/cli/dist/main.js check
