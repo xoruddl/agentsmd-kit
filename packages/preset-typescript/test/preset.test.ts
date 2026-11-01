@@ -1,10 +1,10 @@
 import { execFile } from "node:child_process";
-import { mkdtemp, rm, symlink, writeFile } from "node:fs/promises";
+import { access, constants, mkdtemp, readFile, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
-import { checkRepository, installEntryFiles, installPreset, resolvePresets } from "@agentsmd/core";
+import { checkRepository, installEntryFiles, installPreset } from "@agentsmd/core";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { typescriptPreset } from "../src/index.js";
 
@@ -30,12 +30,9 @@ async function stage(path: string, content: string): Promise<void> {
 beforeEach(async () => {
   repo = await mkdtemp(join(tmpdir(), "agentsmd-preset-ts-"));
   await exec("git", ["init", "-q"], { cwd: repo });
-  const presets = resolvePresets(typescriptPreset);
-  for (const preset of presets) {
-    await installPreset(preset, repo);
-  }
+  await installPreset(typescriptPreset, repo);
   // AGENTS.md와 훅 실행기는 init이 고른 프리셋에 맞게 만든다.
-  await installEntryFiles(presets, repo);
+  await installEntryFiles([typescriptPreset], repo);
 });
 
 afterEach(async () => {
@@ -43,15 +40,22 @@ afterEach(async () => {
 });
 
 describe("typescriptPreset", () => {
-  it("공통 Git 프리셋을 먼저 설치하도록 요구한다", () => {
-    expect(resolvePresets(typescriptPreset).map((preset) => preset.name)).toEqual([
-      "git",
-      "typescript",
-    ]);
+  // Git 작업 규칙과 언어 규칙은 따로 고른다.
+  it("다른 프리셋을 요구하지 않는다", () => {
+    expect(typescriptPreset).not.toHaveProperty("requires");
   });
 
-  it("Git 프리셋과 함께 설치하면 agentsmd check 규칙을 모두 통과한다", async () => {
+  it("TypeScript 프리셋만 설치해도 agentsmd check 규칙을 모두 통과한다", async () => {
     await expect(checkRepository({ root: repo })).resolves.toEqual([]);
+  });
+
+  it("설치한 훅 실행기가 Prettier 검사를 실행한다", async () => {
+    await expect(readFile(join(repo, ".githooks/pre-commit"), "utf8")).resolves.toContain(
+      "pre-commit.d",
+    );
+    await expect(
+      access(join(repo, ".githooks/pre-commit.d/prettier"), constants.X_OK),
+    ).resolves.toBeUndefined();
   });
 });
 

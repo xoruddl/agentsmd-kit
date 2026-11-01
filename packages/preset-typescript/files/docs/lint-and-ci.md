@@ -56,8 +56,8 @@ ESLint 를 쓰면 typescript-eslint, eslint-plugin-react-hooks, eslint-plugin-js
 
 ## Git 훅
 
-공통 훅(커밋 형식, 파일 수)은 [git-conventions.md](git-conventions.md) 의 자동 검사를 따른다.
-TypeScript 프리셋은 포맷 검사 하나를 더한다.
+`.githooks/pre-commit` 이 `.githooks/pre-commit.d/` 의 검사를 이름 순서로 실행한다.
+TypeScript 프리셋은 포맷 검사를 넣는다. Git 프리셋을 함께 설치했다면 커밋 형식·파일 수 검사도 같이 돈다.
 
 | 파일 | 검사 |
 | --- | --- |
