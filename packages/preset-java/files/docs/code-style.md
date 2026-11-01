@@ -2,7 +2,7 @@
 
 ## 포맷
 
-- google-java-format (Spotless). 수동 정렬하지 않는다.
+- palantir-java-format (Spotless). 들여쓰기 공백 4칸, 줄 길이 120. 수동 정렬하지 않는다.
 - 커밋 전 `./gradlew spotlessApply`. pre-commit 훅이 `spotlessCheck` 를 돌린다.
 - 설정은 [lint-and-ci.md](lint-and-ci.md).
 
@@ -49,13 +49,13 @@
  * @throws OrderNotCancelableException 결제 후 24시간이 지난 경우
  */
 public void cancel(Long orderId) {
-  Order order = orderRepository.getById(orderId);
+    Order order = orderRepository.getById(orderId);
 
-  // 정산이 결제 후 24시간 시점에 확정되므로 그 이후 취소는 환불 절차로 처리한다.
-  if (order.isPaidBefore(CANCEL_LIMIT)) {
-    throw new OrderNotCancelableException(orderId);
-  }
-  order.cancel();
+    // 정산이 결제 후 24시간 시점에 확정되므로 그 이후 취소는 환불 절차로 처리한다.
+    if (order.isPaidBefore(CANCEL_LIMIT)) {
+        throw new OrderNotCancelableException(orderId);
+    }
+    order.cancel();
 }
 ```
 

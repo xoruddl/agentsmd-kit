@@ -17,20 +17,22 @@ git config core.hooksPath .githooks
 - 하네스 최초 도입 커밋만 예외: `HARNESS_MAX_FILES=99`
 - `--no-verify` 금지.
 
-## 린트 (Spotless + google-java-format)
+## 린트 (Spotless + palantir-java-format)
 
 프로젝트에 Gradle 을 붙일 때 `build.gradle.kts` 에 추가한다.
+
+palantir-java-format 은 Google Java Style 을 바탕으로 들여쓰기 4칸, 줄 길이 120 을 쓴다.
 
 ```kotlin
 plugins {
     java
-    id("com.diffplug.spotless") version "8.10.2"
+    id("com.diffplug.spotless") version "8.10.4"
 }
 
 spotless {
     java {
         target("src/**/*.java")
-        googleJavaFormat("1.36.1")
+        palantirJavaFormat("2.103.0")
         removeUnusedImports()
         trimTrailingWhitespace()
         endWithNewline()

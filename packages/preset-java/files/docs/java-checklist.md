@@ -18,9 +18,9 @@ Java 코드 작성·리뷰 시 확인한다. [clean-code.md](clean-code.md) 와 
 
 ## 1. 자바 코드 컨벤션
 
-- [Google Java Style Guide](https://google.github.io/styleguide/javaguide.html) 를 따른다.
-- IntelliJ 또는 Eclipse 에서 포맷팅한다.
-- IDE 포맷터는 google-java-format 기준으로 맞춘다. 최종 판정은 `spotlessCheck`. → [lint-and-ci.md](lint-and-ci.md)
+- [palantir-java-format](https://github.com/palantir/palantir-java-format) 스타일을 따른다. Google Java Style 기반이고 들여쓰기 4칸, 줄 길이 120 이다.
+- IntelliJ 는 palantir-java-format 플러그인으로 포맷팅한다.
+- 포맷은 손으로 맞추지 않는다. 최종 판정은 `spotlessCheck`. → [lint-and-ci.md](lint-and-ci.md)
 
 ## 2. 들여쓰기 1단계
 
