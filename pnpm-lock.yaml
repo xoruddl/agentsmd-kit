@@ -27,6 +27,8 @@ importers:
         specifier: ^8.72.1
         version: 8.72.1(eslint@10.14.0)(typescript@6.0.3)
 
+  packages/core: {}
+
 packages:
 
   '@cacheable/memory@2.2.0':
