@@ -76,12 +76,37 @@ describe("runInit", () => {
   });
 
   it("이미 있는 파일은 건너뛰었다고 알린다", async () => {
-    await writeFile(join(root, "AGENTS.md"), "# 기존 지도");
+    await writeFile(join(root, "CLAUDE.md"), "# 사람이 쓴 CLAUDE.md\n");
 
     await runInit(["--preset", "java", "--skip-hooks"], io());
 
-    await expect(readFile(join(root, "AGENTS.md"), "utf8")).resolves.toBe("# 기존 지도");
-    expect(out).toMatch(/이미 있어서 건너뛴 파일 \d+개 \(덮어쓰려면 --force\):\n {2}AGENTS\.md/);
+    await expect(readFile(join(root, "CLAUDE.md"), "utf8")).resolves.toBe(
+      "# 사람이 쓴 CLAUDE.md\n",
+    );
+    expect(out).toMatch(/이미 있어서 건너뛴 파일 1개 \(덮어쓰려면 --force\):\n {2}CLAUDE\.md/);
+  });
+
+  it.each([
+    ["java", "git"],
+    ["git", "java"],
+  ])("%s 다음 %s 순서로 나눠 설치해도 모든 문서가 지도에 오른다", async (first, second) => {
+    await runInit(["--preset", first, "--skip-hooks"], io());
+    out = "";
+    await runInit(["--preset", second, "--skip-hooks"], io());
+
+    expect(out).toMatch(/기존 AGENTS\.md에 문서 \d+개, 규칙 \d+개/);
+    const agents = await readFile(join(root, "AGENTS.md"), "utf8");
+    expect(agents).toContain("[docs/git-conventions.md](docs/git-conventions.md)");
+    expect(agents).toContain("[docs/java-checklist.md](docs/java-checklist.md)");
+    await expect(checkRepository({ root })).resolves.toEqual([]);
+  });
+
+  it("같은 프리셋을 다시 설치하면 AGENTS.md를 바꾸지 않았다고 알린다", async () => {
+    await runInit(["--preset", "git,java", "--skip-hooks"], io());
+    out = "";
+    await runInit(["--preset", "java", "--skip-hooks"], io());
+
+    expect(out).toContain("AGENTS.md에 이미 모든 항목이 있어 바꾸지 않았습니다.");
   });
 
   it("Git 훅 실행기를 만들어 각 프리셋의 pre-commit.d 검사를 연결한다", async () => {

@@ -4,6 +4,7 @@ export { checkRepository } from "./check.js";
 export type { CheckOptions } from "./check.js";
 export { DocMapNotFoundError } from "./errors.js";
 export { installEntryFiles } from "./install-entry-files.js";
+export type { EntryFilesResult } from "./install-entry-files.js";
 export { installPreset } from "./install.js";
 export type { InstallOptions, InstallResult } from "./install.js";
 export { PRE_COMMIT_HOOK } from "./pre-commit-hook.js";

@@ -28,7 +28,7 @@ describe("installEntryFiles", () => {
   it("고른 프리셋의 문서 지도로 AGENTS.md를, 그것을 불러오는 CLAUDE.md를 만든다", async () => {
     const result = await installEntryFiles([docsOnly], target);
 
-    expect(result).toEqual({ written: ["AGENTS.md", "CLAUDE.md"], skipped: [] });
+    expect(result).toEqual({ written: ["AGENTS.md", "CLAUDE.md"], skipped: [], merged: undefined });
     await expect(readFile(join(target, "AGENTS.md"), "utf8")).resolves.toContain(
       "[docs/workflow.md](docs/workflow.md)",
     );
@@ -49,15 +49,54 @@ describe("installEntryFiles", () => {
     expect(result.written).not.toContain(".githooks/pre-commit");
   });
 
-  it("이미 있는 파일은 건너뛰고, force면 덮어쓴다", async () => {
-    await writeFile(join(target, "AGENTS.md"), "# 사람이 다듬은 지도");
+  it("이미 있는 AGENTS.md에는 빠진 문서만 합치고 사람이 쓴 내용은 남긴다", async () => {
+    await writeFile(join(target, "AGENTS.md"), "# 사람이 다듬은 지도\n\n- 팀 메모\n");
+
+    const result = await installEntryFiles([docsOnly], target);
+
+    expect(result.merged).toEqual({ docs: ["docs/workflow.md"], rules: [], verify: [] });
+    expect(result.written).not.toContain("AGENTS.md");
+    expect(result.skipped).not.toContain("AGENTS.md");
+    const agents = await readFile(join(target, "AGENTS.md"), "utf8");
+    expect(agents).toContain("- 팀 메모");
+    expect(agents).toContain("[docs/workflow.md](docs/workflow.md)");
+  });
+
+  it("프리셋을 나눠 설치해도 순서와 상관없이 모든 문서가 지도에 오른다", async () => {
+    const other = {
+      ...docsOnly,
+      name: "other",
+      docs: [{ path: "docs/other.md", when: "다른 작업" }],
+    } satisfies Preset;
+
+    await installEntryFiles([other], target);
+    await installEntryFiles([docsOnly], target);
+
+    const agents = await readFile(join(target, "AGENTS.md"), "utf8");
+    expect(agents).toContain("[docs/other.md](docs/other.md)");
+    expect(agents).toContain("[docs/workflow.md](docs/workflow.md)");
+  });
+
+  it("더할 것이 없으면 AGENTS.md를 건드리지 않는다", async () => {
+    await installEntryFiles([docsOnly], target);
+    const before = await stat(join(target, "AGENTS.md"));
+
+    const result = await installEntryFiles([docsOnly], target);
+
+    expect(result.merged).toEqual({ docs: [], rules: [], verify: [] });
+    expect((await stat(join(target, "AGENTS.md"))).mtimeMs).toBe(before.mtimeMs);
+  });
+
+  it("다른 파일은 이미 있으면 건너뛰고, force면 AGENTS.md까지 새로 쓴다", async () => {
+    await writeFile(join(target, "AGENTS.md"), "# 옛 지도\n");
+    await writeFile(join(target, "CLAUDE.md"), "# 사람이 쓴 CLAUDE.md\n");
 
     await expect(installEntryFiles([docsOnly], target)).resolves.toMatchObject({
-      skipped: ["AGENTS.md"],
+      skipped: ["CLAUDE.md"],
     });
-    await expect(readFile(join(target, "AGENTS.md"), "utf8")).resolves.toBe("# 사람이 다듬은 지도");
 
-    await installEntryFiles([docsOnly], target, { force: true });
-    await expect(readFile(join(target, "AGENTS.md"), "utf8")).resolves.toContain("## 문서 지도");
+    const forced = await installEntryFiles([docsOnly], target, { force: true });
+    expect(forced).toMatchObject({ written: ["AGENTS.md", "CLAUDE.md"], merged: undefined });
+    await expect(readFile(join(target, "AGENTS.md"), "utf8")).resolves.not.toContain("옛 지도");
   });
 });

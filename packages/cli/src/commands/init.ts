@@ -1,6 +1,13 @@
 import { resolve } from "node:path";
 import { parseArgs } from "node:util";
-import { installEntryFiles, installPreset, type InstallResult, type Preset } from "@agentsmd/core";
+import {
+  installEntryFiles,
+  installPreset,
+  type AgentsMdAdditions,
+  type EntryFilesResult,
+  type InstallResult,
+  type Preset,
+} from "@agentsmd/core";
 import { configureHooksPath, type HooksResult } from "../git-hooks.js";
 import { makeHooksExecutable } from "../hook-permissions.js";
 import type { ExitCode, Io } from "../io.js";
@@ -82,7 +89,7 @@ async function installAll(
   presets: readonly Preset[],
   root: string,
   force: boolean,
-): Promise<InstallResult> {
+): Promise<EntryFilesResult> {
   const written: string[] = [];
   const skipped: string[] = [];
   const collect = (result: InstallResult): void => {
@@ -92,18 +99,22 @@ async function installAll(
   for (const preset of presets) {
     collect(await installPreset(preset, root, { force }));
   }
-  collect(await installEntryFiles(presets, root, { force }));
-  return { written, skipped };
+  const entry = await installEntryFiles(presets, root, { force });
+  collect(entry);
+  return { written, skipped, merged: entry.merged };
 }
 
 function formatReport(
   presets: readonly Preset[],
-  result: InstallResult,
+  result: EntryFilesResult,
   hooksPath: string | undefined,
   hooks: HooksResult | undefined,
 ): string {
   const names = presets.map((preset) => preset.name).join(", ");
   const lines = [`${names} 프리셋: 파일 ${String(result.written.length)}개를 설치했습니다.`];
+  if (result.merged !== undefined) {
+    lines.push(formatMerged(result.merged));
+  }
 
   if (result.skipped.length > 0) {
     lines.push(
@@ -124,4 +135,19 @@ function formatReport(
   ];
   lines.push("", "다음 단계:", ...steps.map((step, index) => `  ${String(index + 1)}. ${step}`));
   return `${lines.join("\n")}\n`;
+}
+
+/** 이미 있던 AGENTS.md에 무엇을 더했는지 한 줄로 알린다. */
+function formatMerged(added: AgentsMdAdditions): string {
+  const parts = [
+    [added.docs.length, "문서"],
+    [added.rules.length, "규칙"],
+    [added.verify.length, "검증 명령"],
+  ] as const;
+  const counts = parts
+    .filter(([count]) => count > 0)
+    .map(([count, label]) => `${label} ${String(count)}개`);
+  return counts.length === 0
+    ? "AGENTS.md에 이미 모든 항목이 있어 바꾸지 않았습니다."
+    : `기존 AGENTS.md에 ${counts.join(", ")}를 더했습니다.`;
 }
