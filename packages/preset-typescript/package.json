@@ -2,6 +2,22 @@
   "name": "@agentsmd/preset-typescript",
   "version": "0.1.0",
   "description": "TypeScript·React 프론트엔드용 AI 작업 지침 프리셋 (타입·구조·테스트·보안 규칙, Prettier 훅, pnpm CI)",
+  "keywords": [
+    "agents.md",
+    "ai-agent",
+    "typescript",
+    "react",
+    "frontend"
+  ],
+  "homepage": "https://github.com/xoruddl/agentsmd-kit#readme",
+  "bugs": "https://github.com/xoruddl/agentsmd-kit/issues",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xoruddl/agentsmd-kit.git",
+    "directory": "packages/preset-typescript"
+  },
+  "license": "MIT",
+  "author": "이태경 (https://github.com/xoruddl)",
   "type": "module",
   "exports": {
     ".": {
@@ -16,7 +32,11 @@
   "engines": {
     "node": ">=22"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
+    "prepack": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\" && pnpm run build",
     "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc -p tsconfig.json",
     "test": "vitest run"

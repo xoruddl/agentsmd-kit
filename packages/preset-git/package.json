@@ -2,6 +2,21 @@
   "name": "@agentsmd/preset-git",
   "version": "0.1.0",
   "description": "언어와 무관한 Git 작업 규칙 프리셋 (작업 흐름 문서, 커밋 훅, Conventions 검사, 이슈·PR 템플릿)",
+  "keywords": [
+    "agents.md",
+    "ai-agent",
+    "git-hooks",
+    "conventional-workflow"
+  ],
+  "homepage": "https://github.com/xoruddl/agentsmd-kit#readme",
+  "bugs": "https://github.com/xoruddl/agentsmd-kit/issues",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xoruddl/agentsmd-kit.git",
+    "directory": "packages/preset-git"
+  },
+  "license": "MIT",
+  "author": "이태경 (https://github.com/xoruddl)",
   "type": "module",
   "exports": {
     ".": {
@@ -16,7 +31,11 @@
   "engines": {
     "node": ">=22"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
+    "prepack": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\" && pnpm run build",
     "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc -p tsconfig.json",
     "test": "vitest run"
