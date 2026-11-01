@@ -1,0 +1,26 @@
+{
+  "name": "@agentsmd/preset-git",
+  "version": "0.1.0",
+  "description": "언어와 무관한 Git 작업 규칙 프리셋 (작업 흐름 문서, 커밋 훅, Conventions 검사, 이슈·PR 템플릿)",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "files"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@agentsmd/core": "workspace:*"
+  }
+}

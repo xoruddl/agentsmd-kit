@@ -41,6 +41,12 @@ importers:
 
   packages/core: {}
 
+  packages/preset-git:
+    dependencies:
+      '@agentsmd/core':
+        specifier: workspace:*
+        version: link:../core
+
   packages/preset-java:
     dependencies:
       '@agentsmd/core':
