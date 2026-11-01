@@ -1,3 +1,5 @@
 pnpm-lock.yaml
 dist/
 coverage/
+# 프리셋 파일은 사용자 저장소에 설치될 원본 그대로 둔다.
+packages/preset-*/files/
