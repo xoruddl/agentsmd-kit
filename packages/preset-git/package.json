@@ -1,6 +1,6 @@
 {
   "name": "@agentsmd/preset-git",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "언어와 무관한 Git 작업 규칙 프리셋 (작업 흐름 문서, 커밋 훅, Conventions 검사, 이슈·PR 템플릿)",
   "keywords": [
     "agents.md",
