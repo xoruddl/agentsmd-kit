@@ -29,7 +29,7 @@ describe("javaPreset", () => {
   });
 
   it("설치된 Git 훅이 실행 권한을 가진다", async () => {
-    for (const hook of ["pre-commit", "commit-msg"]) {
+    for (const hook of ["pre-commit.d/max-files", "commit-msg"]) {
       await expect(
         access(join(target, ".githooks", hook), constants.X_OK),
       ).resolves.toBeUndefined();

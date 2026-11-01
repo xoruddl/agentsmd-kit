@@ -1,9 +1,9 @@
 import { execFile } from "node:child_process";
-import { chmod, mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { promisify } from "node:util";
-import { installPreset } from "@agentsmd/core";
+import { installEntryFiles, installPreset } from "@agentsmd/core";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { gitPreset } from "../src/index.js";
 
@@ -54,8 +54,13 @@ beforeEach(async () => {
   repo = await mkdtemp(join(tmpdir(), "agentsmd-hooks-"));
   await exec("git", ["init", "-q"], { cwd: repo });
   await installPreset(gitPreset, repo);
+  // pre-commit 실행기는 init이 만들어 넣으므로, 실제 설치와 같게 함께 만든다.
+  await installEntryFiles([gitPreset], repo);
   // 훅 파일 자체는 스테이징 대상에서 빼서 파일 수 검사에 섞이지 않게 한다.
-  await writeFile(join(repo, ".git", "info", "exclude"), ".githooks/\n.github/\n.claude/\ndocs/\n");
+  await writeFile(
+    join(repo, ".git", "info", "exclude"),
+    ".githooks/\n.github/\n.claude/\ndocs/\nAGENTS.md\nCLAUDE.md\n",
+  );
 });
 
 afterEach(async () => {
@@ -129,26 +134,5 @@ describe("pre-commit", () => {
     await expect(runHook("pre-commit", [], { HARNESS_MAX_FILES: "6" })).resolves.toMatchObject({
       code: 0,
     });
-  });
-
-  it("pre-commit.d의 실행 가능한 검사를 실행하고 실패를 그대로 전한다", async () => {
-    await stageFiles(1);
-    const checks = join(repo, ".githooks", "pre-commit.d");
-    await mkdir(checks, { recursive: true });
-    await writeFile(join(checks, "fail"), "#!/usr/bin/env bash\necho '포맷 위반' >&2\nexit 1\n");
-    await chmod(join(checks, "fail"), 0o755);
-
-    const result = await runHook("pre-commit");
-    expect(result.code).toBe(1);
-    expect(result.stderr).toContain("포맷 위반");
-  });
-
-  it("실행 권한이 없는 파일은 검사로 실행하지 않는다", async () => {
-    await stageFiles(1);
-    const checks = join(repo, ".githooks", "pre-commit.d");
-    await mkdir(checks, { recursive: true });
-    await writeFile(join(checks, "README"), "검사 스크립트를 두는 곳\n");
-
-    await expect(runHook("pre-commit")).resolves.toMatchObject({ code: 0 });
   });
 });
