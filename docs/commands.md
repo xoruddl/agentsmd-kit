@@ -3,34 +3,40 @@
 ## agentsmd init
 
 프리셋의 지침 파일을 저장소에 설치하고 Git 훅을 연결한다.
+Git 작업 규칙과 언어 규칙은 따로 고른다. 함께 쓰려면 쉼표로 잇는다.
 
 ```bash
-agentsmd init --preset java
-agentsmd init --preset typescript
+agentsmd init --preset git,typescript   # Git 규칙 + TypeScript 규칙
+agentsmd init --preset git,java         # Git 규칙 + Java 규칙
+agentsmd init --preset typescript       # TypeScript 규칙만
+agentsmd init --preset git              # Git 규칙만
 ```
 
-| 옵션              | 설명                                   | 기본값 |
-| ----------------- | -------------------------------------- | ------ |
-| `--preset <이름>` | 설치할 프리셋. 필수                    | —      |
-| `--root <경로>`   | 설치할 저장소 루트. 현재 디렉터리 기준 | `.`    |
-| `--force`         | 이미 있는 파일도 덮어쓴다              | 끔     |
-| `--skip-hooks`    | `core.hooksPath`를 설정하지 않는다     | 끔     |
+| 옵션              | 설명                                         | 기본값 |
+| ----------------- | -------------------------------------------- | ------ |
+| `--preset <이름>` | 설치할 프리셋. 여러 개는 쉼표로 잇는다. 필수 | —      |
+| `--root <경로>`   | 설치할 저장소 루트. 현재 디렉터리 기준       | `.`    |
+| `--force`         | 이미 있는 파일도 덮어쓴다                    | 끔     |
+| `--skip-hooks`    | `core.hooksPath`를 설정하지 않는다           | 끔     |
 
 동작 순서:
 
-1. 고른 프리셋이 요구하는 프리셋(공통 Git 프리셋)부터 차례로, 같은 경로 구조로 복사한다.
+1. 고른 프리셋의 파일을 적은 순서대로, 같은 경로 구조로 복사한다.
    이미 있는 파일은 건너뛰고 목록으로 알린다. 사람이 다듬어 둔 지침을 지우지 않기 위해서다.
-2. 설치한 프리셋에 훅 디렉터리가 있으면 `git config core.hooksPath`로 연결한다.
-   Git 저장소가 아니면 연결하지 않고 안내만 남긴다.
-3. 설치한 프리셋들이 정한 "설치 후 사람이 할 일"을 번호로 안내한다.
+2. 고른 프리셋들의 문서 목록과 핵심 규칙을 합쳐 `AGENTS.md`를 만들고, 그것을 불러오는 `CLAUDE.md`를 만든다.
+   훅이 있는 프리셋을 골랐으면 `.githooks/pre-commit.d/`의 검사를 실행하는 `.githooks/pre-commit`도 만든다.
+3. 훅이 있으면 `git config core.hooksPath`로 연결한다. Git 저장소가 아니면 연결하지 않고 안내만 남긴다.
+4. 고른 프리셋들이 정한 "설치 후 사람이 할 일"을 번호로 안내한다.
 
-| 프리셋       | 내용                                                                                                                          |
-| ------------ | ----------------------------------------------------------------------------------------------------------------------------- |
-| `java`       | `AGENTS.md`, Java 코드 규칙 문서, Spotless 검사(`pre-commit.d/spotless`), Gradle CI                                           |
-| `typescript` | `AGENTS.md`, 타입·구조·테스트·보안·린트 문서, Prettier 검사(`pre-commit.d/prettier`), pnpm CI, `.nvmrc`                       |
-| `git` (자동) | Git 작업 규칙·작업 흐름·리뷰 판단·문체 문서, `commit-msg`·`pre-commit` 훅, Conventions 검사, 이슈·PR 템플릿, Claude Code 설정 |
+| 프리셋       | 내용                                                                                                                    |
+| ------------ | ----------------------------------------------------------------------------------------------------------------------- |
+| `git`        | Git 작업 규칙·작업 흐름·리뷰 판단·문체 문서, 커밋 형식·파일 수 검사, Conventions 검사, 이슈·PR 템플릿, Claude Code 설정 |
+| `java`       | Java 코드 규칙 문서, Spotless 검사(`pre-commit.d/spotless`), Gradle CI                                                  |
+| `typescript` | 타입·구조·테스트·보안·린트 문서, Prettier 검사(`pre-commit.d/prettier`), pnpm CI, `.nvmrc`                              |
 
-`git` 프리셋은 문서 지도가 없어 단독으로 고르지 않는다. `java`·`typescript`를 고르면 함께 설치된다.
+`AGENTS.md`가 이미 있으면 덮어쓰지 않는다. 그래서 프리셋을 나눠서 두 번 설치하면 두 번째 프리셋의 문서는 지도에 들어가지 않는다.
+이때는 `agentsmd check`가 "지도에 없는 문서"로 알려 주므로 지도에 한 줄씩 추가한다.
+처음부터 함께 쓸 프리셋은 한 번에 고르는 것이 좋다.
 
 ## agentsmd check
 
