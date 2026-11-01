@@ -1,6 +1,12 @@
 import { resolve } from "node:path";
 import { parseArgs } from "node:util";
-import { installPreset, resolvePresets, type InstallResult, type Preset } from "@agentsmd/core";
+import {
+  installEntryFiles,
+  installPreset,
+  resolvePresets,
+  type InstallResult,
+  type Preset,
+} from "@agentsmd/core";
 import { configureHooksPath, type HooksResult } from "../git-hooks.js";
 import { makeHooksExecutable } from "../hook-permissions.js";
 import type { ExitCode, Io } from "../io.js";
@@ -74,6 +80,7 @@ export async function runInit(args: readonly string[], io: Io): Promise<ExitCode
   return 0;
 }
 
+/** 프리셋 파일을 설치한 뒤, 고른 프리셋 조합에 맞춘 AGENTS.md·CLAUDE.md·훅 실행기를 만든다. */
 async function installAll(
   presets: readonly Preset[],
   root: string,
@@ -81,11 +88,14 @@ async function installAll(
 ): Promise<InstallResult> {
   const written: string[] = [];
   const skipped: string[] = [];
-  for (const preset of presets) {
-    const result = await installPreset(preset, root, { force });
+  const collect = (result: InstallResult): void => {
     written.push(...result.written);
     skipped.push(...result.skipped);
+  };
+  for (const preset of presets) {
+    collect(await installPreset(preset, root, { force }));
   }
+  collect(await installEntryFiles(presets, root, { force }));
   return { written, skipped };
 }
 

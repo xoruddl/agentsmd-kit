@@ -72,7 +72,15 @@ describe("runInit", () => {
     await runInit(["--preset", "java", "--skip-hooks"], io());
 
     await expect(readFile(join(root, "AGENTS.md"), "utf8")).resolves.toBe("# 기존 지도");
-    expect(out).toContain("이미 있어서 건너뛴 파일 1개");
+    expect(out).toMatch(/이미 있어서 건너뛴 파일 \d+개 \(덮어쓰려면 --force\):\n {2}AGENTS\.md/);
+  });
+
+  it("Git 훅 실행기를 만들어 각 프리셋의 pre-commit.d 검사를 연결한다", async () => {
+    await runInit(["--preset", "java", "--skip-hooks"], io());
+
+    await expect(readFile(join(root, ".githooks/pre-commit"), "utf8")).resolves.toContain(
+      "pre-commit.d",
+    );
   });
 
   it("Git 저장소가 아니면 훅 대신 안내를 남긴다", async () => {
