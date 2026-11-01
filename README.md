@@ -17,8 +17,8 @@ AI 코딩 에이전트용 작업 지침(`AGENTS.md`)을 설치하고, 지침이 
 ## 사용법
 
 ```bash
-# 프리셋으로 지침 파일을 설치하고 Git 훅을 연결한다 (공통 Git 규칙이 함께 설치된다)
-npx @agentsmd/cli init --preset typescript   # 또는 --preset java
+# 프리셋으로 지침 파일을 설치하고 Git 훅을 연결한다. Git 규칙과 언어 규칙은 따로 고르고, 쉼표로 함께 고른다
+npx @agentsmd/cli init --preset git,typescript   # 또는 git,java / typescript만 / git만
 
 # 문서 지도가 저장소와 맞는지 검사한다 (문제가 있으면 종료 코드 1)
 npx @agentsmd/cli check
@@ -52,13 +52,13 @@ CI에 `agentsmd check` 한 단계를 넣으면 지도와 어긋난 변경은 머
 
 ## 패키지
 
-| 패키지                                                      | 역할                                                                                           |
-| ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| [`@agentsmd/cli`](packages/cli)                             | CLI(`agentsmd` 명령). 명령 분기, 출력, 종료 코드, Git 훅 연결                                  |
-| [`@agentsmd/core`](packages/core)                           | 문서 지도 파서, 검사 규칙, 프리셋 설치. 언어와 무관                                            |
-| [`@agentsmd/preset-git`](packages/preset-git)               | 언어와 무관한 Git 작업 규칙, 커밋 훅, Conventions 검사, 이슈·PR 템플릿. 언어 프리셋이 요구한다 |
-| [`@agentsmd/preset-java`](packages/preset-java)             | Java·Gradle용 코드 규칙, Spotless(palantir-java-format) 검사, Gradle CI                        |
-| [`@agentsmd/preset-typescript`](packages/preset-typescript) | TypeScript·React 프론트엔드용 타입·구조·테스트·보안 규칙, Prettier 검사, pnpm CI               |
+| 패키지                                                      | 역할                                                                                   |
+| ----------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| [`@agentsmd/cli`](packages/cli)                             | CLI(`agentsmd` 명령). 명령 분기, 출력, 종료 코드, Git 훅 연결                          |
+| [`@agentsmd/core`](packages/core)                           | 문서 지도 파서, 검사 규칙, 프리셋 설치, 고른 프리셋에 맞춘 AGENTS.md 생성. 언어와 무관 |
+| [`@agentsmd/preset-git`](packages/preset-git)               | 언어와 무관한 Git 작업 규칙, 커밋 훅, Conventions 검사, 이슈·PR 템플릿                 |
+| [`@agentsmd/preset-java`](packages/preset-java)             | Java·Gradle용 코드 규칙, Spotless(palantir-java-format) 검사, Gradle CI                |
+| [`@agentsmd/preset-typescript`](packages/preset-typescript) | TypeScript·React 프론트엔드용 타입·구조·테스트·보안 규칙, Prettier 검사, pnpm CI       |
 
 ## 설치
 
