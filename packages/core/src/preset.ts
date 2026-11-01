@@ -12,8 +12,22 @@ export interface Preset {
   readonly filesDir: string;
   /** 프리셋에 Git 훅이 있으면 그 디렉터리. 설치 대상 기준 상대 경로. `core.hooksPath`로 연결한다. */
   readonly hooksPath?: string;
+  /** 문서 지도(AGENTS.md)에 올릴 이 프리셋의 문서. 여러 프리셋을 고르면 순서대로 합친다. */
+  readonly docs?: readonly DocMapEntry[];
+  /** 문서를 다 읽지 못해도 지켜야 하는 핵심 규칙. AGENTS.md에 번호를 매겨 싣는다. */
+  readonly rules?: readonly string[];
+  /** 작업을 마치기 전에 실행할 검증 명령. 예: `pnpm lint && pnpm test` */
+  readonly verify?: string;
   /** 파일을 설치한 뒤 사람이 직접 해야 하는 일. 설치 결과 끝에 안내한다. */
   readonly nextSteps?: readonly string[];
   /** 이 프리셋보다 먼저 설치해야 하는 프리셋. 예: 언어 프리셋이 공통 Git 프리셋을 요구한다. */
   readonly requires?: readonly Preset[];
+}
+
+/** 문서 지도의 한 줄. 어떤 문서를 언제 읽는지 알려 준다. */
+export interface DocMapEntry {
+  /** 저장소 루트 기준 posix 경로. 예: `docs/workflow.md` */
+  readonly path: string;
+  /** 이 문서를 읽는 시점. */
+  readonly when: string;
 }
