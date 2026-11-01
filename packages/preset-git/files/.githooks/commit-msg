@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
 #
 # 커밋 메시지 검사 훅.
-#   - 형식: <type>(<scope>): <제목>
+#   - 형식: <타입>: <요약>  (scope 를 쓰지 않는다)
 #   - 제목 50자 이내, 마침표로 끝나지 않음
 #   - AI 서명 금지
 #
+# 타입 목록은 .github/workflows/conventions.yml 의 TYPES 와 같게 유지한다.
 # 사용: .githooks/commit-msg <메시지 파일>
-# 규칙: docs/commit-convention.md
+# 규칙: docs/git-conventions.md
 
 set -euo pipefail
 
@@ -26,7 +27,7 @@ subject="$(printf '%s\n' "$message" | head -n 1)"
 fail() {
   echo "commit-msg: $1" >&2
   echo "  제목: $subject" >&2
-  echo "  규칙: docs/commit-convention.md" >&2
+  echo "  규칙: docs/git-conventions.md" >&2
   exit 1
 }
 
@@ -35,11 +36,11 @@ if [[ "$subject" =~ ^(Merge|Revert|fixup!|squash!|amend!) ]]; then
   exit 0
 fi
 
-types='feat|fix|refactor|test|docs|style|build|ci|chore'
-pattern="^(${types})(\([a-z0-9._-]+\))?: .+"
+types='feat|fix|refactor|test|docs|chore|ci|build'
+pattern="^(${types}): .+"
 
 if ! [[ "$subject" =~ $pattern ]]; then
-  fail "형식이 '<type>(<scope>): <제목>' 이 아닙니다. type: ${types//|/, }"
+  fail "형식이 '<타입>: <요약>' 이 아닙니다. 타입: ${types//|/, }"
 fi
 
 if [ "${#subject}" -gt 50 ]; then

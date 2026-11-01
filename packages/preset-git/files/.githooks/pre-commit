@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+#
+# 커밋 단위를 작게 유지하기 위한 pre-commit 훅.
+#   1. 스테이징된 파일 수가 HARNESS_MAX_FILES(기본 5)를 넘으면 커밋을 막는다.
+#   2. .githooks/pre-commit.d/ 에 언어 프리셋이 넣은 검사를 이름 순서로 실행한다.
+#
+# 나누면 빌드가 깨질 때만 한도를 올린다: HARNESS_MAX_FILES=6 git commit ...
+# 규칙: docs/workflow.md
+
+set -euo pipefail
+
+max_files="${HARNESS_MAX_FILES:-5}"
+
+# 병합 충돌 해결 커밋은 여러 파일이 섞일 수밖에 없으므로 검사하지 않는다.
+if git rev-parse -q --verify MERGE_HEAD >/dev/null; then
+  exit 0
+fi
+
+if ! [[ "$max_files" =~ ^[0-9]+$ ]] || [ "$max_files" -lt 1 ]; then
+  echo "pre-commit: HARNESS_MAX_FILES 는 1 이상의 정수여야 합니다. (현재: $max_files)" >&2
+  exit 1
+fi
+
+# -M: 파일 이동(rename)은 삭제+추가 두 개가 아니라 하나로 센다.
+staged="$(git diff --cached --name-only -M)"
+count="$(printf '%s' "$staged" | grep -c . || true)"
+
+if [ "$count" -gt "$max_files" ]; then
+  echo "pre-commit: 스테이징된 파일 ${count}개 (한도 ${max_files}개)" >&2
+  printf '%s\n' "$staged" | sed 's/^/  - /' >&2
+  echo "" >&2
+  echo "  책임별로 커밋을 나누세요: git restore --staged <file>" >&2
+  echo "  나누면 빌드가 깨진다면: HARNESS_MAX_FILES=${count} git commit ..." >&2
+  exit 1
+fi
+
+# 언어별 검사(포맷 등)는 언어 프리셋이 pre-commit.d 에 넣는다. 실행 권한이 있는 파일만 실행한다.
+checks_dir="$(dirname "$0")/pre-commit.d"
+if [ -d "$checks_dir" ]; then
+  for check in "$checks_dir"/*; do
+    if [ -f "$check" ] && [ -x "$check" ]; then
+      "$check"
+    fi
+  done
+fi
+
+exit 0

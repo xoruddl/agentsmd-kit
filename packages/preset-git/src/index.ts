@@ -15,5 +15,6 @@ export const gitPreset = {
   nextSteps: [
     "GitHub 저장소 설정에서 머지 방식을 'Create a merge commit'만 허용하세요.",
     "main 브랜치 룰셋의 필수 체크에 Conventions를 추가하세요.",
+    "지침 도입 커밋만 파일 수 한도를 올려 한 번에 커밋하세요: HARNESS_MAX_FILES=99 git commit ...",
   ],
 } satisfies Preset;
