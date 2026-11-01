@@ -21,7 +21,7 @@ export const INIT_USAGE = `사용법: agentsmd init --preset <이름>[,<이름>.
 
 AI 작업 지침(AGENTS.md, docs/, Git 훅, CI)을 저장소에 설치하고 훅을 연결합니다.
 여러 프리셋을 고르면 문서 지도(AGENTS.md)를 적은 순서대로 합칩니다.
-이미 있는 파일은 덮어쓰지 않고 건너뜁니다.
+AGENTS.md가 이미 있으면 빠진 문서·규칙만 더하고, 다른 파일은 이미 있으면 건너뜁니다.
 
 프리셋:
 ${presetList}

@@ -39,8 +39,9 @@ check.ts ── 파일 읽기 ──▶ parse-doc-map.ts ──▶ DocMap
 Git 규칙과 언어 규칙은 독립된 프리셋이다. 사용자가 `--preset git,typescript`처럼 함께 고르면 둘 다 설치된다.
 
 - 프리셋은 AGENTS.md를 파일로 갖지 않는다. 대신 `docs`(문서와 읽는 시점), `rules`(핵심 규칙), `verify`(검증 명령)를 정의한다.
-  `renderAgentsMd`가 고른 프리셋들의 정의를 순서대로 합쳐 지도를 만든다.
-  지도를 파일로 두면 함께 설치할 때 한쪽이 건너뛰어져 다른 프리셋 문서가 지도에서 빠지기 때문이다.
+  `mergeAgentsMd`가 기존 AGENTS.md에 정의 가운데 빠진 항목만 넣는다. 지도를 파일로 두면 함께 설치할 때 한쪽이 건너뛰어져 다른 프리셋 문서가 지도에서 빠지기 때문이다.
+  새로 만들 때(`renderAgentsMd`)도 빈 뼈대에 같은 함수로 합친다. 새로 만들 때와 나눠 설치할 때 결과 모양이 갈라지지 않게 하려는 것이다.
+  절을 찾고 넣는 일은 `markdown-sections.ts`가 맡는다.
 - 표는 대상 저장소의 `prettier --check`에 걸리지 않도록 Prettier와 같은 모양으로 정렬한다 (`markdown-table.ts`).
 - 커밋 검사는 프리셋마다 `.githooks/pre-commit.d/<이름>`에 스크립트로 넣는다. (`max-files`, `spotless`, `prettier`)
   이것들을 실행하는 `.githooks/pre-commit`은 어느 프리셋에도 두지 않고 `installEntryFiles`가 만든다.
