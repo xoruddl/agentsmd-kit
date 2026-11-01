@@ -58,9 +58,6 @@ importers:
       '@agentsmd/core':
         specifier: workspace:*
         version: link:../core
-      '@agentsmd/preset-git':
-        specifier: workspace:*
-        version: link:../preset-git
 
   packages/preset-typescript:
     dependencies:
