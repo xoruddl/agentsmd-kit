@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+#
+# 포맷 검사. 공통 pre-commit 훅이 실행한다.
+# 스테이징된 파일 중 Prettier 가 다루는 파일만 검사한다. (.prettierignore 를 따른다)
+# 규칙: docs/lint-and-ci.md
+
+set -euo pipefail
+
+prettier=node_modules/.bin/prettier
+
+# 패키지 설치 전이거나 Prettier 를 쓰지 않는 저장소면 검사하지 않는다.
+if [ ! -f package.json ] || [ ! -x "$prettier" ]; then
+  exit 0
+fi
+
+# 지운 파일은 검사할 수 없으므로 추가·복사·수정·이동된 파일만 고른다. 파일 이름의 공백을 지키려고 NUL 로 나눈다.
+files=()
+while IFS= read -r -d '' file; do
+  files+=("$file")
+done < <(git diff --cached --name-only --diff-filter=ACMR -z)
+
+if [ "${#files[@]}" -eq 0 ]; then
+  exit 0
+fi
+
+if ! "$prettier" --check --ignore-unknown "${files[@]}" >/dev/null 2>&1; then
+  echo "pre-commit: 포맷 위반. pnpm format 후 다시 스테이징하세요." >&2
+  "$prettier" --list-different --ignore-unknown "${files[@]}" 2>/dev/null | sed 's/^/  - /' >&2 || true
+  exit 1
+fi
