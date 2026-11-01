@@ -1,0 +1,27 @@
+{
+  "name": "@agentsmd/preset-typescript",
+  "version": "0.1.0",
+  "description": "TypeScript·React 프론트엔드용 AI 작업 지침 프리셋 (타입·구조·테스트·보안 규칙, Prettier 훅, pnpm CI)",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "files"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@agentsmd/core": "workspace:*",
+    "@agentsmd/preset-git": "workspace:*"
+  }
+}
