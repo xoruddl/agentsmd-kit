@@ -10,22 +10,27 @@ import {
 import { configureHooksPath, type HooksResult } from "../git-hooks.js";
 import { makeHooksExecutable } from "../hook-permissions.js";
 import type { ExitCode, Io } from "../io.js";
-import { findPreset, PRESETS } from "../presets.js";
+import { PRESETS, selectPresets } from "../presets.js";
 
 const presetList = PRESETS.map((preset) => `  ${preset.name.padEnd(8)}${preset.description}`).join(
   "\n",
 );
 
-export const INIT_USAGE = `사용법: agentsmd init --preset <이름> [옵션]
+export const INIT_USAGE = `사용법: agentsmd init --preset <이름>[,<이름>...] [옵션]
 
 AI 작업 지침(AGENTS.md, docs/, Git 훅, CI)을 저장소에 설치하고 훅을 연결합니다.
+여러 프리셋을 고르면 문서 지도(AGENTS.md)를 적은 순서대로 합칩니다.
 이미 있는 파일은 덮어쓰지 않고 건너뜁니다.
 
 프리셋:
 ${presetList}
 
+예:
+  agentsmd init --preset git,typescript   Git 규칙과 TypeScript 규칙을 함께 설치
+  agentsmd init --preset java             Java 규칙만 설치
+
 옵션:
-  --preset <이름>   설치할 프리셋 (필수)
+  --preset <이름>   설치할 프리셋. 여러 개는 쉼표로 잇습니다 (필수)
   --root <경로>     설치할 저장소 루트 (기본값: 현재 디렉터리)
   --force           이미 있는 파일도 덮어씁니다
   --skip-hooks      core.hooksPath 를 설정하지 않습니다
@@ -52,19 +57,17 @@ export async function runInit(args: readonly string[], io: Io): Promise<ExitCode
     return 0;
   }
 
-  const preset = values.preset === undefined ? undefined : findPreset(values.preset);
-  if (preset === undefined) {
-    const reason =
-      values.preset === undefined
-        ? "--preset 을 지정해야 합니다"
-        : `알 수 없는 프리셋입니다: ${values.preset}`;
+  const selection = selectPresets(values.preset ?? "");
+  if (!selection.ok || selection.presets.length === 0) {
+    const reason = selection.ok
+      ? "--preset 을 지정해야 합니다"
+      : `알 수 없는 프리셋입니다: ${selection.unknown.join(", ")}`;
     io.stderr(`${reason}\n\n프리셋:\n${presetList}\n`);
     return 2;
   }
 
   const root = resolve(io.cwd, values.root ?? ".");
-  // 요구되는 프리셋(예: 공통 Git 프리셋)부터 설치한다.
-  const presets = resolvePresets(preset);
+  const presets = withRequired(selection.presets);
   const result = await installAll(presets, root, values.force === true);
   const hooksPath = presets.find((p) => p.hooksPath !== undefined)?.hooksPath;
   if (hooksPath !== undefined) {
@@ -78,6 +81,14 @@ export async function runInit(args: readonly string[], io: Io): Promise<ExitCode
 
   io.stdout(formatReport(presets, result, hooksPath, hooks));
   return 0;
+}
+
+/** 고른 프리셋이 요구하는 프리셋을 앞에 붙인다. 여러 프리셋이 같은 프리셋을 요구해도 한 번만 넣는다. */
+function withRequired(presets: readonly Preset[]): Preset[] {
+  const expanded = presets.flatMap((preset) => resolvePresets(preset));
+  return expanded.filter(
+    (preset, index) => expanded.findIndex((other) => other.name === preset.name) === index,
+  );
 }
 
 /** 프리셋 파일을 설치한 뒤, 고른 프리셋 조합에 맞춘 AGENTS.md·CLAUDE.md·훅 실행기를 만든다. */
@@ -99,19 +110,14 @@ async function installAll(
   return { written, skipped };
 }
 
-/** 마지막 프리셋이 사용자가 고른 프리셋이고, 그 앞은 함께 설치된 프리셋이다. */
 function formatReport(
   presets: readonly Preset[],
   result: InstallResult,
   hooksPath: string | undefined,
   hooks: HooksResult | undefined,
 ): string {
-  const chosen = presets.at(-1)?.name ?? "";
-  const lines = [`${chosen} 프리셋: 파일 ${String(result.written.length)}개를 설치했습니다.`];
-  const included = presets.slice(0, -1).map((preset) => preset.name);
-  if (included.length > 0) {
-    lines.push(`함께 설치한 프리셋: ${included.join(", ")}`);
-  }
+  const names = presets.map((preset) => preset.name).join(", ");
+  const lines = [`${names} 프리셋: 파일 ${String(result.written.length)}개를 설치했습니다.`];
 
   if (result.skipped.length > 0) {
     lines.push(

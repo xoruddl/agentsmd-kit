@@ -31,33 +31,31 @@ describe("runInit", () => {
   it("Java 프리셋을 설치하고 훅을 연결한다", async () => {
     await git("git", ["-C", root, "init", "-q"]);
 
-    await expect(runInit(["--preset", "java"], io())).resolves.toBe(0);
+    await expect(runInit(["--preset", "git,java"], io())).resolves.toBe(0);
 
     await expect(readFile(join(root, "CLAUDE.md"), "utf8")).resolves.toContain("@AGENTS.md");
     const { stdout } = await git("git", ["-C", root, "config", "core.hooksPath"]);
     expect(stdout.trim()).toBe(".githooks");
     // 파일 수는 프리셋 내용이 바뀔 때마다 달라지므로 형식만 확인한다.
-    expect(out).toMatch(/^java 프리셋: 파일 \d+개를 설치했습니다\./);
+    expect(out).toMatch(/^git, java 프리셋: 파일 \d+개를 설치했습니다\./);
     expect(out).toContain("Git 훅을 연결했습니다");
   });
 
-  it("요구되는 프리셋까지 함께 설치하고 알린다", async () => {
-    await runInit(["--preset", "java", "--skip-hooks"], io());
+  it("쉼표로 고른 프리셋을 함께 설치하고 문서 지도를 합친다", async () => {
+    await expect(runInit(["--preset", "git,typescript", "--skip-hooks"], io())).resolves.toBe(0);
+
+    const agents = await readFile(join(root, "AGENTS.md"), "utf8");
+    expect(agents).toContain("[docs/git-conventions.md](docs/git-conventions.md)");
+    expect(agents).toContain("[docs/typescript.md](docs/typescript.md)");
+    await expect(checkRepository({ root })).resolves.toEqual([]);
+  });
+
+  it("Git 프리셋만 골라도 설치하고 check를 통과한다", async () => {
+    await expect(runInit(["--preset", "git", "--skip-hooks"], io())).resolves.toBe(0);
 
     await expect(readFile(join(root, ".claude/settings.json"), "utf8")).resolves.toContain(
       "--no-verify",
     );
-    expect(out).toContain("함께 설치한 프리셋: git");
-  });
-
-  it("TypeScript 프리셋도 Git 프리셋과 함께 설치하고 check를 통과한다", async () => {
-    await expect(runInit(["--preset", "typescript", "--skip-hooks"], io())).resolves.toBe(0);
-
-    await expect(readFile(join(root, "docs/typescript.md"), "utf8")).resolves.toContain("strict");
-    await expect(readFile(join(root, "docs/git-conventions.md"), "utf8")).resolves.toContain(
-      "merge 커밋",
-    );
-    expect(out).toContain("함께 설치한 프리셋: git");
     await expect(checkRepository({ root })).resolves.toEqual([]);
   });
 
@@ -101,5 +99,12 @@ describe("runInit", () => {
 
     await expect(runInit(["--preset", "kotlin"], io())).resolves.toBe(2);
     expect(err).toContain("알 수 없는 프리셋입니다: kotlin");
+  });
+
+  it("모르는 프리셋이 섞여 있으면 아무것도 설치하지 않는다", async () => {
+    await expect(runInit(["--preset", "git,kotlin", "--skip-hooks"], io())).resolves.toBe(2);
+
+    expect(err).toContain("알 수 없는 프리셋입니다: kotlin");
+    await expect(readFile(join(root, "AGENTS.md"), "utf8")).rejects.toThrow();
   });
 });
