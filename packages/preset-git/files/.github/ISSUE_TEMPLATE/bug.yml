@@ -1,0 +1,43 @@
+name: 버그
+description: 기대와 다르게 동작하는 문제
+title: 'fix: '
+labels: [bug]
+body:
+  - type: textarea
+    id: actual
+    attributes:
+      label: 현상
+      description: 무엇이 잘못 동작하나. 화면 캡처, 로그, 오류 메시지가 있으면 붙인다
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: 재현 방법
+      placeholder: |
+        1.
+        2.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: 기대 동작
+    validations:
+      required: true
+  - type: input
+    id: platform
+    attributes:
+      label: 기기·브라우저·OS
+      description: 화면이나 클라이언트 문제일 때 적는다
+      placeholder: 예) iPhone 15 Safari, macOS Chrome
+  - type: dropdown
+    id: env
+    attributes:
+      label: 환경
+      options:
+        - 로컬
+        - 개발 서버
+        - 운영
+    validations:
+      required: true
