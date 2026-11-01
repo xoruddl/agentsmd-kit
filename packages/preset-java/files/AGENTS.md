@@ -9,9 +9,6 @@
 | [docs/project-direction.md](docs/project-direction.md) | 모든 작업 시작 전 (필수). 범위 밖 작업이면 먼저 질문 |
 | [docs/workflow.md](docs/workflow.md) | 모든 작업 시작 전 (필수) |
 | [docs/git-conventions.md](docs/git-conventions.md) | 이슈·브랜치·커밋·PR·머지 |
-| [docs/branch-strategy.md](docs/branch-strategy.md) | 브랜치 생성·병합 |
-| [docs/commit-convention.md](docs/commit-convention.md) | 커밋 |
-| [docs/pull-request.md](docs/pull-request.md) | PR 생성 |
 | [docs/code-review.md](docs/code-review.md) | PR 리뷰(CodeRabbit) 확인 |
 | [docs/code-style.md](docs/code-style.md) | 코드 작성, 주석 |
 | [docs/clean-code.md](docs/clean-code.md) | 코드 작성, 설계 |
@@ -22,7 +19,7 @@
 
 ## 핵심 규칙
 
-1. 커밋 1개 = 파일 1개. 분리하면 빌드가 깨질 때만 최대 3개까지 묶는다.
+1. 커밋 하나 = 책임 하나, 파일 5개 이하.
 2. 커밋 1개 후 작업을 멈추고 사용자 피드백을 기다린다.
 3. PR 은 한 가지 목적만 담는다.
 4. 커밋·PR 메시지는 사람이 쓴 것처럼 짧게 쓴다. AI 서명 금지.
@@ -33,5 +30,5 @@
 
 - 지침 추가·변경 요청은 메모리에 저장하지 않는다. 이 파일이나 `docs/` 에 반영한다.
 - 새 문서를 만들면 위 문서 지도에 한 줄 추가한다.
-- 문서 수정도 커밋 규칙(1커밋 1파일)을 따른다.
+- 문서 수정도 같은 커밋 규칙을 따른다.
 - 문서 문체는 [docs/writing-style.md](docs/writing-style.md) 를 따른다.
