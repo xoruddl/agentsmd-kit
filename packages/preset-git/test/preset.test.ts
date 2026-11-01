@@ -1,5 +1,7 @@
-import { readFile } from "node:fs/promises";
+import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { checkRepository, installEntryFiles, installPreset } from "@agentsmd/core";
 import { describe, expect, it } from "vitest";
 import { gitPreset } from "../src/index.js";
 
@@ -21,7 +23,19 @@ describe("gitPreset", () => {
     expect(hookTypes).toBe(workflowTypes);
   });
 
-  it("문서 지도는 언어 프리셋이 가지므로 AGENTS.md를 담지 않는다", async () => {
+  // 문서 지도는 init이 고른 프리셋들의 docs를 합쳐 만든다. 파일로 담으면 다른 프리셋과 함께 설치할 때 덮이거나 빠진다.
+  it("AGENTS.md를 파일로 담지 않는다", async () => {
     await expect(read("AGENTS.md")).rejects.toThrow();
+  });
+
+  it("Git 프리셋만 설치해도 agentsmd check 규칙을 모두 통과한다", async () => {
+    const target = await mkdtemp(join(tmpdir(), "agentsmd-preset-git-"));
+    try {
+      await installPreset(gitPreset, target);
+      await installEntryFiles([gitPreset], target);
+      await expect(checkRepository({ root: target })).resolves.toEqual([]);
+    } finally {
+      await rm(target, { recursive: true, force: true });
+    }
   });
 });
