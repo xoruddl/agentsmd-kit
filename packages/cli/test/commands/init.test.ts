@@ -137,6 +137,11 @@ describe("runInit", () => {
     expect(err).toContain("알 수 없는 프리셋입니다: kotlin");
   });
 
+  it("프리셋 목록에서 이름과 설명을 띄어 쓴다", async () => {
+    await runInit(["--preset", "kotlin"], io());
+    expect(err).toMatch(/ {2}typescript {2}\S/);
+  });
+
   it("모르는 프리셋이 섞여 있으면 아무것도 설치하지 않는다", async () => {
     await expect(runInit(["--preset", "git,kotlin", "--skip-hooks"], io())).resolves.toBe(2);
 

@@ -13,9 +13,11 @@ import { makeHooksExecutable } from "../hook-permissions.js";
 import type { ExitCode, Io } from "../io.js";
 import { PRESETS, selectPresets } from "../presets.js";
 
-const presetList = PRESETS.map((preset) => `  ${preset.name.padEnd(8)}${preset.description}`).join(
-  "\n",
-);
+// 이름 열 너비를 가장 긴 이름에 맞춰 설명과 붙지 않게 한다.
+const nameWidth = Math.max(...PRESETS.map((preset) => preset.name.length)) + 2;
+const presetList = PRESETS.map(
+  (preset) => `  ${preset.name.padEnd(nameWidth)}${preset.description}`,
+).join("\n");
 
 export const INIT_USAGE = `사용법: agentsmd init --preset <이름>[,<이름>...] [옵션]
 
