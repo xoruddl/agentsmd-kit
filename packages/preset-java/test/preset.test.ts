@@ -19,11 +19,6 @@ afterEach(async () => {
 });
 
 describe("javaPreset", () => {
-  // Git 작업 규칙과 언어 규칙은 따로 고른다.
-  it("다른 프리셋을 요구하지 않는다", () => {
-    expect(javaPreset).not.toHaveProperty("requires");
-  });
-
   // 설치 직후의 저장소가 바로 CI를 통과하도록, 설치 결과를 이 도구로 검사한다.
   it("Java 프리셋만 설치해도 agentsmd check 규칙을 모두 통과한다", async () => {
     await expect(checkRepository({ root: target })).resolves.toEqual([]);

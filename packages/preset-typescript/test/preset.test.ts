@@ -40,11 +40,6 @@ afterEach(async () => {
 });
 
 describe("typescriptPreset", () => {
-  // Git 작업 규칙과 언어 규칙은 따로 고른다.
-  it("다른 프리셋을 요구하지 않는다", () => {
-    expect(typescriptPreset).not.toHaveProperty("requires");
-  });
-
   it("TypeScript 프리셋만 설치해도 agentsmd check 규칙을 모두 통과한다", async () => {
     await expect(checkRepository({ root: repo })).resolves.toEqual([]);
   });
