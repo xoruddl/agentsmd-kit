@@ -18,12 +18,13 @@ AI 코딩 에이전트용 작업 지침(`AGENTS.md`)을 설치하고, 지침이 
 
 ```bash
 # 프리셋으로 지침 파일을 설치하고 Git 훅을 연결한다 (공통 Git 규칙이 함께 설치된다)
-agentsmd init --preset java
-agentsmd init --preset typescript
+npx @agentsmd/cli init --preset typescript   # 또는 --preset java
 
 # 문서 지도가 저장소와 맞는지 검사한다 (문제가 있으면 종료 코드 1)
-agentsmd check
+npx @agentsmd/cli check
 ```
+
+전역으로 설치하면 `agentsmd init`, `agentsmd check` 처럼 짧게 씁니다: `npm install -g @agentsmd/cli`
 
 ```text
 $ agentsmd check
@@ -53,7 +54,7 @@ CI에 `agentsmd check` 한 단계를 넣으면 지도와 어긋난 변경은 머
 
 | 패키지                                                      | 역할                                                                                           |
 | ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| [`agentsmd`](packages/cli)                                  | CLI. 명령 분기, 출력, 종료 코드, Git 훅 연결                                                   |
+| [`@agentsmd/cli`](packages/cli)                             | CLI(`agentsmd` 명령). 명령 분기, 출력, 종료 코드, Git 훅 연결                                  |
 | [`@agentsmd/core`](packages/core)                           | 문서 지도 파서, 검사 규칙, 프리셋 설치. 언어와 무관                                            |
 | [`@agentsmd/preset-git`](packages/preset-git)               | 언어와 무관한 Git 작업 규칙, 커밋 훅, Conventions 검사, 이슈·PR 템플릿. 언어 프리셋이 요구한다 |
 | [`@agentsmd/preset-java`](packages/preset-java)             | Java·Gradle용 코드 규칙, Spotless(palantir-java-format) 검사, Gradle CI                        |
@@ -61,15 +62,17 @@ CI에 `agentsmd check` 한 단계를 넣으면 지도와 어긋난 변경은 머
 
 ## 설치
 
-아직 npm에 배포하지 않았습니다. 저장소를 받아 빌드한 뒤 실행합니다.
+npm에 배포돼 있어 따로 설치하지 않고 `npx @agentsmd/cli`로 실행할 수 있습니다. Node.js 22 이상이 필요합니다.
+
+CI에서 검사하려면 저장소에 개발 의존성으로 넣고 한 단계를 추가합니다.
 
 ```bash
-pnpm install
-pnpm build
-node packages/cli/dist/main.js check --root <검사할 저장소>
+pnpm add -D @agentsmd/cli
 ```
 
-Node.js 22 이상이 필요합니다.
+```yaml
+- run: pnpm exec agentsmd check
+```
 
 ## 개발
 
