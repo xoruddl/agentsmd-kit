@@ -1,0 +1,22 @@
+{
+  "name": "agentsmd",
+  "version": "0.1.0",
+  "description": "AI 코딩 에이전트용 작업 지침(AGENTS.md)을 설치하고 검사하는 CLI",
+  "type": "module",
+  "bin": {
+    "agentsmd": "./dist/main.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@agentsmd/core": "workspace:*"
+  }
+}
