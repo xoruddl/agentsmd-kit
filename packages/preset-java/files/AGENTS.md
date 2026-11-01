@@ -8,6 +8,7 @@
 | --- | --- |
 | [docs/project-direction.md](docs/project-direction.md) | 모든 작업 시작 전 (필수). 범위 밖 작업이면 먼저 질문 |
 | [docs/workflow.md](docs/workflow.md) | 모든 작업 시작 전 (필수) |
+| [docs/git-conventions.md](docs/git-conventions.md) | 이슈·브랜치·커밋·PR·머지 |
 | [docs/branch-strategy.md](docs/branch-strategy.md) | 브랜치 생성·병합 |
 | [docs/commit-convention.md](docs/commit-convention.md) | 커밋 |
 | [docs/pull-request.md](docs/pull-request.md) | PR 생성 |
