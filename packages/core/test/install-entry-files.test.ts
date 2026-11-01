@@ -77,6 +77,15 @@ describe("installEntryFiles", () => {
     expect(agents).toContain("[docs/workflow.md](docs/workflow.md)");
   });
 
+  it("다른 프리셋을 나중에 설치할 때, 내용이 같은 CLAUDE.md·훅 실행기는 건너뛴 목록에 넣지 않는다", async () => {
+    await installEntryFiles([withHooks], target);
+
+    const result = await installEntryFiles([docsOnly, withHooks], target);
+
+    expect(result.written).toEqual([]);
+    expect(result.skipped).toEqual([]);
+  });
+
   it("더할 것이 없으면 AGENTS.md를 건드리지 않는다", async () => {
     await installEntryFiles([docsOnly], target);
     const before = await stat(join(target, "AGENTS.md"));

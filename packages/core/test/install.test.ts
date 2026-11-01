@@ -58,6 +58,12 @@ describe("installPreset", () => {
     await expect(readFile(join(target, "AGENTS.md"), "utf8")).resolves.toBe("# 사람이 다듬은 지도");
   });
 
+  it("내용이 같은 파일은 건너뛴 목록에 넣지 않는다", async () => {
+    await installPreset(preset, target);
+
+    await expect(installPreset(preset, target)).resolves.toEqual({ written: [], skipped: [] });
+  });
+
   it("force면 이미 있는 파일도 덮어쓴다", async () => {
     await write(target, { "AGENTS.md": "# 옛 지도" });
 
