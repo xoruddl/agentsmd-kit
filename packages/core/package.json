@@ -1,6 +1,6 @@
 {
   "name": "@agentsmd/core",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "AGENTS.md 문서 지도를 읽고 검사하는 규칙 모음",
   "keywords": [
     "agents.md",
