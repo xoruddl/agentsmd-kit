@@ -1,0 +1,48 @@
+name: 버그
+description: init·check가 기대와 다르게 동작하는 문제
+title: "fix: "
+labels: [bug]
+body:
+  - type: textarea
+    id: command
+    attributes:
+      label: 실행한 명령
+      description: 옵션까지 그대로 적는다
+      placeholder: npx @agentsmd/cli init --preset git,typescript
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: 현상
+      description: 출력이나 오류 메시지를 그대로 붙인다
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: 기대 동작
+    validations:
+      required: true
+  - type: textarea
+    id: repo
+    attributes:
+      label: 저장소 상태
+      description: 실행 전 AGENTS.md, CLAUDE.md, docs/ 가 있었는지, 어떤 프리셋을 먼저 설치했는지
+  - type: input
+    id: version
+    attributes:
+      label: "@agentsmd/cli 버전"
+      description: npx 로 실행했다면 명령에 붙인 버전(@0.2.0 등), 설치했다면 package.json 의 버전
+      placeholder: 예) 0.2.0
+    validations:
+      required: true
+  - type: input
+    id: node
+    attributes:
+      label: Node.js 버전·OS
+      placeholder: 예) Node 24.1.0, macOS 15
+    validations:
+      required: true

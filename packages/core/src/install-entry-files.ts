@@ -2,7 +2,7 @@ import { existsSync } from "node:fs";
 import { chmod, mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { CLAUDE_MD, mergeAgentsMd, renderAgentsMd, type AgentsMdAdditions } from "./agents-md.js";
-import type { InstallOptions, InstallResult } from "./install.js";
+import { hasContent, type InstallOptions, type InstallResult } from "./install.js";
 import { PRE_COMMIT_HOOK } from "./pre-commit-hook.js";
 import type { Preset } from "./preset.js";
 
@@ -45,7 +45,9 @@ export async function installEntryFiles(
       continue;
     }
     if (!force && existsSync(destination)) {
-      skipped.push(file.path);
+      if (!(await hasContent(destination, file.content))) {
+        skipped.push(file.path);
+      }
       continue;
     }
     await mkdir(dirname(destination), { recursive: true });

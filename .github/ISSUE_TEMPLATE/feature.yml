@@ -1,0 +1,42 @@
+name: 기능
+description: 검사 규칙·프리셋·명령 추가와 변경, 리팩터링, 설정 등 버그가 아닌 작업
+title: "feat: "
+labels: [enhancement]
+body:
+  - type: textarea
+    id: background
+    attributes:
+      label: 배경
+      description: 왜 이 작업이 필요한가. 실제로 겪은 상황이 있으면 적는다
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: 범위
+      multiple: true
+      options:
+        - core (검사 규칙·설치)
+        - cli (명령·출력)
+        - preset-git
+        - preset-java
+        - preset-typescript
+        - 문서·CI
+    validations:
+      required: true
+  - type: textarea
+    id: tasks
+    attributes:
+      label: 할 일
+      description: 커밋 단위로 나눈 작업 목록
+      value: |
+        - [ ]
+    validations:
+      required: true
+  - type: textarea
+    id: done
+    attributes:
+      label: 완료 조건
+      description: 무엇이 되면 이 이슈를 닫을 수 있나 (동작, 테스트, 문서)
+    validations:
+      required: true
