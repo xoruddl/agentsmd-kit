@@ -4,7 +4,7 @@ AI 코딩 에이전트용 작업 지침(`AGENTS.md`)을 설치하고, 지침이 
 
 ```bash
 # 지침 파일을 설치하고 Git 훅을 연결한다 (공통 Git 규칙이 함께 설치된다)
-npx @agentsmd/cli init --preset typescript   # 또는 --preset java
+npx @agentsmd/cli init --preset git,typescript   # 또는 git,java / typescript만 / git만
 
 # 문서 지도가 저장소와 맞는지 검사한다 (문제가 있으면 종료 코드 1)
 npx @agentsmd/cli check
@@ -38,13 +38,15 @@ docs/requirements.md  [unlisted-doc]  문서 지도(AGENTS.md)에서 안내하�
 
 ## 프리셋
 
-| 프리셋       | 내용                                                                                                            |
-| ------------ | --------------------------------------------------------------------------------------------------------------- |
-| `typescript` | TypeScript·React 프론트엔드: 필수 tsconfig 옵션, 타입·구조·접근성·테스트·보안 규칙, Prettier 커밋 검사, pnpm CI |
-| `java`       | Java·Gradle: 코드 규칙, palantir-java-format(Spotless) 커밋 검사, Gradle CI                                     |
+| 프리셋       | 내용                                                                                                        |
+| ------------ | ----------------------------------------------------------------------------------------------------------- |
+| `git`        | 언어와 무관한 Git 규칙: 이슈 → 브랜치 → PR → merge 커밋, 커밋 형식·파일 수 훅, PR 규칙 검사, 이슈·PR 템플릿 |
+| `typescript` | TypeScript·React 프론트엔드: 필수 tsconfig 옵션, 타입·구조·접근성·테스트·보안 규칙, 린트·CI 명령            |
+| `java`       | Java·Gradle: 코드 규칙, palantir-java-format(Spotless)·Gradle 검증 명령                                     |
 
-어느 프리셋이든 공통 Git 규칙(이슈 → 브랜치 → PR → merge 커밋, 커밋 형식·파일 수 훅, PR 규칙 검사, 이슈·PR 템플릿)이 함께 설치됩니다.
-이미 있는 파일은 덮어쓰지 않습니다.
+Git 규칙과 언어 규칙은 따로 고르고, 함께 쓰려면 쉼표로 잇습니다 (`--preset git,typescript`).
+언어 프리셋은 Git 훅과 GitHub 설정을 설치하지 않습니다.
+`AGENTS.md`가 이미 있으면 빠진 항목만 더하고, 다른 파일은 이미 있으면 덮어쓰지 않습니다.
 
 ## 종료 코드
 
