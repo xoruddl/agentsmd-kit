@@ -5,7 +5,7 @@
 #   - 제목 50자 이내, 마침표로 끝나지 않음
 #   - AI 서명 금지
 #
-# 타입 목록은 .github/workflows/conventions.yml 의 TYPES 와 같게 유지한다.
+# 타입 목록은 .githooks/check-pr 의 types 와 같게 유지한다.
 # 사용: .githooks/commit-msg <메시지 파일>
 # 규칙: docs/git-conventions.md
 
