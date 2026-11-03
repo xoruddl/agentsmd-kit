@@ -4,12 +4,13 @@ import type { Preset } from "@agentsmd/core";
 /**
  * 언어와 무관한 Git 작업 규칙 프리셋.
  *
- * 이슈 → 브랜치 → PR → merge 커밋 흐름, 에이전트의 커밋 단위 작업 방식, 커밋 훅, PR 규칙 검사를 담는다.
+ * 이슈 → 브랜치 → PR → merge 커밋 흐름, 에이전트의 커밋 단위 작업 방식, 커밋 훅, PR 규칙 검사 스크립트를 담는다.
+ * 호스팅(GitHub 등)과 CI 서비스에 묶이는 파일은 두지 않는다. PR 규칙 검사는 CI가 `.githooks/check-pr`를 부른다.
  * 단독으로 설치해도 되고, 언어 프리셋과 함께 고르면 문서 지도가 합쳐진다.
  */
 export const gitPreset = {
   name: "git",
-  description: "Git 작업 흐름 문서, 커밋 훅, Conventions 검사, 이슈·PR 템플릿",
+  description: "Git 작업 흐름 문서, 커밋 훅, PR 규칙 검사 스크립트",
   filesDir: fileURLToPath(new URL("../files", import.meta.url)),
   hooksPath: ".githooks",
   docs: [
@@ -26,8 +27,7 @@ export const gitPreset = {
     "훅 우회(`--no-verify`) 금지.",
   ],
   nextSteps: [
-    "GitHub 저장소 설정에서 머지 방식을 'Create a merge commit'만 허용하세요.",
-    "main 브랜치 룰셋의 필수 체크에 Conventions를 추가하세요.",
+    "CI에서 PR마다 .githooks/check-pr 를 실행하세요. → docs/git-conventions.md",
     "지침 도입 커밋만 파일 수 한도를 올려 한 번에 커밋하세요: HARNESS_MAX_FILES=99 git commit ...",
   ],
 } satisfies Preset;
