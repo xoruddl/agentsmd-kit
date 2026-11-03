@@ -17,14 +17,40 @@ AI 코딩 에이전트용 작업 지침(`AGENTS.md`)을 설치하고, 지침이 
 ## 사용법
 
 ```bash
-# 프리셋으로 지침 파일을 설치한다. Git 규칙(훅 포함), GitHub 템플릿, 언어 규칙은 따로 고르고 쉼표로 잇는다
-npx @agentsmd/cli init --preset git,github,typescript   # 또는 git,java / typescript만 / git만
+# 프리셋으로 지침 파일을 설치한다. 필요한 프리셋을 쉼표로 잇는다 (아래 '프리셋' 참고)
+npx @agentsmd/cli init --preset git,github,typescript
 
 # 문서 지도가 저장소와 맞는지 검사한다 (문제가 있으면 종료 코드 1)
 npx @agentsmd/cli check
 ```
 
 전역으로 설치하면 `agentsmd init`, `agentsmd check` 처럼 짧게 씁니다: `npm install -g @agentsmd/cli`
+
+### 프리셋
+
+Git 규칙, 호스팅(GitHub), 언어 규칙은 따로 고릅니다. 필요한 것만 쉼표로 이으면 됩니다.
+
+| 프리셋       | 이럴 때                                         | 설치되는 것                                                                                                        |
+| ------------ | ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `git`        | 커밋·PR 규칙과 Git 훅을 쓸 때. 호스팅·CI와 무관 | 작업 흐름·Git 규칙·리뷰 기준·문체 문서, 커밋 훅(형식·파일 수), PR 규칙 검사 스크립트(`check-pr`), Claude Code 설정 |
+| `github`     | GitHub에서 이슈·PR을 관리할 때                  | 이슈·PR 템플릿, GitHub 사용법 문서(gh 명령, 머지 방식·룰셋, CI 연결 예시)                                          |
+| `typescript` | TypeScript·React 프론트엔드                     | 타입·구조·테스트·보안·린트 규칙 문서, 검증 명령, `.nvmrc`                                                          |
+| `java`       | Java·Gradle 프로젝트                            | 코드 스타일·클린 코드·체크리스트 문서, Spotless 설정, 검증 명령                                                    |
+
+| 저장소                 | 명령                                  |
+| ---------------------- | ------------------------------------- |
+| GitHub + TypeScript    | `init --preset git,github,typescript` |
+| GitLab·사내 Git + Java | `init --preset git,java`              |
+| 언어 규칙만            | `init --preset typescript`            |
+| Git 규칙만             | `init --preset git`                   |
+
+어느 조합이든 아래는 같습니다.
+
+- `AGENTS.md`(문서 지도·핵심 규칙·검증 명령)와 이를 불러오는 `CLAUDE.md`를 고른 프리셋에 맞춰 만듭니다.
+- 이미 있는 파일은 덮어쓰지 않습니다. `AGENTS.md`가 있으면 빠진 문서·규칙만 더하므로, 프리셋을 나중에 추가해도 됩니다.
+- CI 설정 파일은 설치하지 않습니다. GitHub Actions, GitLab CI, Jenkins 등 쓰는 CI에서 문서에 적힌 검증 명령과 `.githooks/check-pr`를 부르면 됩니다.
+
+프리셋별 파일 목록은 [docs/commands.md](docs/commands.md)와 각 패키지 README에 있습니다.
 
 ```text
 $ agentsmd check
