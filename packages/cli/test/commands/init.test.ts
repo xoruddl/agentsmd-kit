@@ -28,7 +28,7 @@ afterEach(async () => {
 });
 
 describe("runInit", () => {
-  it("Java 프리셋을 설치하고 훅을 연결한다", async () => {
+  it("Git·Java 프리셋을 설치하고 훅을 연결한다", async () => {
     await git("git", ["-C", root, "init", "-q"]);
 
     await expect(runInit(["--preset", "git,java"], io())).resolves.toBe(0);
@@ -110,15 +110,28 @@ describe("runInit", () => {
   });
 
   it("Git 훅 실행기를 만들어 각 프리셋의 pre-commit.d 검사를 연결한다", async () => {
-    await runInit(["--preset", "java", "--skip-hooks"], io());
+    await runInit(["--preset", "git", "--skip-hooks"], io());
 
     await expect(readFile(join(root, ".githooks/pre-commit"), "utf8")).resolves.toContain(
       "pre-commit.d",
     );
   });
 
+  it.each(["java", "typescript"])(
+    "%s 프리셋만 고르면 Git 훅을 만들거나 연결하지 않는다",
+    async (name) => {
+      await git("git", ["-C", root, "init", "-q"]);
+
+      await expect(runInit(["--preset", name], io())).resolves.toBe(0);
+
+      await expect(readFile(join(root, ".githooks/pre-commit"), "utf8")).rejects.toThrow();
+      await expect(git("git", ["-C", root, "config", "core.hooksPath"])).rejects.toThrow();
+      expect(out).not.toContain("Git 훅");
+    },
+  );
+
   it("Git 저장소가 아니면 훅 대신 안내를 남긴다", async () => {
-    await expect(runInit(["--preset", "java"], io())).resolves.toBe(0);
+    await expect(runInit(["--preset", "git"], io())).resolves.toBe(0);
     expect(out).toContain("Git 저장소가 아니어서 훅을 연결하지 않았습니다");
   });
 

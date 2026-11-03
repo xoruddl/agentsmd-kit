@@ -3,7 +3,7 @@
 ## 포맷
 
 - palantir-java-format (Spotless). 들여쓰기 공백 4칸, 줄 길이 120. 수동 정렬하지 않는다.
-- 커밋 전 `./gradlew spotlessApply`. pre-commit 훅이 `spotlessCheck` 를 돌린다.
+- 작업을 마치기 전 `./gradlew spotlessApply`. 검증 명령과 CI 가 `spotlessCheck` 를 돌린다.
 - 설정은 [lint-and-ci.md](lint-and-ci.md).
 
 ## 네이밍
@@ -39,7 +39,7 @@
 
 - 코드를 그대로 읽는 주석 (`// i 증가`)
 - 주석 처리된 코드
-- 변경 이력 주석 (git 이 한다)
+- 변경 이력 주석 (버전 관리 도구가 한다)
 
 ```java
 /**

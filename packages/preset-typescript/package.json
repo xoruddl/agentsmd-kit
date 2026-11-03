@@ -1,7 +1,7 @@
 {
   "name": "@agentsmd/preset-typescript",
-  "version": "0.2.1",
-  "description": "TypeScript·React 프론트엔드용 AI 작업 지침 프리셋 (타입·구조·테스트·보안 규칙, Prettier 훅, pnpm CI)",
+  "version": "0.3.0",
+  "description": "TypeScript·React 프론트엔드용 AI 작업 지침 프리셋 (타입·구조·테스트·보안 규칙, 린트·CI 명령)",
   "keywords": [
     "agents.md",
     "ai-agent",

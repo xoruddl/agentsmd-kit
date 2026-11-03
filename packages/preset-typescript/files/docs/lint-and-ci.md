@@ -54,19 +54,14 @@ ESLint 를 쓰면 typescript-eslint, eslint-plugin-react-hooks, eslint-plugin-js
 - Prettier 에 맡긴다. 손으로 정렬하지 않는다. 설정은 저장소의 `.prettierrc` 를 따른다.
 - 고칠 때: `pnpm format` (`prettier --write .`)
 
-## Git 훅
-
-`.githooks/pre-commit` 이 `.githooks/pre-commit.d/` 의 검사를 이름 순서로 실행한다.
-TypeScript 프리셋은 포맷 검사를 넣는다. Git 프리셋을 함께 설치했다면 커밋 형식·파일 수 검사도 같이 돈다.
-
-| 파일 | 검사 |
-| --- | --- |
-| `.githooks/pre-commit.d/prettier` | 스테이징된 파일만 `prettier --check`. `package.json` 과 설치된 Prettier 가 있을 때만 |
-
 ## CI
 
-[.github/workflows/ci.yml](../.github/workflows/ci.yml)
+어떤 CI 서비스를 쓰든 아래 순서로 실행한다. 작업을 마치기 전에 돌리는 검증 명령과 같다.
+
+```bash
+pnpm install --frozen-lockfile
+pnpm lint && pnpm format:check && pnpm typecheck && pnpm test && pnpm build
+```
 
 - Node 버전은 `.nvmrc`, pnpm 버전은 `package.json` 의 `packageManager` 를 따른다.
-- `install --frozen-lockfile` → `lint` → `format:check` → `typecheck` → `test` → `build`
 - npm·yarn 을 쓰면 설치 단계와 명령을 맞게 바꾼다.
