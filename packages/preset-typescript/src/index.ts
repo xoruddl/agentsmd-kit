@@ -4,18 +4,16 @@ import type { Preset } from "@agentsmd/core";
 /**
  * TypeScript·React 프론트엔드용 프리셋.
  *
- * 타입 규칙과 필수 컴파일러 옵션, 폴더·컴포넌트·접근성, 테스트, 환경변수·보안 문서와
- * Prettier 커밋 검사, pnpm CI를 담는다. Git 작업 규칙은 Git 프리셋을 함께 고르면 더해진다.
+ * 타입 규칙과 필수 컴파일러 옵션, 폴더·컴포넌트·접근성, 테스트, 환경변수·보안, 린트·CI 명령 문서를 담는다.
+ * Git 훅·GitHub 설정은 넣지 않는다. 필요하면 Git 프리셋을 함께 고른다.
  *
  * tsconfig나 린트 설정 파일은 설치하지 않는다. 빌드 도구마다 설정이 달라 덮어쓰면 프로젝트가 깨지므로,
  * 필수 옵션을 문서로 안내하고 사람이 적용한다.
  */
 export const typescriptPreset = {
   name: "typescript",
-  description: "TypeScript·React 프론트엔드용 타입·구조·테스트·보안 규칙, Prettier 훅, pnpm CI",
+  description: "TypeScript·React 프론트엔드용 타입·구조·테스트·보안 규칙, 린트·CI 명령",
   filesDir: fileURLToPath(new URL("../files", import.meta.url)),
-  // Prettier 검사(pre-commit.d/prettier)를 연결한다.
-  hooksPath: ".githooks",
   docs: [
     {
       path: "docs/project-direction.md",
@@ -25,7 +23,7 @@ export const typescriptPreset = {
     { path: "docs/structure.md", when: "파일·컴포넌트를 만들 때. 폴더, 컴포넌트, 접근성" },
     { path: "docs/testing.md", when: "테스트를 쓸 때" },
     { path: "docs/env-and-security.md", when: "환경변수·외부 입력·의존성을 다룰 때" },
-    { path: "docs/lint-and-ci.md", when: "스크립트·린트·훅·CI 설정" },
+    { path: "docs/lint-and-ci.md", when: "스크립트·린트·포맷·CI 설정" },
   ],
   rules: [
     "`any`, `as` 단언, `!` 로 타입 오류를 덮지 않는다.",
