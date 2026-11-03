@@ -2,8 +2,9 @@
 
 ## agentsmd init
 
-프리셋의 지침 파일을 저장소에 설치하고 Git 훅을 연결한다.
+프리셋의 지침 파일을 저장소에 설치하고, `git` 프리셋을 골랐으면 Git 훅을 연결한다.
 Git 작업 규칙과 언어 규칙은 따로 고른다. 함께 쓰려면 쉼표로 잇는다.
+언어 프리셋은 Git 훅과 GitHub 설정(`.githooks/`, `.github/`)을 설치하지 않는다.
 
 ```bash
 agentsmd init --preset git,typescript   # Git 규칙 + TypeScript 규칙
@@ -24,15 +25,15 @@ agentsmd init --preset git              # Git 규칙만
 1. 고른 프리셋의 파일을 적은 순서대로, 같은 경로 구조로 복사한다.
    이미 있는 파일은 건너뛰고 목록으로 알린다. 사람이 다듬어 둔 지침을 지우지 않기 위해서다.
 2. 고른 프리셋들의 문서 목록과 핵심 규칙을 합쳐 `AGENTS.md`를 만들고(이미 있으면 빠진 항목만 합친다), 그것을 불러오는 `CLAUDE.md`를 만든다.
-   훅이 있는 프리셋을 골랐으면 `.githooks/pre-commit.d/`의 검사를 실행하는 `.githooks/pre-commit`도 만든다.
+   훅이 있는 프리셋(`git`)을 골랐으면 `.githooks/pre-commit.d/`의 검사를 실행하는 `.githooks/pre-commit`도 만든다.
 3. 훅이 있으면 `git config core.hooksPath`로 연결한다. Git 저장소가 아니면 연결하지 않고 안내만 남긴다.
 4. 고른 프리셋들이 정한 "설치 후 사람이 할 일"을 번호로 안내한다.
 
 | 프리셋       | 내용                                                                                                                    |
 | ------------ | ----------------------------------------------------------------------------------------------------------------------- |
 | `git`        | Git 작업 규칙·작업 흐름·리뷰 판단·문체 문서, 커밋 형식·파일 수 검사, Conventions 검사, 이슈·PR 템플릿, Claude Code 설정 |
-| `java`       | Java 코드 규칙 문서, Spotless 검사(`pre-commit.d/spotless`), Gradle CI                                                  |
-| `typescript` | 타입·구조·테스트·보안·린트 문서, Prettier 검사(`pre-commit.d/prettier`), pnpm CI, `.nvmrc`                              |
+| `java`       | Java 코드 규칙 문서, Spotless·Gradle 검증 명령 문서                                                                     |
+| `typescript` | 타입·구조·테스트·보안 문서, 린트·포맷·CI 명령 문서, `.nvmrc`                                                            |
 
 `AGENTS.md`가 이미 있으면 덮어쓰지 않고 **빠진 항목만 합친다**. 그래서 프리셋을 어떤 순서로 나눠 설치해도 모든 문서가 지도에 오른다.
 

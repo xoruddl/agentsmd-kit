@@ -4,16 +4,14 @@ import type { Preset } from "@agentsmd/core";
 /**
  * Java·Gradle 프로젝트용 프리셋.
  *
- * Java 코드 규칙 문서, Spotless(palantir-java-format) 커밋 검사, Gradle CI를 담는다.
- * Git 작업 규칙은 Git 프리셋을 함께 고르면 더해진다.
+ * Java 코드 규칙 문서와 Spotless(palantir-java-format)·Gradle 검증 명령 문서를 담는다.
+ * Git 훅·GitHub 설정은 넣지 않는다. 필요하면 Git 프리셋을 함께 고른다.
  * `files/`는 빌드 결과(dist/)와 소스(src/) 어디서 실행해도 패키지 루트 기준으로 같은 위치다.
  */
 export const javaPreset = {
   name: "java",
-  description: "Java·Gradle 프로젝트용 지침, 커밋 훅, Spotless·Gradle CI",
+  description: "Java·Gradle 프로젝트용 코드 규칙, Spotless·Gradle 검증 명령",
   filesDir: fileURLToPath(new URL("../files", import.meta.url)),
-  // Spotless 검사(pre-commit.d/spotless)를 연결한다.
-  hooksPath: ".githooks",
   docs: [
     {
       path: "docs/project-direction.md",
@@ -23,11 +21,11 @@ export const javaPreset = {
     { path: "docs/clean-code.md", when: "코드 작성, 설계" },
     { path: "docs/clean-code-examples.md", when: "코드 작성 시 참고 예시" },
     { path: "docs/java-checklist.md", when: "Java 코드 작성·리뷰" },
-    { path: "docs/lint-and-ci.md", when: "훅·린트·CI 설정" },
+    { path: "docs/lint-and-ci.md", when: "린트·포맷·CI 설정" },
   ],
   rules: [
     "코드에는 의도를 설명하는 주석을 적극적으로 단다.",
-    "포맷은 손으로 맞추지 않는다. 커밋 전 `./gradlew spotlessApply`.",
+    "포맷은 손으로 맞추지 않는다. 작업을 마치기 전 `./gradlew spotlessApply`.",
   ],
   verify: "./gradlew spotlessCheck build",
   nextSteps: [

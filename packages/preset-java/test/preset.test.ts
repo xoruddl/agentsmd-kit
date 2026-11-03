@@ -1,4 +1,4 @@
-import { access, constants, mkdtemp, readFile, rm } from "node:fs/promises";
+import { access, mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { checkRepository, installEntryFiles, installPreset } from "@agentsmd/core";
@@ -10,7 +10,7 @@ let target: string;
 beforeEach(async () => {
   target = await mkdtemp(join(tmpdir(), "agentsmd-preset-java-"));
   await installPreset(javaPreset, target);
-  // AGENTS.md와 훅 실행기는 init이 고른 프리셋에 맞게 만든다.
+  // AGENTS.md는 init이 고른 프리셋에 맞게 만든다.
   await installEntryFiles([javaPreset], target);
 });
 
@@ -24,12 +24,9 @@ describe("javaPreset", () => {
     await expect(checkRepository({ root: target })).resolves.toEqual([]);
   });
 
-  it("설치한 훅 실행기가 Spotless 검사를 실행한다", async () => {
-    await expect(readFile(join(target, ".githooks/pre-commit"), "utf8")).resolves.toContain(
-      "pre-commit.d",
-    );
-    await expect(
-      access(join(target, ".githooks/pre-commit.d/spotless"), constants.X_OK),
-    ).resolves.toBeUndefined();
+  it("Git 훅과 GitHub 설정은 설치하지 않는다", async () => {
+    expect(javaPreset).not.toHaveProperty("hooksPath");
+    await expect(access(join(target, ".githooks"))).rejects.toThrow();
+    await expect(access(join(target, ".github"))).rejects.toThrow();
   });
 });
