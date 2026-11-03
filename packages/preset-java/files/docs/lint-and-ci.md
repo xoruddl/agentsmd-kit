@@ -1,16 +1,4 @@
-# 훅 · 린트 · CI
-
-## Git 훅
-
-`.githooks/pre-commit` 이 `.githooks/pre-commit.d/` 의 검사를 이름 순서로 실행한다.
-Java 프리셋은 포맷 검사를 넣는다. Git 프리셋을 함께 설치했다면 커밋 형식·파일 수 검사도 같이 돈다.
-
-| 파일 | 검사 |
-| --- | --- |
-| `.githooks/pre-commit.d/spotless` | `gradlew` 가 있고 `.java` 가 스테이징됐으면 `spotlessCheck` |
-
-- 클론한 뒤 훅이 동작하지 않으면 `git config core.hooksPath .githooks` 로 연결한다.
-- `--no-verify` 금지.
+# 린트 · CI
 
 ## 린트 (Spotless + palantir-java-format)
 
@@ -38,15 +26,18 @@ spotless {
 | 명령 | 용도 |
 | --- | --- |
 | `./gradlew spotlessApply` | 포맷 적용 |
-| `./gradlew spotlessCheck` | 포맷 검사 (훅, CI) |
+| `./gradlew spotlessCheck` | 포맷 검사 (작업 마무리, CI) |
+
+작업을 마치기 전에 `./gradlew spotlessApply` 로 포맷을 맞추고 아래 검증 명령을 실행한다.
 
 ## CI
 
-[.github/workflows/ci.yml](../.github/workflows/ci.yml)
+어떤 CI 서비스를 쓰든 아래 명령을 실행한다. 작업을 마치기 전에 돌리는 검증 명령과 같다.
 
-| job | 실행 | 검사 |
-| --- | --- | --- |
-| `build` | PR, main push | `spotlessCheck build`. `gradlew` 없으면 건너뜀 |
+```bash
+./gradlew spotlessCheck build
+```
 
-- 커밋 규칙(파일 수, 메시지 형식)은 CI 에서 검사하지 않는다. 로컬 훅만 검사한다.
-- 버전을 올릴 때는 이 문서의 스니펫과 CI 를 같이 고친다.
+- JDK 21 을 쓴다.
+- `gradlew` 가 없는 저장소(지침만 있는 저장소)에서는 건너뛴다.
+- 버전을 올릴 때는 이 문서의 스니펫과 CI 설정을 같이 고친다.
