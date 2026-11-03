@@ -1,0 +1,47 @@
+{
+  "name": "@agentsmd/preset-github",
+  "version": "0.3.0",
+  "description": "GitHub 저장소용 AI 작업 지침 프리셋 (이슈·PR 템플릿, 저장소 설정·CI 연결 안내)",
+  "keywords": [
+    "agents.md",
+    "ai-agent",
+    "github",
+    "issue-template",
+    "pull-request-template"
+  ],
+  "homepage": "https://github.com/xoruddl/agentsmd-kit#readme",
+  "bugs": "https://github.com/xoruddl/agentsmd-kit/issues",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xoruddl/agentsmd-kit.git",
+    "directory": "packages/preset-github"
+  },
+  "license": "MIT",
+  "author": "이태경 (https://github.com/xoruddl)",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "files"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "prepack": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\" && pnpm run build",
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@agentsmd/core": "workspace:*"
+  }
+}
