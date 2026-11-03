@@ -6,16 +6,18 @@
 agentsmd (cli) ──▶ @agentsmd/core ◀── 모든 프리셋 (Preset 타입)
       │
       ├──▶ @agentsmd/preset-git
+      ├──▶ @agentsmd/preset-github
       ├──▶ @agentsmd/preset-java
       └──▶ @agentsmd/preset-typescript
 ```
 
-| 패키지                   | 책임                                                                | 모르는 것              |
-| ------------------------ | ------------------------------------------------------------------- | ---------------------- |
-| `packages/core`          | 문서 지도 파서, 검사 규칙, 프리셋 설치, AGENTS.md·훅 실행기 생성    | 명령줄, 출력 형식, Git |
-| `packages/cli`           | 인자 파싱, 명령 분기, 출력, 종료 코드, Git 훅 연결                  | 규칙의 내용            |
-| `packages/preset-git`    | 언어와 무관한 Git 작업 규칙, 커밋 형식·파일 수 검사, 이슈·PR 템플릿 | 언어별 검사            |
-| `packages/preset-<언어>` | 언어 규칙 문서, 검증·CI 명령 문서                                   | 설치 방법, Git·GitHub  |
+| 패키지                   | 책임                                                             | 모르는 것               |
+| ------------------------ | ---------------------------------------------------------------- | ----------------------- |
+| `packages/core`          | 문서 지도 파서, 검사 규칙, 프리셋 설치, AGENTS.md·훅 실행기 생성 | 명령줄, 출력 형식, Git  |
+| `packages/cli`           | 인자 파싱, 명령 분기, 출력, 종료 코드, Git 훅 연결               | 규칙의 내용             |
+| `packages/preset-git`    | 언어와 무관한 Git 작업 규칙, 커밋 훅, PR 규칙 검사 스크립트      | 언어, 호스팅, CI 서비스 |
+| `packages/preset-github` | 이슈·PR 템플릿, GitHub 설정·CI 연결 안내                         | 언어, CI 서비스         |
+| `packages/preset-<언어>` | 언어 규칙 문서, 검증·CI 명령 문서                                | 설치 방법, Git·GitHub   |
 
 `core`는 다른 패키지에 의존하지 않는다. 프리셋은 `core`의 `Preset` 타입만 쓰고, 프리셋끼리는 서로 의존하지 않는다.
 
@@ -36,7 +38,7 @@ check.ts ── 파일 읽기 ──▶ parse-doc-map.ts ──▶ DocMap
 
 ## 프리셋: 따로 고르고, 공통 파일은 조합에 맞게 만든다
 
-Git 규칙과 언어 규칙은 독립된 프리셋이다. 사용자가 `--preset git,typescript`처럼 함께 고르면 둘 다 설치된다.
+Git 규칙, 호스팅(GitHub), 언어 규칙은 독립된 프리셋이다. 사용자가 `--preset git,github,typescript`처럼 함께 고르면 모두 설치된다.
 
 - 프리셋은 AGENTS.md를 파일로 갖지 않는다. 대신 `docs`(문서와 읽는 시점), `rules`(핵심 규칙), `verify`(검증 명령)를 정의한다.
   `mergeAgentsMd`가 기존 AGENTS.md에 정의 가운데 빠진 항목만 넣는다. 지도를 파일로 두면 함께 설치할 때 한쪽이 건너뛰어져 다른 프리셋 문서가 지도에서 빠지기 때문이다.
@@ -46,9 +48,11 @@ Git 규칙과 언어 규칙은 독립된 프리셋이다. 사용자가 `--preset
 - 커밋 검사는 `.githooks/pre-commit.d/<이름>`에 스크립트로 넣는다. 지금은 Git 프리셋의 `max-files`뿐이다.
   이것들을 실행하는 `.githooks/pre-commit`은 어느 프리셋에도 두지 않고 `installEntryFiles`가 만든다.
   검사를 더하는 프리셋이 생겨도 실행기를 나눠 갖지 않게 하기 위해서다.
-- 언어 프리셋은 Git 훅과 GitHub 설정(`.githooks/`, `.github/`)을 두지 않는다.
-  Git 규칙이나 특정 CI 서비스를 원하지 않는 저장소에도 언어 규칙만 설치할 수 있게 하기 위해서다.
-  포맷 검사는 `verify` 명령이 맡고, CI 문서에는 서비스와 무관하게 실행할 명령만 적는다.
+- 프리셋은 Git, 호스팅, 언어 가운데 한 축만 맡는다. Git 훅(`.githooks/`)은 Git 프리셋만, `.github/`는 GitHub 프리셋만 둔다.
+  Git 규칙이나 GitHub를 원하지 않는 저장소에도 나머지를 설치할 수 있게 하기 위해서다.
+- 어느 프리셋도 CI 설정 파일(GitHub Actions 워크플로 등)을 두지 않는다. GitHub를 써도 CI는 Jenkins 등으로 돌릴 수 있기 때문이다.
+  CI에서 할 일은 실행할 명령으로 정한다. 언어 프리셋은 `verify` 명령을, Git 프리셋은 `.githooks/check-pr`를 제공하고,
+  어느 CI에서 어떻게 부르는지는 문서로 안내한다.
 - 프리셋 문서는 다른 프리셋의 문서를 링크하지 않는다. 함께 설치되지 않으면 깨진 링크가 된다.
 - 두 프리셋은 같은 경로의 파일을 두지 않는다. 설치는 이미 있는 파일을 덮어쓰지 않는다.
 
