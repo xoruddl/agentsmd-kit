@@ -1,14 +1,16 @@
 import type { Preset } from "@agentsmd/core";
 import { gitPreset } from "@agentsmd/preset-git";
+import { githubPreset } from "@agentsmd/preset-github";
 import { javaPreset } from "@agentsmd/preset-java";
 import { typescriptPreset } from "@agentsmd/preset-typescript";
 
 /**
  * `init --preset`으로 고를 수 있는 프리셋. 새 프리셋 패키지를 만들면 여기에 추가한다.
  *
- * Git 작업 규칙과 언어 규칙은 따로 고른다. 함께 쓰려면 `--preset git,typescript`처럼 쉼표로 잇는다.
+ * Git 작업 규칙, 호스팅(GitHub), 언어 규칙은 따로 고른다.
+ * 함께 쓰려면 `--preset git,github,typescript`처럼 쉼표로 잇는다.
  */
-export const PRESETS: readonly Preset[] = [gitPreset, javaPreset, typescriptPreset];
+export const PRESETS: readonly Preset[] = [gitPreset, githubPreset, javaPreset, typescriptPreset];
 
 export type PresetSelection =
   | { readonly ok: true; readonly presets: readonly Preset[] }

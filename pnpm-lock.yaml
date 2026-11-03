@@ -38,6 +38,9 @@ importers:
       '@agentsmd/preset-git':
         specifier: workspace:*
         version: link:../preset-git
+      '@agentsmd/preset-github':
+        specifier: workspace:*
+        version: link:../preset-github
       '@agentsmd/preset-java':
         specifier: workspace:*
         version: link:../preset-java
@@ -48,6 +51,12 @@ importers:
   packages/core: {}
 
   packages/preset-git:
+    dependencies:
+      '@agentsmd/core':
+        specifier: workspace:*
+        version: link:../core
+
+  packages/preset-github:
     dependencies:
       '@agentsmd/core':
         specifier: workspace:*

@@ -4,12 +4,7 @@
 
 ## 확인
 
-PR 생성 후 사용자가 리뷰 확인을 요청하면 조회한다.
-
-```bash
-gh pr view <PR번호> --json reviews,comments
-gh api repos/{owner}/{repo}/pulls/<PR번호>/comments
-```
+PR 생성 후 사용자가 리뷰 확인을 요청하면, 쓰는 호스팅의 CLI나 API로 리뷰와 줄 단위 코멘트를 모두 조회한다.
 
 - 리뷰가 없으면 "리뷰 없음" 한 줄 보고 후 넘어간다. 대기·재조회하지 않는다.
 - 리뷰 도구가 남기는 변경 요약 코멘트는 판단 대상이 아니다.

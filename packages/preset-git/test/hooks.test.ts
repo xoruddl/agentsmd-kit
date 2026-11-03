@@ -17,11 +17,11 @@ async function runHook(
   env: Record<string, string> = {},
 ): Promise<{ code: number; stderr: string }> {
   try {
-    await exec(join(repo, ".githooks", hook), [...args], {
+    const { stderr } = await exec(join(repo, ".githooks", hook), [...args], {
       cwd: repo,
       env: { ...process.env, ...env },
     });
-    return { code: 0, stderr: "" };
+    return { code: 0, stderr };
   } catch (error) {
     return failureOf(error);
   }
@@ -133,6 +133,45 @@ describe("pre-commit", () => {
     await stageFiles(6);
     await expect(runHook("pre-commit", [], { HARNESS_MAX_FILES: "6" })).resolves.toMatchObject({
       code: 0,
+    });
+  });
+});
+
+describe("check-pr", () => {
+  const valid = { BRANCH: "feat/12-order-cancel", TITLE: "feat: 주문 취소", BODY: "Closes #12" };
+
+  it("브랜치·제목·본문이 규칙에 맞으면 통과한다", async () => {
+    await expect(runHook("check-pr", [], valid)).resolves.toMatchObject({ code: 0 });
+  });
+
+  it("브랜치 이름 형식이 틀리면 막는다", async () => {
+    const result = await runHook("check-pr", [], { ...valid, BRANCH: "order-cancel" });
+    expect(result.code).toBe(1);
+    expect(result.stderr).toContain("브랜치 이름");
+  });
+
+  it("제목 형식이 틀리면 막는다", async () => {
+    const result = await runHook("check-pr", [], { ...valid, TITLE: "주문 취소" });
+    expect(result.code).toBe(1);
+    expect(result.stderr).toContain("제목");
+  });
+
+  it("본문에 Closes #N이 없으면 막는다", async () => {
+    const result = await runHook("check-pr", [], { ...valid, BODY: "주문 취소 기능" });
+    expect(result.code).toBe(1);
+    expect(result.stderr).toContain("Closes");
+  });
+
+  // Jenkins처럼 PR 본문을 바로 주지 않는 CI에서도 나머지 검사는 돌게 한다.
+  it("BODY를 넘기지 않으면 Closes 검사만 건너뛴다", async () => {
+    const result = await runHook("check-pr", [], { BRANCH: valid.BRANCH, TITLE: valid.TITLE });
+    expect(result.code).toBe(0);
+    expect(result.stderr).toContain("건너뜁니다");
+  });
+
+  it("BRANCH나 TITLE이 없으면 2를 돌려준다", async () => {
+    await expect(runHook("check-pr", [], { BRANCH: valid.BRANCH })).resolves.toMatchObject({
+      code: 2,
     });
   });
 });
