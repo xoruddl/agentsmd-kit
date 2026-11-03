@@ -15,7 +15,7 @@ agentsmd (cli) ──▶ @agentsmd/core ◀── 모든 프리셋 (Preset 타�
 | `packages/core`          | 문서 지도 파서, 검사 규칙, 프리셋 설치, AGENTS.md·훅 실행기 생성    | 명령줄, 출력 형식, Git |
 | `packages/cli`           | 인자 파싱, 명령 분기, 출력, 종료 코드, Git 훅 연결                  | 규칙의 내용            |
 | `packages/preset-git`    | 언어와 무관한 Git 작업 규칙, 커밋 형식·파일 수 검사, 이슈·PR 템플릿 | 언어별 검사            |
-| `packages/preset-<언어>` | 언어 규칙 문서, 언어별 훅 검사, CI                                  | 설치 방법, Git 규칙    |
+| `packages/preset-<언어>` | 언어 규칙 문서, 검증·CI 명령 문서                                   | 설치 방법, Git·GitHub  |
 
 `core`는 다른 패키지에 의존하지 않는다. 프리셋은 `core`의 `Preset` 타입만 쓰고, 프리셋끼리는 서로 의존하지 않는다.
 
@@ -43,9 +43,12 @@ Git 규칙과 언어 규칙은 독립된 프리셋이다. 사용자가 `--preset
   새로 만들 때(`renderAgentsMd`)도 빈 뼈대에 같은 함수로 합친다. 새로 만들 때와 나눠 설치할 때 결과 모양이 갈라지지 않게 하려는 것이다.
   절을 찾고 넣는 일은 `markdown-sections.ts`가 맡는다.
 - 표는 대상 저장소의 `prettier --check`에 걸리지 않도록 Prettier와 같은 모양으로 정렬한다 (`markdown-table.ts`).
-- 커밋 검사는 프리셋마다 `.githooks/pre-commit.d/<이름>`에 스크립트로 넣는다. (`max-files`, `spotless`, `prettier`)
+- 커밋 검사는 `.githooks/pre-commit.d/<이름>`에 스크립트로 넣는다. 지금은 Git 프리셋의 `max-files`뿐이다.
   이것들을 실행하는 `.githooks/pre-commit`은 어느 프리셋에도 두지 않고 `installEntryFiles`가 만든다.
-  실행기를 Git 프리셋이 가지면 언어 프리셋만 설치했을 때 언어 검사가 돌지 않기 때문이다.
+  검사를 더하는 프리셋이 생겨도 실행기를 나눠 갖지 않게 하기 위해서다.
+- 언어 프리셋은 Git 훅과 GitHub 설정(`.githooks/`, `.github/`)을 두지 않는다.
+  Git 규칙이나 특정 CI 서비스를 원하지 않는 저장소에도 언어 규칙만 설치할 수 있게 하기 위해서다.
+  포맷 검사는 `verify` 명령이 맡고, CI 문서에는 서비스와 무관하게 실행할 명령만 적는다.
 - 프리셋 문서는 다른 프리셋의 문서를 링크하지 않는다. 함께 설치되지 않으면 깨진 링크가 된다.
 - 두 프리셋은 같은 경로의 파일을 두지 않는다. 설치는 이미 있는 파일을 덮어쓰지 않는다.
 
@@ -65,8 +68,7 @@ Git 규칙과 언어 규칙은 독립된 프리셋이다. 사용자가 `--preset
 ## 언어 프리셋 추가하기
 
 1. `packages/preset-<이름>/files/`에 설치될 경로 그대로 파일을 둔다. Prettier는 이 디렉터리를 건드리지 않는다.
-   - 언어 규칙 문서(`docs/`), CI. `AGENTS.md`와 `CLAUDE.md`는 두지 않는다.
-   - 커밋 시 검사가 필요하면 `.githooks/pre-commit.d/<이름>`에 실행 권한과 함께 두고 `hooksPath: ".githooks"`를 정한다.
+   - 언어 규칙 문서(`docs/`)만 둔다. `AGENTS.md`, `CLAUDE.md`, `.githooks/`, `.github/`는 두지 않는다.
 2. `src/index.ts`에서 `Preset` 객체를 내보낸다. `docs`, `rules`, `verify`를 채우고, 수작업이 남으면 `nextSteps`를 채운다.
    `docs/` 아래 문서는 모두 `docs`에 올린다. 빠지면 `check`가 지도에 없는 문서로 잡는다.
 3. 그 프리셋만 설치한 결과(`installPreset` + `installEntryFiles`)가 `checkRepository`를 통과하는지 테스트한다.
