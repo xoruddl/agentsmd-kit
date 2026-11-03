@@ -22,7 +22,7 @@ const presetList = PRESETS.map(
 export const INIT_USAGE = `사용법: agentsmd init --preset <이름>[,<이름>...] [옵션]
 
 AI 작업 지침(AGENTS.md, docs/)을 저장소에 설치합니다.
-Git 훅과 GitHub 설정은 git 프리셋을 고를 때만 설치하고 연결합니다.
+Git 훅은 git 프리셋, GitHub 템플릿은 github 프리셋을 고를 때만 설치합니다.
 여러 프리셋을 고르면 문서 지도(AGENTS.md)를 적은 순서대로 합칩니다.
 AGENTS.md가 이미 있으면 빠진 문서·규칙만 더하고, 다른 파일은 이미 있으면 건너뜁니다.
 
@@ -30,8 +30,9 @@ AGENTS.md가 이미 있으면 빠진 문서·규칙만 더하고, 다른 파일�
 ${presetList}
 
 예:
-  agentsmd init --preset git,typescript   Git 규칙과 TypeScript 규칙을 함께 설치
-  agentsmd init --preset java             Java 규칙만 설치
+  agentsmd init --preset git,typescript          Git 규칙과 TypeScript 규칙을 함께 설치
+  agentsmd init --preset git,github,typescript   GitHub 템플릿까지 함께 설치
+  agentsmd init --preset java                    Java 규칙만 설치
 
 옵션:
   --preset <이름>   설치할 프리셋. 여러 개는 쉼표로 잇습니다 (필수)

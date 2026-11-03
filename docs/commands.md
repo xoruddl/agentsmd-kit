@@ -3,14 +3,16 @@
 ## agentsmd init
 
 프리셋의 지침 파일을 저장소에 설치하고, `git` 프리셋을 골랐으면 Git 훅을 연결한다.
-Git 작업 규칙과 언어 규칙은 따로 고른다. 함께 쓰려면 쉼표로 잇는다.
-언어 프리셋은 Git 훅과 GitHub 설정(`.githooks/`, `.github/`)을 설치하지 않는다.
+Git 작업 규칙, 호스팅(GitHub), 언어 규칙은 따로 고른다. 함께 쓰려면 쉼표로 잇는다.
+Git 훅(`.githooks/`)은 `git`, GitHub 템플릿(`.github/`)은 `github`을 고를 때만 설치한다.
+어느 프리셋도 CI 설정 파일은 설치하지 않는다. CI에서 돌릴 명령과 연결 방법은 문서로 안내한다.
 
 ```bash
-agentsmd init --preset git,typescript   # Git 규칙 + TypeScript 규칙
-agentsmd init --preset git,java         # Git 규칙 + Java 규칙
-agentsmd init --preset typescript       # TypeScript 규칙만
-agentsmd init --preset git              # Git 규칙만
+agentsmd init --preset git,typescript          # Git 규칙 + TypeScript 규칙
+agentsmd init --preset git,github,typescript   # GitHub 템플릿까지
+agentsmd init --preset git,java                # Git 규칙 + Java 규칙
+agentsmd init --preset typescript              # TypeScript 규칙만
+agentsmd init --preset git                     # Git 규칙만
 ```
 
 | 옵션              | 설명                                         | 기본값 |
@@ -29,11 +31,12 @@ agentsmd init --preset git              # Git 규칙만
 3. 훅이 있으면 `git config core.hooksPath`로 연결한다. Git 저장소가 아니면 연결하지 않고 안내만 남긴다.
 4. 고른 프리셋들이 정한 "설치 후 사람이 할 일"을 번호로 안내한다.
 
-| 프리셋       | 내용                                                                                                                    |
-| ------------ | ----------------------------------------------------------------------------------------------------------------------- |
-| `git`        | Git 작업 규칙·작업 흐름·리뷰 판단·문체 문서, 커밋 형식·파일 수 검사, Conventions 검사, 이슈·PR 템플릿, Claude Code 설정 |
-| `java`       | Java 코드 규칙 문서, Spotless·Gradle 검증 명령 문서                                                                     |
-| `typescript` | 타입·구조·테스트·보안 문서, 린트·포맷·CI 명령 문서, `.nvmrc`                                                            |
+| 프리셋       | 내용                                                                                                                             |
+| ------------ | -------------------------------------------------------------------------------------------------------------------------------- |
+| `git`        | Git 작업 규칙·작업 흐름·리뷰 판단·문체 문서, 커밋 형식·파일 수 훅, PR 규칙 검사 스크립트(`.githooks/check-pr`), Claude Code 설정 |
+| `github`     | 이슈·PR 템플릿, GitHub 사용법 문서(gh 명령, 머지 방식·룰셋 설정, CI 연결 예시)                                                   |
+| `java`       | Java 코드 규칙 문서, Spotless·Gradle 검증 명령 문서                                                                              |
+| `typescript` | 타입·구조·테스트·보안 문서, 린트·포맷·CI 명령 문서, `.nvmrc`                                                                     |
 
 `AGENTS.md`가 이미 있으면 덮어쓰지 않고 **빠진 항목만 합친다**. 그래서 프리셋을 어떤 순서로 나눠 설치해도 모든 문서가 지도에 오른다.
 
