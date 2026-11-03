@@ -67,6 +67,23 @@ describe("runInit", () => {
     await expect(readFile(join(root, ".claude/settings.json"), "utf8")).resolves.toContain(
       "--no-verify",
     );
+    // 호스팅·CI에 묶이는 파일은 github 프리셋을 고를 때만 설치한다.
+    await expect(
+      readFile(join(root, ".github/pull_request_template.md"), "utf8"),
+    ).rejects.toThrow();
+    await expect(checkRepository({ root })).resolves.toEqual([]);
+  });
+
+  it("git,github를 함께 고르면 템플릿과 PR 규칙 검사 스크립트를 함께 설치한다", async () => {
+    await expect(runInit(["--preset", "git,github", "--skip-hooks"], io())).resolves.toBe(0);
+
+    await expect(readFile(join(root, ".githooks/check-pr"), "utf8")).resolves.toContain("BRANCH");
+    await expect(
+      readFile(join(root, ".github/pull_request_template.md"), "utf8"),
+    ).resolves.toContain("Closes #");
+    const agents = await readFile(join(root, "AGENTS.md"), "utf8");
+    expect(agents).toContain("[docs/git-conventions.md](docs/git-conventions.md)");
+    expect(agents).toContain("[docs/github.md](docs/github.md)");
     await expect(checkRepository({ root })).resolves.toEqual([]);
   });
 

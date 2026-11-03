@@ -40,6 +40,7 @@
   "dependencies": {
     "@agentsmd/core": "workspace:*",
     "@agentsmd/preset-git": "workspace:*",
+    "@agentsmd/preset-github": "workspace:*",
     "@agentsmd/preset-java": "workspace:*",
     "@agentsmd/preset-typescript": "workspace:*"
   }
