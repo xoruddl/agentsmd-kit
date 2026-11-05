@@ -20,12 +20,14 @@ jobs:
           BASE: ${{ github.base_ref }}
           TITLE: ${{ github.event.pull_request.title }}
           BODY: ${{ github.event.pull_request.body }}
+          # 브랜치 이름과 커밋 메시지는 소문자 타입, PR 제목은 대괄호로 감싼 타입을 쓴다
           TYPES: feat|fix|refactor|test|docs|chore|ci|build
+          TITLE_TYPES: Feat|Fix|Refactor|Test|Docs|Chore|CI|Build
         run: |
           failed=0
 
-          if [[ ! "$TITLE" =~ ^($TYPES):\ .+ ]]; then
-            echo "::error::PR 제목이 '<타입>: <요약>' 형식이 아닙니다: $TITLE"
+          if [[ ! "$TITLE" =~ ^\[($TITLE_TYPES)\]\ .+ ]]; then
+            echo "::error::PR 제목이 '[타입] 요약' 형식이 아닙니다 (예: [Feat] 요약): $TITLE"
             failed=1
           fi
 
