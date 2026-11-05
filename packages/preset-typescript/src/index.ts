@@ -2,9 +2,10 @@ import { fileURLToPath } from "node:url";
 import type { Preset } from "@agentsmd/core";
 
 /**
- * TypeScript·React 프론트엔드용 프리셋.
+ * TypeScript 프로젝트용 프리셋. 프론트엔드·백엔드·라이브러리 어디에나 쓰는 공통 규칙만 담는다.
  *
- * 타입 규칙과 필수 컴파일러 옵션, 폴더·컴포넌트·접근성, 테스트, 환경변수·보안, 린트·CI 명령 문서를 담는다.
+ * 타입 규칙과 필수 컴파일러 옵션, 폴더·모듈, 테스트, 환경변수·보안, 린트·CI 명령 문서를 담는다.
+ * React 화면 규칙은 넣지 않는다. 필요하면 React 프리셋을 함께 고른다.
  * Git 훅·GitHub 설정은 넣지 않는다. 필요하면 Git 프리셋을 함께 고른다.
  *
  * tsconfig나 린트 설정 파일은 설치하지 않는다. 빌드 도구마다 설정이 달라 덮어쓰면 프로젝트가 깨지므로,
@@ -12,7 +13,7 @@ import type { Preset } from "@agentsmd/core";
  */
 export const typescriptPreset = {
   name: "typescript",
-  description: "TypeScript·React 프론트엔드용 타입·구조·테스트·보안 규칙, 린트·CI 명령",
+  description: "TypeScript 프로젝트용 타입·구조·테스트·보안 규칙, 린트·CI 명령",
   filesDir: fileURLToPath(new URL("../files", import.meta.url)),
   docs: [
     {
@@ -20,7 +21,7 @@ export const typescriptPreset = {
       when: "모든 작업 시작 전 (필수). 범위 밖 작업이면 먼저 질문",
     },
     { path: "docs/typescript.md", when: "코드 작성·리뷰 (항상). 컴파일러 옵션, 타입 규칙" },
-    { path: "docs/structure.md", when: "파일·컴포넌트를 만들 때. 폴더, 컴포넌트, 접근성" },
+    { path: "docs/structure.md", when: "파일·폴더를 만들 때. 기능 단위 폴더, 모듈 경계" },
     { path: "docs/testing.md", when: "테스트를 쓸 때" },
     { path: "docs/env-and-security.md", when: "환경변수·외부 입력·의존성을 다룰 때" },
     { path: "docs/lint-and-ci.md", when: "스크립트·린트·포맷·CI 설정" },
@@ -28,7 +29,7 @@ export const typescriptPreset = {
   rules: [
     "`any`, `as` 단언, `!` 로 타입 오류를 덮지 않는다.",
     "API 응답·저장소 값·URL 파라미터·환경변수는 들어오는 곳에서 검증한다.",
-    "클릭할 수 있는 요소는 `<button>`·`<a>` 로 만든다. 이미지에는 `alt`, 입력에는 `label`.",
+    "Promise 는 `await` 하거나 처리한다. `catch` 로 받은 값은 `unknown` 으로 좁혀 쓴다.",
     "기능은 테스트와 함께 쓴다. 버그 수정은 재현 테스트부터 쓴다.",
     "새 의존성은 사용자에게 묻고 추가한다.",
   ],
