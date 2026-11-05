@@ -3,7 +3,7 @@
 ## agentsmd init
 
 프리셋의 지침 파일을 저장소에 설치하고, `git` 프리셋을 골랐으면 Git 훅을 연결한다.
-Git 작업 규칙, 호스팅(GitHub), 언어 규칙, 프레임워크(React) 규칙은 따로 고른다. 함께 쓰려면 쉼표로 잇는다.
+Git 작업 규칙, 호스팅(GitHub), 언어 규칙, 프레임워크(React·Spring) 규칙은 따로 고른다. 함께 쓰려면 쉼표로 잇는다.
 Git 훅(`.githooks/`)은 `git`, GitHub 템플릿(`.github/`)은 `github`을 고를 때만 설치한다.
 어느 프리셋도 CI 설정 파일은 설치하지 않는다. CI에서 돌릴 명령과 연결 방법은 문서로 안내한다.
 
@@ -12,6 +12,7 @@ agentsmd init --preset git,typescript          # Git 규칙 + TypeScript 규칙
 agentsmd init --preset git,github,typescript   # GitHub 템플릿까지
 agentsmd init --preset git,typescript,react    # React 프론트엔드 규칙까지
 agentsmd init --preset git,java                # Git 규칙 + Java 규칙
+agentsmd init --preset git,java,spring         # Spring Boot 서버 규칙까지
 agentsmd init --preset typescript              # TypeScript 규칙만
 agentsmd init --preset git                     # Git 규칙만
 ```
@@ -37,6 +38,7 @@ agentsmd init --preset git                     # Git 규칙만
 | `git`        | Git 작업 규칙·작업 흐름·리뷰 판단·문체 문서, 커밋 형식·파일 수 훅, PR 규칙 검사 스크립트(`.githooks/check-pr`), Claude Code 설정 |
 | `github`     | 이슈·PR 템플릿, GitHub 사용법 문서(gh 명령, 머지 방식·룰셋 설정, CI 연결 예시)                                                   |
 | `java`       | Java 코드 규칙 문서, Spotless·Gradle 검증 명령 문서                                                                              |
+| `spring`     | 패키지 구조·JPA·트랜잭션·API·테스트 문서. 검증 명령은 `java`에 맡긴다                                                            |
 | `typescript` | 타입·구조·테스트·보안 문서, 린트·포맷·CI 명령 문서, `.nvmrc`                                                                     |
 | `react`      | 컴포넌트·접근성·화면 테스트·브라우저 보안 문서. 검증 명령과 `.nvmrc`는 `typescript`에 맡긴다                                     |
 
