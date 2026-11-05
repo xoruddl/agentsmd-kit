@@ -42,6 +42,7 @@
     "@agentsmd/preset-git": "workspace:*",
     "@agentsmd/preset-github": "workspace:*",
     "@agentsmd/preset-java": "workspace:*",
+    "@agentsmd/preset-react": "workspace:*",
     "@agentsmd/preset-typescript": "workspace:*"
   }
 }
