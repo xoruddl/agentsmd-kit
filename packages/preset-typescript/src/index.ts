@@ -36,7 +36,7 @@ export const typescriptPreset = {
   nextSteps: [
     "docs/project-direction.md 에 프로젝트 목표와 범위를 채우세요.",
     "tsconfig 에 docs/typescript.md 의 필수 컴파일러 옵션을 켜세요.",
-    "package.json 에 lint, format:check, typecheck, test, build 스크립트를 두세요. → docs/lint-and-ci.md",
+    "package.json 에 lint, format, format:check, typecheck, test, build 스크립트를 두세요. → docs/lint-and-ci.md",
     ".nvmrc 의 Node 버전을 프로젝트에 맞게 고치세요.",
   ],
 } satisfies Preset;
