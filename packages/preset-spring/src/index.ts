@@ -13,4 +13,15 @@ export const springPreset = {
   name: "spring",
   description: "Spring Boot 서버용 구조·JPA·트랜잭션·API·테스트 규칙",
   filesDir: fileURLToPath(new URL("../files", import.meta.url)),
+  docs: [
+    {
+      path: "docs/spring-architecture.md",
+      when: "클래스·패키지를 만들 때. 패키지 구조, 의존 방향, 주입, DTO 경계, 설정",
+    },
+  ],
+  rules: [
+    "필드 주입 대신 생성자 주입을 쓴다.",
+    "엔티티를 API 요청·응답으로 쓰지 않는다. DTO(record)로 바꾼다.",
+    "다른 기능의 repository·엔티티를 직접 쓰지 않고 그 기능의 service 를 통한다.",
+  ],
 } satisfies Preset;
