@@ -55,7 +55,7 @@ src/
 - 아이콘만 있는 버튼은 `aria-label` 로 이름을 준다.
 - 색만으로 정보를 전하지 않는다. (오류를 빨간색으로만 표시하지 않는다)
 - 키보드만으로 모든 동작을 할 수 있어야 한다. 포커스 표시(`outline`)를 지우지 않는다.
-- 일부는 린트(jsx-a11y)가 검사하고, 나머지는 리뷰에서 확인한다. 테스트에서 `getByRole` 로 찾을 수 없는 요소는 접근성 문제일 가능성이 높다.
+- 일부는 린트(jsx-a11y)가 검사하고, 나머지는 리뷰에서 확인한다. 테스트에서 `getByRole` 로 찾을 수 없는 요소는 접근성 문제일 가능성이 높다. → [react-testing.md](react-testing.md)
 
 ## 린트 규칙
 
@@ -76,7 +76,7 @@ oxlint 를 쓰면 `.oxlintrc.json` 의 `plugins` 에 `react`, `jsx-a11y` 를 더
 | --- | --- |
 | `react/rules-of-hooks` | 조건문·반복문 안의 훅 호출 |
 | `react/exhaustive-deps` | 의존성 배열 누락으로 오래된 값을 쓰는 것 |
-| `react/no-danger` | `dangerouslySetInnerHTML` |
+| `react/no-danger` | `dangerouslySetInnerHTML` → [browser-security.md](browser-security.md) |
 | `jsx-a11y` 플러그인 | `alt` 없는 이미지 등 접근성 문제 |
 
 ESLint 를 쓰면 eslint-plugin-react-hooks, eslint-plugin-react, eslint-plugin-jsx-a11y 로 같은 규칙을 켠다.

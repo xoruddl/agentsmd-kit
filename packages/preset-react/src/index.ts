@@ -18,6 +18,11 @@ export const reactPreset = {
       path: "docs/react-components.md",
       when: "컴포넌트·훅을 만들 때. 폴더, 화면 상태, 접근성, React 린트 규칙",
     },
+    { path: "docs/react-testing.md", when: "컴포넌트·훅·화면 테스트를 쓸 때" },
+    {
+      path: "docs/browser-security.md",
+      when: "공개 환경변수, 사용자 입력을 화면에 그릴 때, 인증 토큰을 다룰 때",
+    },
   ],
   rules: [
     "클릭할 수 있는 요소는 `<button>`·`<a>` 로 만든다. 이미지에는 `alt`, 입력에는 `label`.",
