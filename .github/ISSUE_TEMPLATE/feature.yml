@@ -19,8 +19,10 @@ body:
         - core (검사 규칙·설치)
         - cli (명령·출력)
         - preset-git
+        - preset-github
         - preset-java
         - preset-typescript
+        - preset-react
         - 문서·CI
     validations:
       required: true
