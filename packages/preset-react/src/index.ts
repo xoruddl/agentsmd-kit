@@ -13,4 +13,15 @@ export const reactPreset = {
   name: "react",
   description: "React 프론트엔드용 컴포넌트·접근성·화면 테스트·브라우저 보안 규칙",
   filesDir: fileURLToPath(new URL("../files", import.meta.url)),
+  docs: [
+    {
+      path: "docs/react-components.md",
+      when: "컴포넌트·훅을 만들 때. 폴더, 화면 상태, 접근성, React 린트 규칙",
+    },
+  ],
+  rules: [
+    "클릭할 수 있는 요소는 `<button>`·`<a>` 로 만든다. 이미지에는 `alt`, 입력에는 `label`.",
+    "서버 데이터를 그리는 화면은 로딩·오류·빈 결과·성공 상태를 모두 그린다.",
+  ],
+  nextSteps: ["린트 설정에 docs/react-components.md 의 React·jsx-a11y 규칙을 켜세요."],
 } satisfies Preset;
