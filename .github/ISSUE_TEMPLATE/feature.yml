@@ -21,6 +21,7 @@ body:
         - preset-git
         - preset-github
         - preset-java
+        - preset-spring
         - preset-typescript
         - preset-react
         - 문서·CI
