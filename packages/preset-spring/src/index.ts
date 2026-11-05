@@ -22,6 +22,14 @@ export const springPreset = {
       path: "docs/spring-data-jpa.md",
       when: "엔티티·Repository·트랜잭션을 다룰 때. 지연 로딩, N+1, 스키마 마이그레이션",
     },
+    {
+      path: "docs/spring-api.md",
+      when: "컨트롤러·API 를 만들 때. URL, 상태 코드, 요청 검증, 오류 응답, 페이징",
+    },
+    {
+      path: "docs/spring-testing.md",
+      when: "Spring 이 필요한 테스트를 쓸 때. 슬라이스 테스트, @MockitoBean, Testcontainers",
+    },
   ],
   rules: [
     "필드 주입 대신 생성자 주입을 쓴다.",

@@ -37,7 +37,7 @@ controller → service → repository
 - 다른 기능의 `repository`·엔티티를 직접 쓰지 않는다. 그 기능의 `service` 를 통한다.
   즉시 결과가 필요 없으면 도메인 이벤트(`ApplicationEventPublisher`, `@TransactionalEventListener`)로 나눈다.
 - 다른 기능의 엔티티는 객체가 아니라 ID 로 참조한다.
-- 의존 방향은 ArchUnit 테스트로 검사할 수 있다.
+- 의존 방향은 ArchUnit 테스트로 검사할 수 있다. → [spring-testing.md](spring-testing.md)
 
 ## 빈과 주입
 
