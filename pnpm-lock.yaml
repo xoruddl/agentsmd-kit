@@ -77,6 +77,12 @@ importers:
         specifier: workspace:*
         version: link:../core
 
+  packages/preset-spring:
+    dependencies:
+      '@agentsmd/core':
+        specifier: workspace:*
+        version: link:../core
+
   packages/preset-typescript:
     dependencies:
       '@agentsmd/core':
