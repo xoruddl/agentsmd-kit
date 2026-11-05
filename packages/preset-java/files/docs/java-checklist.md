@@ -17,6 +17,7 @@ Java 코드 작성·리뷰 시 확인한다. [clean-code.md](clean-code.md) 와 
 | 8 | 객체 내부를 연달아 탐색하지 않는가 (디미터 법칙) |
 | 9 | 메서드가 한 가지 일만 하는가 |
 | 10 | 클래스가 작은가 |
+| 11 | Java 21 문법으로 더 간단히 쓸 수 있지 않은가 |
 
 ## 1. 자바 코드 컨벤션
 
@@ -127,3 +128,29 @@ OrderResponse.from(order);
 
 - 클래스를 작게 유지한다.
 - 클래스가 커지면 책임을 나눌 수 있는지 먼저 본다.
+
+## 11. Java 21 문법
+
+- 값만 담는 클래스는 `record` 로 만든다. 생성자·`equals`·`hashCode`·`toString` 을 손으로 쓰지 않는다.
+- 분기는 `switch` 식(`->`)으로 쓴다. enum·sealed 타입을 분기하면 `default` 를 두지 않는다. 새 경우가 생기면 컴파일러가 빠진 곳을 알려 준다.
+- 경우가 정해진 타입 계층은 `sealed interface` 와 `record` 로 만들고 패턴 매칭으로 분기한다.
+- `instanceof` 뒤에 캐스팅하지 않고 패턴 매칭(`if (payment instanceof CardPayment card)`)을 쓴다.
+- 여러 줄 문자열(SQL, JSON)은 텍스트 블록(`"""`)으로 쓴다.
+- 불변 컬렉션은 `List.of`, `List.copyOf`, `stream().toList()` 로 만든다.
+- `var` 는 오른쪽에서 타입이 바로 보일 때만 쓴다. (`var orders = new ArrayList<Order>()`) 메서드 반환값처럼 타입이 안 보이면 타입을 적는다.
+
+```java
+sealed interface Payment permits CardPayment, BankTransfer {}
+
+record CardPayment(String cardNumber, int amount) implements Payment {}
+
+record BankTransfer(String accountNumber, int amount) implements Payment {}
+
+int fee(Payment payment) {
+    // sealed 타입이라 default 가 없어도 모든 경우를 다룬다. 새 결제 수단을 추가하면 여기서 컴파일 오류가 난다.
+    return switch (payment) {
+        case CardPayment card -> card.amount() * 3 / 100;
+        case BankTransfer transfer -> 500;
+    };
+}
+```
