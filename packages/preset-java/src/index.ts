@@ -21,11 +21,13 @@ export const javaPreset = {
     { path: "docs/clean-code.md", when: "코드 작성, 설계" },
     { path: "docs/clean-code-examples.md", when: "코드 작성 시 참고 예시" },
     { path: "docs/java-checklist.md", when: "Java 코드 작성·리뷰" },
+    { path: "docs/java-testing.md", when: "테스트를 쓸 때" },
     { path: "docs/lint-and-ci.md", when: "린트·포맷·CI 설정" },
   ],
   rules: [
     "코드에는 의도를 설명하는 주석을 적극적으로 단다.",
     "포맷은 손으로 맞추지 않는다. 작업을 마치기 전 `./gradlew spotlessApply`.",
+    "기능은 테스트와 함께 쓴다. 버그 수정은 재현 테스트부터 쓴다.",
   ],
   verify: "./gradlew spotlessCheck build",
   nextSteps: [
