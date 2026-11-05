@@ -28,7 +28,19 @@
 | `noFallthroughCasesInSwitch` | `switch` 의 `break` 누락 |
 | `noUnusedLocals`, `noUnusedParameters` | 쓰지 않는 변수·인자 |
 | `verbatimModuleSyntax` | 타입만 가져오면서 `import type` 을 쓰지 않는 것 |
-| `erasableSyntaxOnly` | `enum`, `namespace` 처럼 실행 코드를 만드는 TS 문법. 타입만 지우면 실행되는 코드로 유지한다 |
+| `erasableSyntaxOnly` | `enum`, `namespace`, 생성자 매개변수 프로퍼티처럼 실행 코드를 만드는 TS 문법. 타입만 지우면 실행되는 코드로 유지한다 |
+
+- `erasableSyntaxOnly` 를 켜면 생성자 매개변수 프로퍼티(`constructor(private readonly api: Api)`)를 쓸 수 없다. 필드를 선언하고 생성자에서 대입한다.
+
+```ts
+class MenuService {
+  private readonly api: Api
+
+  constructor(api: Api) {
+    this.api = api
+  }
+}
+```
 
 - 타입 검사는 `typecheck` 스크립트로 따로 둔다. 빌드 도구는 타입 오류가 있어도 빌드하는 경우가 많다. → [lint-and-ci.md](lint-and-ci.md)
 
