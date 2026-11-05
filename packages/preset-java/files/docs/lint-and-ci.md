@@ -9,7 +9,7 @@ palantir-java-format 은 Google Java Style 을 바탕으로 들여쓰기 4칸, �
 ```kotlin
 plugins {
     java
-    id("com.diffplug.spotless") version "8.10.4"
+    id("com.diffplug.spotless") version "8.11.0"
 }
 
 java {
