@@ -1,5 +1,6 @@
 <!--
-- 제목: `<타입>: <요약>` (타입: feat, fix, refactor, test, docs, chore, ci, build)
+- 제목: `[타입] 요약` (타입: Feat, Fix, Refactor, Test, Docs, Chore, CI, Build). 예: `[Feat] react 프리셋 추가`
+  커밋 메시지는 지금처럼 `feat: 요약` 형식으로 쓴다.
 - 짧게, 사실만. 빈 섹션은 지운다. 변경 파일 나열 금지.
 - develop → main 릴리스 PR은 `Closes #`를 지우고 포함한 PR 목록을 적는다.
 -->
