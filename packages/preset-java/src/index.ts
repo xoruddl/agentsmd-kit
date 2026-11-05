@@ -32,6 +32,6 @@ export const javaPreset = {
   verify: "./gradlew spotlessCheck build",
   nextSteps: [
     "docs/project-direction.md 에 프로젝트 목표와 범위를 채우세요.",
-    "Gradle 프로젝트라면 docs/lint-and-ci.md 의 Spotless 설정을 build.gradle.kts 에 추가하세요.",
+    "Gradle 프로젝트라면 docs/lint-and-ci.md 의 Spotless·toolchain 설정을 build.gradle.kts 에 추가하세요.",
   ],
 } satisfies Preset;
