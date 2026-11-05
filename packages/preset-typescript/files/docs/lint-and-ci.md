@@ -26,16 +26,25 @@ oxlint 를 쓰면 `.oxlintrc.json` 에 아래 규칙을 켠다.
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
   "plugins": ["react", "typescript", "oxc", "jsx-a11y"],
+  "options": {
+    "typeAware": true
+  },
   "rules": {
     "react/rules-of-hooks": "error",
     "react/exhaustive-deps": "error",
     "react/no-danger": "error",
     "typescript/no-explicit-any": "error",
     "typescript/no-non-null-assertion": "error",
-    "typescript/consistent-type-imports": "error"
+    "typescript/consistent-type-imports": "error",
+    "typescript/no-floating-promises": "error",
+    "typescript/no-misused-promises": "error",
+    "typescript/only-throw-error": "error"
   }
 }
 ```
+
+- `no-floating-promises` 처럼 타입 정보가 필요한 규칙은 `options.typeAware` 를 켜고 `oxlint-tsgolint` 를 `devDependencies` 에 추가해야 동작한다.
+- `oxlint-tsgolint` 는 TypeScript 7(typescript-go) 기반이다. tsconfig 가 TypeScript 7 에서 지원하지 않는 옵션을 쓰면 먼저 정리한다.
 
 | 규칙 | 막는 것 | 관련 문서 |
 | --- | --- | --- |
@@ -45,9 +54,13 @@ oxlint 를 쓰면 `.oxlintrc.json` 에 아래 규칙을 켠다.
 | `typescript/no-explicit-any` | `any` | [typescript.md](typescript.md) |
 | `typescript/no-non-null-assertion` | `value!` | [typescript.md](typescript.md) |
 | `typescript/consistent-type-imports` | 타입을 일반 `import` 로 가져오는 것 | [typescript.md](typescript.md) |
+| `typescript/no-floating-promises` | 기다리지도, 처리하지도 않은 Promise | [typescript.md](typescript.md) |
+| `typescript/no-misused-promises` | `async` 함수를 `void` 를 기대하는 콜백에 넘기는 것, 조건문에 Promise 를 쓰는 것 | [typescript.md](typescript.md) |
+| `typescript/only-throw-error` | 문자열이나 일반 객체를 `throw` 하는 것 | [typescript.md](typescript.md) |
 | `jsx-a11y` 플러그인 | `alt` 없는 이미지 등 접근성 문제 | [structure.md](structure.md) |
 
 ESLint 를 쓰면 typescript-eslint, eslint-plugin-react-hooks, eslint-plugin-jsx-a11y 로 같은 규칙을 켠다.
+typescript-eslint 는 `recommendedTypeChecked` 설정을 쓰면 위의 타입 정보가 필요한 규칙이 함께 켜진다.
 
 ## 포맷
 

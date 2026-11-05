@@ -85,6 +85,47 @@ type Category = (typeof CATEGORIES)[number]
 
 - 다른 모듈이 가져다 쓰는 함수는 반환 타입을 적는다. 모듈 안에서만 쓰는 함수는 추론에 맡긴다.
 
+## 비동기 · 오류
+
+- Promise 는 `await` 하거나, `.catch()` 로 처리하거나, 반환한다. 그냥 두면 실패가 아무 곳에도 보고되지 않는다.
+- 결과를 기다리지 않는 것이 의도라면 `void` 를 붙여 드러낸다. (`void refetch()`)
+- `async` 함수를 `void` 를 기대하는 자리(`onClick`, `forEach`, `setTimeout` 콜백)에 바로 넘기지 않는다. 안에서 오류를 처리하는 함수로 감싼다.
+- 병렬로 실행할 수 있는 작업은 반복문 안에서 하나씩 `await` 하지 않고 `Promise.all` 로 묶는다.
+- `catch` 로 받은 값은 `unknown` 이다. `Error` 라고 가정하지 않고 좁혀서 쓴다.
+- `throw` 는 `Error` 객체로 한다. 문자열이나 일반 객체를 던지지 않는다.
+- 오류를 잡았으면 처리하거나 다시 던진다. 빈 `catch` 로 삼키지 않는다.
+- 다시 던질 때는 `new Error('메뉴 저장 실패', { cause: error })` 처럼 원인을 남긴다.
+
+```ts
+// 나쁨: async 함수를 그대로 넘기고, e 를 Error 로 가정한다
+button.addEventListener('click', async () => {
+  try {
+    await saveMenu(menu)
+  } catch (e) {
+    showToast(e.message)
+  }
+})
+
+// 좋음: 오류를 좁혀서 처리하고, 핸들러에는 Promise 를 돌려주지 않는 함수를 넘긴다
+async function handleSave(): Promise<void> {
+  try {
+    await saveMenu(menu)
+  } catch (error) {
+    if (error instanceof HttpError && error.status === 409) {
+      showToast('다른 곳에서 먼저 수정했습니다. 새로고침해 주세요')
+      return
+    }
+    showToast('저장하지 못했습니다. 다시 시도해 주세요')
+  }
+}
+
+button.addEventListener('click', () => {
+  void handleSave()
+})
+```
+
+- 위 규칙 대부분은 타입 정보를 쓰는 린트 규칙이 검사한다. → [lint-and-ci.md](lint-and-ci.md)
+
 ## 이름
 
 | 대상 | 규칙 | 예 |
