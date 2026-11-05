@@ -47,6 +47,9 @@ importers:
       '@agentsmd/preset-react':
         specifier: workspace:*
         version: link:../preset-react
+      '@agentsmd/preset-spring':
+        specifier: workspace:*
+        version: link:../preset-spring
       '@agentsmd/preset-typescript':
         specifier: workspace:*
         version: link:../preset-typescript
