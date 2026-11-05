@@ -8,13 +8,30 @@
 - 변수를 추가·삭제하면 `.env.example` 도 함께 고친다.
 - 환경변수는 한 모듈에서 읽고 검증해 내보낸다. 컴포넌트가 `import.meta.env` 를 직접 읽지 않는다.
 
+- 값이 없으면 기본값(`?? ''`)으로 덮지 않고 앱 시작 시 오류를 낸다. 빈 값으로 실행되면 엉뚱한 곳에서 원인 모를 오류가 난다.
+- 값은 `unknown` 으로 받아 검증한다. 빌드 도구가 주는 타입(Vite 는 `any`)을 믿지 않는다.
+- 변수는 `import.meta.env.VITE_API_BASE_URL` 처럼 이름을 그대로 적어 읽는다. 빌드 도구는 이렇게 적힌 접근만 값으로 바꾸므로 `import.meta.env[name]` 처럼 읽지 않는다.
+
 ```ts
 // src/config.ts
-const apiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? ''
-if (typeof apiBaseUrl !== 'string') {
-  throw new Error('VITE_API_BASE_URL 이 문자열이 아닙니다')
+function requireEnv(name: string, value: unknown): string {
+  if (typeof value !== 'string' || value.trim() === '') {
+    throw new Error(`환경변수 ${name} 이 비어 있습니다. .env.example 을 확인하세요`)
+  }
+  return value
 }
-export const config = { apiBaseUrl } as const
+
+function requireUrlEnv(name: string, value: unknown): string {
+  const url = requireEnv(name, value)
+  if (!URL.canParse(url)) {
+    throw new Error(`환경변수 ${name} 이 URL 형식이 아닙니다`)
+  }
+  return url
+}
+
+export const config = {
+  apiBaseUrl: requireUrlEnv('VITE_API_BASE_URL', import.meta.env.VITE_API_BASE_URL),
+} as const
 ```
 
 ## 보안
