@@ -64,7 +64,7 @@ class MenuService {
 - 환경변수 → [env-and-security.md](env-and-security.md)
 
 ```ts
-// 나쁨: 응답이 바뀌어도 타입 오류 없이 화면에서 터진다
+// 나쁨: 응답이 바뀌어도 타입 오류 없이 값을 쓰는 곳에서 터진다
 const menu = (await res.json()) as Menu
 
 // 좋음: 경계에서 검증하고 실패를 오류로 만든다
@@ -142,8 +142,8 @@ button.addEventListener('click', () => {
 
 | 대상 | 규칙 | 예 |
 | --- | --- | --- |
-| 컴포넌트, 타입 | PascalCase | `MenuResult`, `PickMenuResponse` |
-| 훅 | `use` 로 시작 | `usePickHistory` |
+| 타입, 클래스 | PascalCase | `PickMenuResponse`, `MenuService` |
+| 함수, 변수 | camelCase | `parseMenu`, `pickedAt` |
 | boolean | `is/has/can` 으로 시작 | `isPicking` |
 | 상수 | UPPER_SNAKE_CASE | `MAX_HISTORY` |
-| 파일 | 내보내는 대상과 같은 이름 | `MenuResult.tsx`, `usePickHistory.ts` |
+| 파일 | 대표로 내보내는 대상과 같은 이름 | `MenuService.ts`, `parseMenu.ts` |
