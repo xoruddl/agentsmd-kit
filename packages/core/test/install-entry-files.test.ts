@@ -50,7 +50,10 @@ describe("installEntryFiles", () => {
   });
 
   it("이미 있는 AGENTS.md에는 빠진 문서만 합치고 사람이 쓴 내용은 남긴다", async () => {
-    await writeFile(join(target, "AGENTS.md"), "# 사람이 다듬은 지도\n\n- 팀 메모\n");
+    await writeFile(
+      join(target, "AGENTS.md"),
+      "# 사람이 다듬은 지도\n\n- 팀 메모\n\n## 문서 지도\n\n## 지침 관리\n",
+    );
 
     const result = await installEntryFiles([docsOnly], target);
 

@@ -105,6 +105,7 @@ describe("mergeAgentsMd", () => {
     expect(mergeAgentsMd(markdown, [language, git])).toEqual({
       content: markdown,
       added: { docs: [], rules: [], verify: [] },
+      unplaced: { docs: [], rules: [], verify: [] },
     });
   });
 
@@ -127,16 +128,43 @@ describe("mergeAgentsMd", () => {
   });
 
   it("글머리표 목록이면 같은 글머리표로 잇는다", () => {
-    const existing = "# AGENTS.md\n\n## 핵심 규칙\n\n- 기존 규칙\n";
+    const existing = "# AGENTS.md\n\n## 문서 지도\n\n## 핵심 규칙\n\n- 기존 규칙\n";
     expect(mergeAgentsMd(existing, [git]).content).toContain(
       "- 기존 규칙\n- 커밋 하나 = 책임 하나, 파일 5개 이하.",
     );
   });
 
-  it("절이 없으면 정해진 순서대로 새로 만든다", () => {
-    const markdown = mergeAgentsMd("# 기존 지도\n\n## 지침 관리\n\n- 메모\n", [language]).content;
+  it("문서 지도가 있으면 빠진 절을 정해진 순서대로 새로 만든다", () => {
+    const existing = "# AGENTS.md\n\n## 문서 지도\n\n## 지침 관리\n\n- 메모\n";
+    const markdown = mergeAgentsMd(existing, [language]).content;
     const headings = markdown.split("\n").filter((line) => line.startsWith("## "));
     expect(headings).toEqual(["## 문서 지도", "## 핵심 규칙", "## 검증", "## 지침 관리"]);
+  });
+
+  // 절 이름이 다른 지침(예: `## 작업 전 읽을 문서`)에 같은 역할의 절을 하나 더 만들면 지침이 두 벌이 된다.
+  it("문서 지도 절이 없으면 아무 절도 만들지 않고 넣지 못한 항목을 돌려준다", () => {
+    const existing =
+      "# AGENTS.md\n\n## 작업 전 읽을 문서\n\n| 상황 | 문서 |\n| --- | --- |\n| 설계 | [구조](docs/architecture.md) |\n\n## 핵심 규칙 요약\n\n- 팀 규칙\n";
+
+    const result = mergeAgentsMd(existing, [language]);
+
+    expect(result.content).toBe(existing);
+    expect(result.added).toEqual({ docs: [], rules: [], verify: [] });
+    expect(result.unplaced).toEqual({
+      docs: language.docs,
+      rules: language.rules,
+      verify: [language.verify],
+    });
+  });
+
+  it("문서 지도 절이 없어도 이미 있는 문서·규칙은 넣지 못한 항목에서 뺀다", () => {
+    const existing =
+      "# AGENTS.md\n\n## 읽을 문서\n\n- [방향](docs/project-direction.md)\n\n## 규칙\n\n- `any`, `as` 단언으로 타입 오류를 덮지 않는다.\n";
+
+    const { unplaced } = mergeAgentsMd(existing, [language]);
+
+    expect(unplaced.docs.map((doc) => doc.path)).toEqual(["docs/typescript.md"]);
+    expect(unplaced.rules).toEqual([]);
   });
 
   it("./ 로 시작하는 링크도 이미 있는 문서로 본다", () => {

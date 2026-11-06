@@ -1,5 +1,5 @@
 export { CLAUDE_MD, mergeAgentsMd, renderAgentsMd } from "./agents-md.js";
-export type { AgentsMdAdditions, MergedAgentsMd } from "./agents-md.js";
+export type { AgentsMdAdditions, MergedAgentsMd, UnplacedItems } from "./agents-md.js";
 export { checkRepository } from "./check.js";
 export type { CheckOptions } from "./check.js";
 export { DocMapNotFoundError } from "./errors.js";
