@@ -33,6 +33,7 @@ ${presetList}
   agentsmd init --preset git,typescript          Git 규칙과 TypeScript 규칙을 함께 설치
   agentsmd init --preset git,github,typescript   GitHub 템플릿까지 함께 설치
   agentsmd init --preset git,typescript,react    React 프론트엔드 규칙까지 함께 설치
+  agentsmd init --preset git,java,spring         Spring Boot 서버 규칙까지 함께 설치
   agentsmd init --preset java                    Java 규칙만 설치
 
 옵션:

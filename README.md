@@ -28,7 +28,7 @@ npx @agentsmd/cli check
 
 ### 프리셋
 
-Git 규칙, 호스팅(GitHub), 언어 규칙, 프레임워크(React) 규칙은 따로 고릅니다. 필요한 것만 쉼표로 이으면 됩니다.
+Git 규칙, 호스팅(GitHub), 언어 규칙, 프레임워크(React·Spring) 규칙은 따로 고릅니다. 필요한 것만 쉼표로 이으면 됩니다.
 
 | 프리셋       | 이럴 때                                            | 설치되는 것                                                                                                        |
 | ------------ | -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
@@ -37,12 +37,14 @@ Git 규칙, 호스팅(GitHub), 언어 규칙, 프레임워크(React) 규칙은 �
 | `typescript` | TypeScript 프로젝트 (프론트엔드·백엔드·라이브러리) | 타입·구조·테스트·보안·린트 규칙 문서, 검증 명령, `.nvmrc`                                                          |
 | `react`      | React 프론트엔드. `typescript`와 함께              | 컴포넌트·접근성·화면 테스트·브라우저 보안 문서, React 린트 규칙                                                    |
 | `java`       | Java·Gradle 프로젝트                               | 코드 스타일·클린 코드·체크리스트·테스트 문서, Spotless 설정, 검증 명령                                             |
+| `spring`     | Spring Boot 서버. `java`와 함께                    | 패키지 구조·JPA·트랜잭션·API·테스트 문서                                                                           |
 
 | 저장소                    | 명령                                        |
 | ------------------------- | ------------------------------------------- |
 | GitHub + TypeScript       | `init --preset git,github,typescript`       |
 | GitHub + React 프론트엔드 | `init --preset git,github,typescript,react` |
 | GitLab·사내 Git + Java    | `init --preset git,java`                    |
+| GitHub + Spring Boot      | `init --preset git,github,java,spring`      |
 | 언어 규칙만               | `init --preset typescript`                  |
 | Git 규칙만                | `init --preset git`                         |
 
@@ -87,6 +89,7 @@ CI에 `agentsmd check` 한 단계를 넣으면 지도와 어긋난 변경은 머
 | [`@agentsmd/preset-git`](packages/preset-git)               | 언어·호스팅과 무관한 Git 작업 규칙, 커밋 훅, PR 규칙 검사 스크립트                     |
 | [`@agentsmd/preset-github`](packages/preset-github)         | GitHub 이슈·PR 템플릿, 저장소 설정·CI 연결 안내                                        |
 | [`@agentsmd/preset-java`](packages/preset-java)             | Java·Gradle용 코드 규칙, Spotless(palantir-java-format)·Gradle 검증 명령               |
+| [`@agentsmd/preset-spring`](packages/preset-spring)         | Spring Boot 서버용 구조·JPA·트랜잭션·API·테스트 규칙                                   |
 | [`@agentsmd/preset-typescript`](packages/preset-typescript) | TypeScript 프로젝트용 타입·구조·테스트·보안 규칙, 린트·CI 명령                         |
 | [`@agentsmd/preset-react`](packages/preset-react)           | React 프론트엔드용 컴포넌트·접근성·화면 테스트·브라우저 보안 규칙                      |
 
