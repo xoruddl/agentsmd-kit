@@ -28,7 +28,12 @@ describe("installEntryFiles", () => {
   it("고른 프리셋의 문서 지도로 AGENTS.md를, 그것을 불러오는 CLAUDE.md를 만든다", async () => {
     const result = await installEntryFiles([docsOnly], target);
 
-    expect(result).toEqual({ written: ["AGENTS.md", "CLAUDE.md"], skipped: [], merged: undefined });
+    expect(result).toEqual({
+      written: ["AGENTS.md", "CLAUDE.md"],
+      skipped: [],
+      merged: undefined,
+      unplaced: undefined,
+    });
     await expect(readFile(join(target, "AGENTS.md"), "utf8")).resolves.toContain(
       "[docs/workflow.md](docs/workflow.md)",
     );
@@ -63,6 +68,17 @@ describe("installEntryFiles", () => {
     const agents = await readFile(join(target, "AGENTS.md"), "utf8");
     expect(agents).toContain("- 팀 메모");
     expect(agents).toContain("[docs/workflow.md](docs/workflow.md)");
+  });
+
+  it("문서 지도 절이 없는 AGENTS.md는 바꾸지 않고 넣지 못한 항목을 알려 준다", async () => {
+    const existing = "# AGENTS.md\n\n## 작업 전 읽을 문서\n\n- [구조](docs/architecture.md)\n";
+    await writeFile(join(target, "AGENTS.md"), existing);
+
+    const result = await installEntryFiles([docsOnly], target);
+
+    expect(result.merged).toEqual({ docs: [], rules: [], verify: [] });
+    expect(result.unplaced).toEqual({ docs: docsOnly.docs, rules: [], verify: [] });
+    await expect(readFile(join(target, "AGENTS.md"), "utf8")).resolves.toBe(existing);
   });
 
   it("프리셋을 나눠 설치해도 순서와 상관없이 모든 문서가 지도에 오른다", async () => {

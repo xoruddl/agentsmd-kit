@@ -107,7 +107,7 @@ async function installAll(
   }
   const entry = await installEntryFiles(presets, root, { force });
   collect(entry);
-  return { written, skipped, merged: entry.merged };
+  return { written, skipped, merged: entry.merged, unplaced: entry.unplaced };
 }
 
 function formatReport(
