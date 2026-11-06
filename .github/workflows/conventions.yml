@@ -2,8 +2,13 @@ name: Conventions
 
 # PR의 브랜치 이름·제목·이슈 연결 규칙을 검사한다.
 # 작업 PR(<타입>/<이슈번호>-<설명> → develop)은 셋 다, 릴리스 PR(develop → main)은 제목만 검사한다.
+#
+# pull_request_target은 PR의 merge 커밋이 아니라 대상 브랜치의 최신 워크플로를 실행한다.
+# 규칙을 바꾸면 이미 열려 있는 PR도 다음 실행부터 새 규칙으로 검사하게 하려는 것이다.
+# 이 이벤트는 PR 코드를 실행하면 위험하므로 checkout하지 않고, 권한도 주지 않는다.
+# 제목·본문·브랜치 이름만 환경변수로 읽는다. checkout이 필요해지면 pull_request로 되돌린다.
 on:
-  pull_request:
+  pull_request_target:
     types: [opened, edited, synchronize, reopened]
 
 permissions: {}
