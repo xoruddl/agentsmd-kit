@@ -1,13 +1,11 @@
 {
   "name": "@agentsmd/preset-typescript",
   "version": "0.4.0",
-  "description": "TypeScript·React 프론트엔드용 AI 작업 지침 프리셋 (타입·구조·테스트·보안 규칙, 린트·CI 명령)",
+  "description": "TypeScript 프로젝트용 AI 작업 지침 프리셋 (타입·구조·테스트·보안 규칙, 린트·CI 명령)",
   "keywords": [
     "agents.md",
     "ai-agent",
-    "typescript",
-    "react",
-    "frontend"
+    "typescript"
   ],
   "homepage": "https://github.com/xoruddl/agentsmd-kit#readme",
   "bugs": "https://github.com/xoruddl/agentsmd-kit/issues",

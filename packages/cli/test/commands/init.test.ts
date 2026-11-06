@@ -50,6 +50,15 @@ describe("runInit", () => {
     await expect(checkRepository({ root })).resolves.toEqual([]);
   });
 
+  it("typescript와 react를 함께 고르면 두 프리셋의 문서를 모두 설치한다", async () => {
+    await expect(runInit(["--preset", "typescript,react", "--skip-hooks"], io())).resolves.toBe(0);
+
+    const agents = await readFile(join(root, "AGENTS.md"), "utf8");
+    expect(agents).toContain("[docs/typescript.md](docs/typescript.md)");
+    expect(agents).toContain("[docs/react-components.md](docs/react-components.md)");
+    await expect(checkRepository({ root })).resolves.toEqual([]);
+  });
+
   it("언어 프리셋만 고르면 Git 규칙은 설치하지 않는다", async () => {
     await expect(runInit(["--preset", "typescript", "--skip-hooks"], io())).resolves.toBe(0);
 
@@ -134,7 +143,7 @@ describe("runInit", () => {
     );
   });
 
-  it.each(["java", "typescript"])(
+  it.each(["java", "typescript", "react"])(
     "%s 프리셋만 고르면 Git 훅을 만들거나 연결하지 않는다",
     async (name) => {
       await git("git", ["-C", root, "init", "-q"]);

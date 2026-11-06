@@ -44,6 +44,9 @@ importers:
       '@agentsmd/preset-java':
         specifier: workspace:*
         version: link:../preset-java
+      '@agentsmd/preset-react':
+        specifier: workspace:*
+        version: link:../preset-react
       '@agentsmd/preset-typescript':
         specifier: workspace:*
         version: link:../preset-typescript
@@ -63,6 +66,12 @@ importers:
         version: link:../core
 
   packages/preset-java:
+    dependencies:
+      '@agentsmd/core':
+        specifier: workspace:*
+        version: link:../core
+
+  packages/preset-react:
     dependencies:
       '@agentsmd/core':
         specifier: workspace:*
