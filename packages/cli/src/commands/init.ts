@@ -7,6 +7,7 @@ import {
   type EntryFilesResult,
   type InstallResult,
   type Preset,
+  type UnplacedItems,
 } from "@agentsmd/core";
 import { configureHooksPath, type HooksResult } from "../git-hooks.js";
 import { makeHooksExecutable } from "../hook-permissions.js";
@@ -25,6 +26,7 @@ AI 작업 지침(AGENTS.md, docs/)을 저장소에 설치합니다.
 Git 훅은 git 프리셋, GitHub 템플릿은 github 프리셋을 고를 때만 설치합니다.
 여러 프리셋을 고르면 문서 지도(AGENTS.md)를 적은 순서대로 합칩니다.
 AGENTS.md가 이미 있으면 빠진 문서·규칙만 더하고, 다른 파일은 이미 있으면 건너뜁니다.
+AGENTS.md에 '## 문서 지도' 절이 없으면 바꾸지 않고 직접 옮길 항목을 알려 줍니다.
 
 프리셋:
 ${presetList}
@@ -118,9 +120,11 @@ function formatReport(
 ): string {
   const names = presets.map((preset) => preset.name).join(", ");
   const lines = [`${names} 프리셋: 파일 ${String(result.written.length)}개를 설치했습니다.`];
-  if (result.merged !== undefined) {
+  const unplaced = result.unplaced === undefined ? [] : formatUnplaced(result.unplaced);
+  if (result.merged !== undefined && unplaced.length === 0) {
     lines.push(formatMerged(result.merged));
   }
+  lines.push(...unplaced);
 
   if (result.skipped.length > 0) {
     lines.push(
@@ -141,6 +145,29 @@ function formatReport(
   ];
   lines.push("", "다음 단계:", ...steps.map((step, index) => `  ${String(index + 1)}. ${step}`));
   return `${lines.join("\n")}\n`;
+}
+
+/**
+ * AGENTS.md에 넣지 못한 항목을 사람이 옮길 수 있는 모양으로 보여 준다. 없으면 빈 배열.
+ * 문서는 표 행으로 보여 주어 기존 문서 표에 그대로 붙일 수 있게 한다.
+ */
+function formatUnplaced(unplaced: UnplacedItems): string[] {
+  const groups = [
+    ["문서", unplaced.docs.map((doc) => `[${doc.path}](${doc.path}) | ${doc.when}`)],
+    ["규칙", unplaced.rules],
+    ["검증 명령", unplaced.verify],
+  ] as const;
+  const body = groups
+    .filter(([, items]) => items.length > 0)
+    .flatMap(([label, items]) => [`  ${label}:`, ...items.map((item) => `    ${item}`)]);
+  if (body.length === 0) {
+    return [];
+  }
+  return [
+    "AGENTS.md에 '## 문서 지도' 절이 없어 아래 항목을 넣지 않았습니다.",
+    "같은 역할을 하는 기존 절에 직접 옮기세요. 옮기기 전에는 agentsmd check 가 지도에 없는 문서를 알립니다.",
+    ...body,
+  ];
 }
 
 /** 이미 있던 AGENTS.md에 무엇을 더했는지 한 줄로 알린다. */
