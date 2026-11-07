@@ -6,6 +6,7 @@
 ## 1. 이슈
 
 - 작업 전에 이슈를 만든다. 이슈 템플릿이 있으면 채운다. 빈 이슈는 만들지 않는다.
+- 제목 형식: `[<타입>] <한국어 요약>` (예: `[Feat] 주문 취소 사유 입력`). 타입은 [PR 제목](#4-pr)과 같다.
 - 이슈 하나는 브랜치 하나, PR 하나로 끝낼 크기로 잡는다. 크면 이슈를 나눈다.
 
 ## 2. 브랜치
@@ -60,7 +61,26 @@ git push -u origin <브랜치>
 
 push 후 쓰는 호스팅(GitHub, GitLab 등)에서 `main` 대상 PR을 만든다. GitLab의 MR(Merge Request)도 이 문서에서는 PR이라 부른다.
 
-- 제목은 커밋 메시지와 같은 형식으로 쓴다.
+- 제목 형식: `[<타입>] <한국어 요약>`. 이슈·PR 목록에서 종류가 눈에 띄게 커밋 메시지와 달리 타입을 대괄호로 감싼다.
+  요약은 커밋 제목과 같은 기준으로 쓴다.
+
+  | 브랜치·커밋 타입 | 이슈·PR 제목 타입 |
+  | ---------------- | ----------------- |
+  | `feat`           | `[Feat]`          |
+  | `fix`            | `[Fix]`           |
+  | `refactor`       | `[Refactor]`      |
+  | `test`           | `[Test]`          |
+  | `docs`           | `[Docs]`          |
+  | `chore`          | `[Chore]`         |
+  | `ci`             | `[CI]`            |
+  | `build`          | `[Build]`         |
+
+  ```
+  좋음  [Feat] 주문 취소 사유 필드 추가
+  나쁨  feat: 주문 취소 사유 필드 추가      ← 커밋 형식
+  나쁨  [feat] 주문 취소 사유 필드 추가     ← 소문자 타입
+  ```
+
 - 본문은 PR 템플릿이 있으면 채운다. `Closes #<이슈번호>`를 넣어 머지 시 이슈가 자동으로 닫히게 한다.
 - 변경 내용은 3줄 이내 불릿. 변경 파일을 나열하지 않는다. 빈 섹션은 지운다.
 - 커밋 10개, 변경 300줄 이하를 권장한다. 넘으면 PR을 나눈다.
@@ -96,7 +116,7 @@ git merge main
 `.githooks/check-pr`는 어느 CI에서든 환경변수 세 개만 넘겨 부른다.
 
 ```sh
-BRANCH=feat/12-order-cancel TITLE="feat: 주문 취소 사유 필드 추가" BODY="Closes #12" .githooks/check-pr
+BRANCH=feat/12-order-cancel TITLE="[Feat] 주문 취소 사유 필드 추가" BODY="Closes #12" .githooks/check-pr
 ```
 
 | CI                    | BRANCH                                 | TITLE                                    | BODY                                    |
