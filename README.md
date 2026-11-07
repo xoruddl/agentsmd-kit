@@ -51,7 +51,7 @@ Git 규칙, 호스팅(GitHub), 언어 규칙, 프레임워크(React·Spring) 규
 어느 조합이든 아래는 같습니다.
 
 - `AGENTS.md`(문서 지도·핵심 규칙·검증 명령)와 이를 불러오는 `CLAUDE.md`를 고른 프리셋에 맞춰 만듭니다.
-- 이미 있는 파일은 덮어쓰지 않습니다. `AGENTS.md`가 있으면 빠진 문서·규칙만 더하므로, 프리셋을 나중에 추가해도 됩니다.
+- 이미 있는 파일은 덮어쓰지 않습니다. `AGENTS.md`가 있으면 빠진 문서·규칙만 더하므로, 프리셋을 나중에 추가해도 됩니다. 나눠 설치할 때는 언어 프리셋(`java`, `typescript`)을 먼저 설치합니다.
 - CI 설정 파일은 설치하지 않습니다. GitHub Actions, GitLab CI, Jenkins 등 쓰는 CI에서 문서에 적힌 검증 명령과 `.githooks/check-pr`를 부르면 됩니다.
 
 프리셋별 파일 목록은 [docs/commands.md](docs/commands.md)와 각 패키지 README에 있습니다.

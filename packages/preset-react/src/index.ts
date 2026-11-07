@@ -28,5 +28,8 @@ export const reactPreset = {
     "클릭할 수 있는 요소는 `<button>`·`<a>` 로 만든다. 이미지에는 `alt`, 입력에는 `label`.",
     "서버 데이터를 그리는 화면은 로딩·오류·빈 결과·성공 상태를 모두 그린다.",
   ],
-  nextSteps: ["린트 설정에 docs/react-components.md 의 React·jsx-a11y 규칙을 켜세요."],
+  nextSteps: [
+    "검증 명령과 .nvmrc 는 typescript 프리셋이 넣습니다. 함께 설치하지 않았다면 agentsmd init --preset typescript 를 실행하세요.",
+    "린트 설정에 docs/react-components.md 의 React·jsx-a11y 규칙을 켜세요.",
+  ],
 } satisfies Preset;
