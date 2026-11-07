@@ -1,7 +1,14 @@
 import { existsSync } from "node:fs";
 import { chmod, mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
-import { CLAUDE_MD, mergeAgentsMd, renderAgentsMd, type AgentsMdAdditions } from "./agents-md.js";
+import {
+  CLAUDE_MD,
+  mergeAgentsMd,
+  renderAgentsMd,
+  type AgentsMdAdditions,
+  type MergedAgentsMd,
+  type UnplacedItems,
+} from "./agents-md.js";
 import { hasContent, type InstallOptions, type InstallResult } from "./install.js";
 import { PRE_COMMIT_HOOK } from "./pre-commit-hook.js";
 import type { Preset } from "./preset.js";
@@ -17,6 +24,8 @@ interface EntryFile {
 export interface EntryFilesResult extends InstallResult {
   /** 이미 있던 AGENTS.md에 합쳤으면 새로 넣은 항목. 새로 만들었거나 덮어썼으면 undefined. */
   readonly merged: AgentsMdAdditions | undefined;
+  /** 이미 있던 AGENTS.md에서 넣을 절을 찾지 못해 넣지 않은 항목. 합치지 않았으면 undefined. */
+  readonly unplaced: UnplacedItems | undefined;
 }
 
 /**
@@ -58,24 +67,24 @@ export async function installEntryFiles(
     written.push(file.path);
   }
 
-  return { written, skipped, merged };
+  return { written, skipped, merged: merged?.added, unplaced: merged?.unplaced };
 }
 
 /** 이미 있는 AGENTS.md에 빠진 항목을 합친다. 파일이 없으면 undefined, 넣을 것이 없으면 파일을 건드리지 않는다. */
 async function mergeExistingAgentsMd(
   presets: readonly Preset[],
   targetDir: string,
-): Promise<AgentsMdAdditions | undefined> {
+): Promise<MergedAgentsMd | undefined> {
   const path = join(targetDir, AGENTS_MD);
   if (!existsSync(path)) {
     return undefined;
   }
   const existing = await readFile(path, "utf8");
-  const { content, added } = mergeAgentsMd(existing, presets);
-  if (content !== existing) {
-    await writeFile(path, content);
+  const merged = mergeAgentsMd(existing, presets);
+  if (merged.content !== existing) {
+    await writeFile(path, merged.content);
   }
-  return added;
+  return merged;
 }
 
 function entryFiles(presets: readonly Preset[]): EntryFile[] {
