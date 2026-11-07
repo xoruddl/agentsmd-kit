@@ -38,6 +38,7 @@ export const springPreset = {
     "`@Transactional` 은 service 에 두고, 조회는 `readOnly = true`. 트랜잭션 안에서 외부 API 를 부르지 않는다.",
   ],
   nextSteps: [
+    "검증 명령은 java 프리셋이 넣습니다. 함께 설치하지 않았다면 agentsmd init --preset java 를 실행하세요.",
     "application.yml 에 docs/spring-data-jpa.md 의 open-in-view·batch fetch 설정을 넣으세요.",
   ],
 } satisfies Preset;
