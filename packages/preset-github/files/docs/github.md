@@ -12,12 +12,13 @@
 | `.github/pull_request_template.md` | PR 본문 |
 
 이슈는 템플릿 중 하나를 골라 채운다. PR 본문은 템플릿을 채우고 `Closes #<이슈번호>`를 넣는다.
+이슈·PR 제목은 `[<타입>] <요약>` 형식이다 (예: `[Feat] 주문 취소 사유 필드 추가`). 커밋 메시지(`feat: 요약`)와 다르다.
 
 ## gh 명령
 
 ```sh
 gh issue create --template feature.yml
-gh pr create --base main --title "<타입>: <요약>" --body-file <본문 파일>
+gh pr create --base main --title "[<타입>] <요약>" --body-file <본문 파일>
 gh pr view <PR번호> --json reviews,comments
 gh api repos/{owner}/{repo}/pulls/<PR번호>/comments
 ```

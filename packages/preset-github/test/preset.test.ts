@@ -1,4 +1,4 @@
-import { access, mkdtemp, rm } from "node:fs/promises";
+import { access, mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { checkRepository, installEntryFiles, installPreset } from "@agentsmd/core";
@@ -26,6 +26,15 @@ describe("githubPreset", () => {
   it("이슈·PR 템플릿을 설치한다", async () => {
     await expect(access(join(repo, ".github/pull_request_template.md"))).resolves.toBeUndefined();
     await expect(access(join(repo, ".github/ISSUE_TEMPLATE/feature.yml"))).resolves.toBeUndefined();
+  });
+
+  // git 프리셋의 check-pr이 PR 제목을 `[타입] 요약`으로 검사하므로, 템플릿도 같은 형식으로 시작하게 한다.
+  it.each([
+    ["ISSUE_TEMPLATE/feature.yml", "title: '[Feat] '"],
+    ["ISSUE_TEMPLATE/bug.yml", "title: '[Fix] '"],
+    ["pull_request_template.md", "`[<타입>] <한국어 요약>`"],
+  ])("%s는 [타입] 요약 형식을 안내한다", async (file, expected) => {
+    await expect(readFile(join(repo, ".github", file), "utf8")).resolves.toContain(expected);
   });
 
   // GitHub를 써도 CI는 Jenkins 등으로 돌릴 수 있어서, CI 설정 파일은 넣지 않는다.
