@@ -1,6 +1,6 @@
 name: 기능
 description: 기능 추가·변경, 리팩터링, 설정 등 버그가 아닌 작업
-title: 'feat: '
+title: '[Feat] '
 labels: [enhancement]
 body:
   - type: textarea
