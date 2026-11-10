@@ -43,4 +43,13 @@ describe("githubPreset", () => {
     await expect(access(join(repo, ".github/workflows"))).rejects.toThrow();
     await expect(access(join(repo, ".githooks"))).rejects.toThrow();
   });
+
+  // 워크플로를 설치하지 않는 대신, GitHub Actions에서 문서 지도를 검사하는 방법을 문서로 안내한다.
+  it("설치 후 안내에서 문서 지도 검사 Action을 알린다", async () => {
+    const step = githubPreset.nextSteps.find((line) => line.includes("agentsmd-kit"));
+    expect(step).toContain("docs/github.md");
+    await expect(readFile(join(repo, "docs/github.md"), "utf8")).resolves.toContain(
+      "uses: xoruddl/agentsmd-kit@v0.5",
+    );
+  });
 });
