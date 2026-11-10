@@ -107,6 +107,12 @@ pnpm add -D @agentsmd/cli
 - run: pnpm exec agentsmd check
 ```
 
+GitHub Actions에서는 설치 없이 이 저장소의 Action을 한 줄로 씁니다. 검사 대상 경로는 `with:`로 바꿀 수 있고, 입력 이름은 `agentsmd check`의 옵션과 같습니다. → [`packages/preset-github/files/docs/github.md`](packages/preset-github/files/docs/github.md)
+
+```yaml
+- uses: xoruddl/agentsmd-kit@v0.5
+```
+
 ## 개발
 
 ```bash
