@@ -172,10 +172,21 @@ describe("check-pr", () => {
     },
   );
 
-  it("본문에 Closes #N이 없으면 막는다", async () => {
-    const result = await runHook("check-pr", [], { ...valid, BODY: "주문 취소 기능" });
+  // 이슈를 여러 PR로 나눠 진행할 때 마지막이 아닌 PR은 이슈를 닫지 않도록 Refs를 쓴다.
+  it.each(["Refs #12", "refs #12", "작업 일부. Refs #12"])(
+    "본문 '%s'는 이슈를 닫지 않는 연결로 통과한다",
+    async (body) => {
+      await expect(runHook("check-pr", [], { ...valid, BODY: body })).resolves.toMatchObject({
+        code: 0,
+      });
+    },
+  );
+
+  it("본문에 Closes #N도 Refs #N도 없으면 막는다", async () => {
+    const result = await runHook("check-pr", [], { ...valid, BODY: "주문 취소 기능 #12" });
     expect(result.code).toBe(1);
     expect(result.stderr).toContain("Closes");
+    expect(result.stderr).toContain("Refs");
   });
 
   // Jenkins처럼 PR 본문을 바로 주지 않는 CI에서도 나머지 검사는 돌게 한다.

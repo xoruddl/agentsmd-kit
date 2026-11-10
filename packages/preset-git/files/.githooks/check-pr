@@ -3,12 +3,12 @@
 # PR(GitLab 에서는 MR) 규칙 검사. 훅이 아니라 CI 에서 부르는 스크립트다.
 #   - 브랜치 이름: <타입>/<이슈번호>-<짧은-설명>
 #   - 제목: [<타입>] <요약>   (예: [Feat] 로그인 추가. 커밋 메시지 형식과 다르다)
-#   - 본문: Closes #<이슈번호>
+#   - 본문: Closes #<이슈번호> (머지 시 이슈를 닫음) 또는 Refs #<이슈번호> (이슈의 일부 작업)
 #
 # 어떤 CI 에서든 값을 환경변수로 넘겨 부른다.
 #   BRANCH  PR 브랜치 이름  (필수)
 #   TITLE   PR 제목         (필수)
-#   BODY    PR 본문         (선택. 넘기지 않으면 Closes 검사를 건너뛴다)
+#   BODY    PR 본문         (선택. 넘기지 않으면 이슈 연결 검사를 건너뛴다)
 #
 # 예: BRANCH=feat/12-login TITLE="[Feat] 로그인 추가" BODY="Closes #12" .githooks/check-pr
 #
@@ -42,9 +42,9 @@ fi
 
 # 본문을 바로 주지 않는 CI(Jenkins 등)도 있어서, BODY 를 넘기지 않았을 때만 건너뛴다.
 if [ -z "${BODY+set}" ]; then
-  echo "check-pr: BODY 를 넘기지 않아 'Closes #<이슈번호>' 검사를 건너뜁니다" >&2
-elif ! grep -qiE '(^|[^[:alnum:]])closes #[0-9]+' <<< "$BODY"; then
-  fail "본문에 'Closes #<이슈번호>'가 없습니다"
+  echo "check-pr: BODY 를 넘기지 않아 이슈 연결('Closes #<이슈번호>' 또는 'Refs #<이슈번호>') 검사를 건너뜁니다" >&2
+elif ! grep -qiE '(^|[^[:alnum:]])(closes|refs) #[0-9]+' <<< "$BODY"; then
+  fail "본문에 'Closes #<이슈번호>'(이슈를 닫음) 또는 'Refs #<이슈번호>'(이슈의 일부 작업)가 없습니다"
 fi
 
 exit $failed
