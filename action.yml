@@ -1,0 +1,50 @@
+# 사용자 저장소의 GitHub Actions에서 `agentsmd check`를 한 줄로 돌리는 Action.
+#   - uses: xoruddl/agentsmd-kit@v0.5
+# 입력은 `agentsmd check`의 옵션과 같다. 자세한 규칙은 docs/rules.md, 옵션은 docs/commands.md.
+# cli 버전은 아래에 고정한다. cli를 올려 배포할 때 함께 바꾸고 `v0.5` 태그를 옮긴다.
+name: agentsmd check
+description: AGENTS.md 문서 지도가 저장소와 맞는지 검사한다 (깨진 링크, 지도에 없는 문서, CLAUDE.md 불러오기)
+author: xoruddl
+
+branding:
+  icon: map
+  color: blue
+
+inputs:
+  root:
+    description: 검사할 저장소 루트. 워크스페이스 기준
+    required: false
+    default: "."
+  agents:
+    description: 문서 지도 파일. 루트 기준
+    required: false
+    default: AGENTS.md
+  docs:
+    description: 지도에 모두 있어야 하는 문서 디렉터리. 루트 기준
+    required: false
+    default: docs
+  claude:
+    description: Claude Code 지침 파일. 루트 기준
+    required: false
+    default: CLAUDE.md
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@v7
+      with:
+        node-version: 22
+
+    # 입력은 사용자가 쓴 값이라 스크립트에 직접 끼워 넣지 않고 환경변수로 넘긴다
+    - run: >
+        npx --yes @agentsmd/cli@0.5.0 check
+        --root "$AGENTSMD_ROOT"
+        --agents "$AGENTSMD_AGENTS"
+        --docs "$AGENTSMD_DOCS"
+        --claude "$AGENTSMD_CLAUDE"
+      shell: bash
+      env:
+        AGENTSMD_ROOT: ${{ inputs.root }}
+        AGENTSMD_AGENTS: ${{ inputs.agents }}
+        AGENTSMD_DOCS: ${{ inputs.docs }}
+        AGENTSMD_CLAUDE: ${{ inputs.claude }}
