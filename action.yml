@@ -1,7 +1,9 @@
 # 사용자 저장소의 GitHub Actions에서 `agentsmd check`를 한 줄로 돌리는 Action.
 #   - uses: xoruddl/agentsmd-kit@v0.5
 # 입력은 `agentsmd check`의 옵션과 같다. 자세한 규칙은 docs/rules.md, 옵션은 docs/commands.md.
-# cli 버전은 아래에 고정한다. cli를 올려 배포할 때 함께 바꾸고 `v0.5` 태그를 옮긴다.
+# 이 저장소의 Dockerfile로 만든 이미지(ghcr.io/xoruddl/agentsmd)를 쓴다. 컨테이너에서 돌므로 호출한 job의 Node와 무관하고,
+# 같은 이미지를 GitLab CI·Jenkins에서도 쓴다. Docker Action이라 Linux 러너에서만 돈다.
+# 이미지 버전은 아래에 고정한다. 릴리스 때 함께 바꾸고 `v0.5` 태그를 옮긴다. 순서는 docs/release.md.
 name: agentsmd check
 description: AGENTS.md 문서 지도가 저장소와 맞는지 검사한다 (깨진 링크, 지도에 없는 문서, CLAUDE.md 불러오기)
 author: xoruddl
@@ -29,34 +31,17 @@ inputs:
     default: CLAUDE.md
 
 runs:
-  using: composite
-  steps:
-    # cli는 Node 22 이상이 필요하다. setup-node는 이후 단계의 Node까지 바꾸므로,
-    # 호출한 워크플로가 이미 22 이상을 쓰고 있으면 건너뛴다.
-    - id: node
-      run: |
-        if node -e 'process.exit(Number(process.versions.node.split(".")[0]) >= 22 ? 0 : 1)' 2>/dev/null; then
-          echo "ready=true" >> "$GITHUB_OUTPUT"
-        else
-          echo "ready=false" >> "$GITHUB_OUTPUT"
-        fi
-      shell: bash
-    - if: steps.node.outputs.ready == 'false'
-      uses: actions/setup-node@v7
-      with:
-        node-version: 22
-
-    # 입력은 사용자가 쓴 값이라 스크립트에 직접 끼워 넣지 않고 환경변수로 넘긴다.
-    # 변수에서 빈 값이 오면 cli에 빈 경로가 넘어가므로 기본값으로 되돌린다.
-    - run: >
-        npx --yes @agentsmd/cli@0.5.0 check
-        --root "${AGENTSMD_ROOT:-.}"
-        --agents "${AGENTSMD_AGENTS:-AGENTS.md}"
-        --docs "${AGENTSMD_DOCS:-docs}"
-        --claude "${AGENTSMD_CLAUDE:-CLAUDE.md}"
-      shell: bash
-      env:
-        AGENTSMD_ROOT: ${{ inputs.root }}
-        AGENTSMD_AGENTS: ${{ inputs.agents }}
-        AGENTSMD_DOCS: ${{ inputs.docs }}
-        AGENTSMD_CLAUDE: ${{ inputs.claude }}
+  using: docker
+  image: docker://ghcr.io/xoruddl/agentsmd:0.5.0
+  # 작업 디렉터리는 GitHub가 워크스페이스로 잡아 주므로 root 기본값 "."이 저장소 루트다.
+  # 입력은 인자로 그대로 넘긴다. 빈 값은 cli가 종료 코드 2로 거부한다.
+  args:
+    - check
+    - --root
+    - ${{ inputs.root }}
+    - --agents
+    - ${{ inputs.agents }}
+    - --docs
+    - ${{ inputs.docs }}
+    - --claude
+    - ${{ inputs.claude }}
