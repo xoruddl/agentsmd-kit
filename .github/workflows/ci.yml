@@ -39,3 +39,11 @@ jobs:
       # 이 도구로 이 저장소의 AGENTS.md를 검사한다. 문서를 추가하고 지도를 고치지 않으면 여기서 실패한다.
       - name: agentsmd check
         run: node packages/cli/dist/main.js check
+
+  # 사용자 저장소가 쓰는 루트 action.yml이 깨지지 않았는지 확인한다.
+  # 위 job은 이 브랜치의 코드로, 이 job은 npm에 배포된 cli로 검사하므로 역할이 다르다.
+  action:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./

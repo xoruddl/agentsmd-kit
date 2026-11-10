@@ -17,5 +17,6 @@ export const githubPreset = {
   nextSteps: [
     "GitHub 저장소 설정에서 머지 방식을 'Allow merge commits'만 허용하세요. → docs/github.md",
     "main 브랜치 룰셋을 만들고 CI 검사를 필수 체크로 거세요. → docs/github.md",
+    "GitHub Actions를 쓰면 PR마다 문서 지도를 검사하는 xoruddl/agentsmd-kit Action을 거세요. → docs/github.md",
   ],
 } satisfies Preset;
