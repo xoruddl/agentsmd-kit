@@ -11,6 +11,7 @@ agentsmd-kit 저장소에서 코드를 작성·수정·리뷰하는 AI 에이전
 | [docs/architecture.md](docs/architecture.md) | 코드를 고치기 전 (필수). 패키지 책임, 의존 방향, 규칙·프리셋 추가 절차 |
 | [docs/rules.md](docs/rules.md)               | 검사 규칙을 추가·변경할 때. 동작을 바꾸면 이 문서도 함께 고친다        |
 | [docs/commands.md](docs/commands.md)         | 명령 옵션·종료 코드를 바꿀 때. 도움말 문자열과 함께 고친다             |
+| [docs/release.md](docs/release.md)           | 버전을 올려 npm·Docker 이미지·Action 태그를 내보낼 때                  |
 
 ## 핵심 규칙
 
