@@ -11,13 +11,14 @@
 | `.github/ISSUE_TEMPLATE/config.yml` | 빈 이슈를 막는다 |
 | `.github/pull_request_template.md` | PR 본문 |
 
-이슈는 템플릿 중 하나를 골라 채운다. PR 본문은 템플릿을 채우고 `Closes #<이슈번호>`를 넣는다.
+이슈는 템플릿 중 하나를 골라 채운다. PR 본문은 템플릿을 채우고, 이 PR로 이슈가 끝나면 `Closes #<이슈번호>`를 넣어 머지 시 이슈가 닫히게 한다.
+이슈·PR 제목은 `[<타입>] <요약>` 형식이다 (예: `[Feat] 주문 취소 사유 필드 추가`). 커밋 메시지(`feat: 요약`)와 다르다.
 
 ## gh 명령
 
 ```sh
 gh issue create --template feature.yml
-gh pr create --base main --title "<타입>: <요약>" --body-file <본문 파일>
+gh pr create --base main --title "[<타입>] <요약>" --body-file <본문 파일>
 gh pr view <PR번호> --json reviews,comments
 gh api repos/{owner}/{repo}/pulls/<PR번호>/comments
 ```
@@ -53,12 +54,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      # PR 제목과 본문은 작성자가 쓴 값이라 스크립트에 직접 넣지 않고 환경변수로 넘긴다
+      # PR 제목은 작성자가 쓴 값이라 스크립트에 직접 넣지 않고 환경변수로 넘긴다
       - run: .githooks/check-pr
         env:
           BRANCH: ${{ github.head_ref }}
           TITLE: ${{ github.event.pull_request.title }}
-          BODY: ${{ github.event.pull_request.body }}
 ```
 
 만든 뒤 룰셋의 필수 체크에 `conventions`를 추가한다.

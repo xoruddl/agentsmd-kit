@@ -28,7 +28,19 @@
 | `noFallthroughCasesInSwitch` | `switch` 의 `break` 누락 |
 | `noUnusedLocals`, `noUnusedParameters` | 쓰지 않는 변수·인자 |
 | `verbatimModuleSyntax` | 타입만 가져오면서 `import type` 을 쓰지 않는 것 |
-| `erasableSyntaxOnly` | `enum`, `namespace` 처럼 실행 코드를 만드는 TS 문법. 타입만 지우면 실행되는 코드로 유지한다 |
+| `erasableSyntaxOnly` | `enum`, `namespace`, 생성자 매개변수 프로퍼티처럼 실행 코드를 만드는 TS 문법. 타입만 지우면 실행되는 코드로 유지한다 |
+
+- `erasableSyntaxOnly` 를 켜면 생성자 매개변수 프로퍼티(`constructor(private readonly api: Api)`)를 쓸 수 없다. 필드를 선언하고 생성자에서 대입한다.
+
+```ts
+class MenuService {
+  private readonly api: Api
+
+  constructor(api: Api) {
+    this.api = api
+  }
+}
+```
 
 - 타입 검사는 `typecheck` 스크립트로 따로 둔다. 빌드 도구는 타입 오류가 있어도 빌드하는 경우가 많다. → [lint-and-ci.md](lint-and-ci.md)
 
@@ -52,7 +64,7 @@
 - 환경변수 → [env-and-security.md](env-and-security.md)
 
 ```ts
-// 나쁨: 응답이 바뀌어도 타입 오류 없이 화면에서 터진다
+// 나쁨: 응답이 바뀌어도 타입 오류 없이 값을 쓰는 곳에서 터진다
 const menu = (await res.json()) as Menu
 
 // 좋음: 경계에서 검증하고 실패를 오류로 만든다
@@ -85,12 +97,53 @@ type Category = (typeof CATEGORIES)[number]
 
 - 다른 모듈이 가져다 쓰는 함수는 반환 타입을 적는다. 모듈 안에서만 쓰는 함수는 추론에 맡긴다.
 
+## 비동기 · 오류
+
+- Promise 는 `await` 하거나, `.catch()` 로 처리하거나, 반환한다. 그냥 두면 실패가 아무 곳에도 보고되지 않는다.
+- 결과를 기다리지 않는 것이 의도라면 `void` 를 붙여 드러낸다. (`void refetch()`)
+- `async` 함수를 `void` 를 기대하는 자리(`onClick`, `forEach`, `setTimeout` 콜백)에 바로 넘기지 않는다. 안에서 오류를 처리하는 함수로 감싼다.
+- 병렬로 실행할 수 있는 작업은 반복문 안에서 하나씩 `await` 하지 않고 `Promise.all` 로 묶는다.
+- `catch` 로 받은 값은 `unknown` 이다. `Error` 라고 가정하지 않고 좁혀서 쓴다.
+- `throw` 는 `Error` 객체로 한다. 문자열이나 일반 객체를 던지지 않는다.
+- 오류를 잡았으면 처리하거나 다시 던진다. 빈 `catch` 로 삼키지 않는다.
+- 다시 던질 때는 `new Error('메뉴 저장 실패', { cause: error })` 처럼 원인을 남긴다.
+
+```ts
+// 나쁨: async 함수를 그대로 넘기고, e 를 Error 로 가정한다
+button.addEventListener('click', async () => {
+  try {
+    await saveMenu(menu)
+  } catch (e) {
+    showToast(e.message)
+  }
+})
+
+// 좋음: 오류를 좁혀서 처리하고, 핸들러에는 Promise 를 돌려주지 않는 함수를 넘긴다
+async function handleSave(): Promise<void> {
+  try {
+    await saveMenu(menu)
+  } catch (error) {
+    if (error instanceof HttpError && error.status === 409) {
+      showToast('다른 곳에서 먼저 수정했습니다. 새로고침해 주세요')
+      return
+    }
+    showToast('저장하지 못했습니다. 다시 시도해 주세요')
+  }
+}
+
+button.addEventListener('click', () => {
+  void handleSave()
+})
+```
+
+- 위 규칙 대부분은 타입 정보를 쓰는 린트 규칙이 검사한다. → [lint-and-ci.md](lint-and-ci.md)
+
 ## 이름
 
 | 대상 | 규칙 | 예 |
 | --- | --- | --- |
-| 컴포넌트, 타입 | PascalCase | `MenuResult`, `PickMenuResponse` |
-| 훅 | `use` 로 시작 | `usePickHistory` |
+| 타입, 클래스 | PascalCase | `PickMenuResponse`, `MenuService` |
+| 함수, 변수 | camelCase | `parseMenu`, `pickedAt` |
 | boolean | `is/has/can` 으로 시작 | `isPicking` |
 | 상수 | UPPER_SNAKE_CASE | `MAX_HISTORY` |
-| 파일 | 내보내는 대상과 같은 이름 | `MenuResult.tsx`, `usePickHistory.ts` |
+| 파일 | 대표로 내보내는 대상과 같은 이름 | `MenuService.ts`, `parseMenu.ts` |

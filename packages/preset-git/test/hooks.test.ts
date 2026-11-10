@@ -138,9 +138,9 @@ describe("pre-commit", () => {
 });
 
 describe("check-pr", () => {
-  const valid = { BRANCH: "feat/12-order-cancel", TITLE: "feat: 주문 취소", BODY: "Closes #12" };
+  const valid = { BRANCH: "feat/12-order-cancel", TITLE: "[Feat] 주문 취소" };
 
-  it("브랜치·제목·본문이 규칙에 맞으면 통과한다", async () => {
+  it("브랜치·제목이 규칙에 맞으면 통과한다", async () => {
     await expect(runHook("check-pr", [], valid)).resolves.toMatchObject({ code: 0 });
   });
 
@@ -150,23 +150,33 @@ describe("check-pr", () => {
     expect(result.stderr).toContain("브랜치 이름");
   });
 
-  it("제목 형식이 틀리면 막는다", async () => {
-    const result = await runHook("check-pr", [], { ...valid, TITLE: "주문 취소" });
+  // 커밋은 `feat: 요약`, PR 제목은 목록에서 종류가 눈에 띄게 `[Feat] 요약`을 쓴다.
+  it.each([
+    "주문 취소",
+    "feat: 주문 취소",
+    "[feat] 주문 취소",
+    "[Feat]주문 취소",
+    "[Feature] 주문 취소",
+  ])("제목 '%s'는 '[타입] 요약' 형식이 아니어서 막는다", async (title) => {
+    const result = await runHook("check-pr", [], { ...valid, TITLE: title });
     expect(result.code).toBe(1);
-    expect(result.stderr).toContain("제목");
+    expect(result.stderr).toContain("'[타입] 요약'");
   });
 
-  it("본문에 Closes #N이 없으면 막는다", async () => {
+  it.each(["[Fix] 토큰 만료 수정", "[CI] 워크플로 추가", "[Build] Gradle 설정 변경"])(
+    "제목 '%s'는 통과한다",
+    async (title) => {
+      await expect(runHook("check-pr", [], { ...valid, TITLE: title })).resolves.toMatchObject({
+        code: 0,
+      });
+    },
+  );
+
+  // 이슈 번호는 브랜치 이름으로 이미 강제한다. 이슈를 여러 PR로 나누면 Closes를 못 쓰는 PR이 생기므로 본문은 검사하지 않는다.
+  it("본문에 이슈 연결이 없어도 통과한다", async () => {
     const result = await runHook("check-pr", [], { ...valid, BODY: "주문 취소 기능" });
-    expect(result.code).toBe(1);
-    expect(result.stderr).toContain("Closes");
-  });
-
-  // Jenkins처럼 PR 본문을 바로 주지 않는 CI에서도 나머지 검사는 돌게 한다.
-  it("BODY를 넘기지 않으면 Closes 검사만 건너뛴다", async () => {
-    const result = await runHook("check-pr", [], { BRANCH: valid.BRANCH, TITLE: valid.TITLE });
     expect(result.code).toBe(0);
-    expect(result.stderr).toContain("건너뜁니다");
+    expect(result.stderr).toBe("");
   });
 
   it("BRANCH나 TITLE이 없으면 2를 돌려준다", async () => {

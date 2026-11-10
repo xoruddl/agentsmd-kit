@@ -1,6 +1,6 @@
 {
   "name": "@agentsmd/preset-github",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "GitHub 저장소용 AI 작업 지침 프리셋 (이슈·PR 템플릿, 저장소 설정·CI 연결 안내)",
   "keywords": [
     "agents.md",

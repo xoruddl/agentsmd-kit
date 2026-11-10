@@ -41,14 +41,22 @@ export interface AgentsMdAdditions {
   readonly verify: readonly string[];
 }
 
+/** 넣을 절을 찾지 못해 AGENTS.md에 넣지 않은 항목. 사람이 기존 절에 옮겨야 한다. */
+export interface UnplacedItems {
+  readonly docs: readonly DocMapEntry[];
+  readonly rules: readonly string[];
+  readonly verify: readonly string[];
+}
+
 export interface MergedAgentsMd {
   readonly content: string;
   readonly added: AgentsMdAdditions;
+  readonly unplaced: UnplacedItems;
 }
 
 /** 고른 프리셋들의 문서·규칙·검증 명령으로 새 AGENTS.md를 만든다. */
 export function renderAgentsMd(presets: readonly Preset[]): string {
-  return mergeAgentsMd(SKELETON, presets).content;
+  return merge(SKELETON, presets).content;
 }
 
 /**
@@ -61,19 +69,41 @@ export function renderAgentsMd(presets: readonly Preset[]): string {
  * - 규칙: 같은 문장이 없으면 `## 핵심 규칙` 목록 끝에 이어 붙인다.
  * - 검증: 같은 명령 줄이 없으면 `## 검증` 코드 블록에 더한다.
  *
- * 절이나 표, 목록이 없으면 새로 만든다.
+ * `## 문서 지도` 절이 있으면 빠진 절·표·목록을 새로 만든다.
+ * 없으면 사람이 다른 이름(예: `## 작업 전 읽을 문서`)으로 쓴 지침으로 보고 아무것도 넣지 않는다.
+ * 같은 역할의 절을 하나 더 만들면 지침이 두 벌이 되기 때문이다. 넣지 못한 항목은 `unplaced`로 돌려준다.
  */
 export function mergeAgentsMd(existing: string, presets: readonly Preset[]): MergedAgentsMd {
+  if (findSection(existing.split(/\r?\n/), DOCS) === undefined) {
+    return {
+      content: existing,
+      added: { docs: [], rules: [], verify: [] },
+      unplaced: unplacedItems(existing, presets),
+    };
+  }
+  return merge(existing, presets);
+}
+
+/** 문서 지도 절이 없는 AGENTS.md에 없는 항목. 규칙·명령은 파일 어디에든 같은 문장이 있으면 이미 있는 것으로 본다. */
+function unplacedItems(existing: string, presets: readonly Preset[]): UnplacedItems {
+  const absent = (item: string): boolean => !existing.includes(item.trim());
+  return {
+    docs: missingDocs(existing, presets),
+    rules: missingItems(
+      [],
+      presets.flatMap((preset) => preset.rules ?? []),
+    ).filter(absent),
+    verify: missingItems(
+      [],
+      presets.flatMap((preset) => (preset.verify === undefined ? [] : [preset.verify])),
+    ).filter(absent),
+  };
+}
+
+function merge(existing: string, presets: readonly Preset[]): MergedAgentsMd {
   let lines = existing.split(/\r?\n/);
 
-  const linked = new Set(
-    parseDocMap("AGENTS.md", existing).links.flatMap(
-      (link) => resolveLink("AGENTS.md", link.target) ?? [],
-    ),
-  );
-  const docs = uniqueByPath(presets.flatMap((preset) => preset.docs ?? [])).filter(
-    (doc) => !linked.has(doc.path),
-  );
+  const docs = missingDocs(existing, presets);
   lines = addDocs(lines, docs);
 
   const rules = missingItems(
@@ -89,7 +119,23 @@ export function mergeAgentsMd(existing: string, presets: readonly Preset[]): Mer
   lines = addVerify(lines, verify);
 
   const content = `${lines.join("\n").replace(/\s+$/, "")}\n`;
-  return { content, added: { docs: docs.map((doc) => doc.path), rules, verify } };
+  return {
+    content,
+    added: { docs: docs.map((doc) => doc.path), rules, verify },
+    unplaced: { docs: [], rules: [], verify: [] },
+  };
+}
+
+/** 프리셋 문서 가운데 AGENTS.md에서 아직 링크하지 않은 것. */
+function missingDocs(existing: string, presets: readonly Preset[]): DocMapEntry[] {
+  const linked = new Set(
+    parseDocMap("AGENTS.md", existing).links.flatMap(
+      (link) => resolveLink("AGENTS.md", link.target) ?? [],
+    ),
+  );
+  return uniqueByPath(presets.flatMap((preset) => preset.docs ?? [])).filter(
+    (doc) => !linked.has(doc.path),
+  );
 }
 
 function addDocs(lines: string[], docs: readonly DocMapEntry[]): string[] {

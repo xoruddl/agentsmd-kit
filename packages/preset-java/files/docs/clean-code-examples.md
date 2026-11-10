@@ -116,7 +116,8 @@ class OrderService {
 ## OCP (타입별 분기 제거)
 
 ```java
-// Bad: 결제 수단 추가마다 switch 수정
+// Bad: default 가 있어 새 결제 수단을 추가해도 컴파일러가 빠진 곳을 알려 주지 않는다.
+// 같은 분기가 여러 곳에 흩어지면 수단을 추가할 때마다 모두 찾아 고쳐야 한다.
 int fee(PayType type, int amount) {
     switch (type) {
         case CARD: return amount * 3 / 100;
@@ -125,15 +126,34 @@ int fee(PayType type, int amount) {
     }
 }
 
-// Good: 새 수단은 구현체만 추가
-interface FeePolicy {
-    int fee(int amount);
+// Good: 규칙을 enum 이 갖는다. 새 상수를 추가하면 fee 구현을 빠뜨릴 수 없다.
+enum PayType {
+    CARD {
+        @Override
+        int fee(int amount) {
+            return amount * 3 / 100;
+        }
+    },
+    BANK {
+        @Override
+        int fee(int amount) {
+            return 500;
+        }
+    };
+
+    abstract int fee(int amount);
 }
 
-class CardFeePolicy implements FeePolicy {
-    public int fee(int amount) { return amount * 3 / 100; }
+// Good: 분기가 한 곳뿐이면 switch 식으로 충분하다. default 가 없어 새 상수가 생기면 컴파일 오류가 난다.
+int fee(PayType type, int amount) {
+    return switch (type) {
+        case CARD -> amount * 3 / 100;
+        case BANK -> 500;
+    };
 }
 ```
+
+- 구현마다 다른 협력 객체가 필요하거나, 다른 모듈이 구현을 추가해야 할 때 인터페이스와 구현체로 나눈다. → [clean-code.md](clean-code.md) 의 추상화 기준
 
 ## LSP
 

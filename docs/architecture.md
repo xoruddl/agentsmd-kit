@@ -8,16 +8,19 @@ agentsmd (cli) ──▶ @agentsmd/core ◀── 모든 프리셋 (Preset 타�
       ├──▶ @agentsmd/preset-git
       ├──▶ @agentsmd/preset-github
       ├──▶ @agentsmd/preset-java
-      └──▶ @agentsmd/preset-typescript
+      ├──▶ @agentsmd/preset-spring
+      ├──▶ @agentsmd/preset-typescript
+      └──▶ @agentsmd/preset-react
 ```
 
-| 패키지                   | 책임                                                             | 모르는 것               |
-| ------------------------ | ---------------------------------------------------------------- | ----------------------- |
-| `packages/core`          | 문서 지도 파서, 검사 규칙, 프리셋 설치, AGENTS.md·훅 실행기 생성 | 명령줄, 출력 형식, Git  |
-| `packages/cli`           | 인자 파싱, 명령 분기, 출력, 종료 코드, Git 훅 연결               | 규칙의 내용             |
-| `packages/preset-git`    | 언어와 무관한 Git 작업 규칙, 커밋 훅, PR 규칙 검사 스크립트      | 언어, 호스팅, CI 서비스 |
-| `packages/preset-github` | 이슈·PR 템플릿, GitHub 설정·CI 연결 안내                         | 언어, CI 서비스         |
-| `packages/preset-<언어>` | 언어 규칙 문서, 검증·CI 명령 문서                                | 설치 방법, Git·GitHub   |
+| 패키지                         | 책임                                                             | 모르는 것                             |
+| ------------------------------ | ---------------------------------------------------------------- | ------------------------------------- |
+| `packages/core`                | 문서 지도 파서, 검사 규칙, 프리셋 설치, AGENTS.md·훅 실행기 생성 | 명령줄, 출력 형식, Git                |
+| `packages/cli`                 | 인자 파싱, 명령 분기, 출력, 종료 코드, Git 훅 연결               | 규칙의 내용                           |
+| `packages/preset-git`          | 언어와 무관한 Git 작업 규칙, 커밋 훅, PR 규칙 검사 스크립트      | 언어, 호스팅, CI 서비스               |
+| `packages/preset-github`       | 이슈·PR 템플릿, GitHub 설정·CI 연결 안내                         | 언어, CI 서비스                       |
+| `packages/preset-<언어>`       | 언어 규칙 문서, 검증·CI 명령 문서                                | 설치 방법, Git·GitHub                 |
+| `packages/preset-<프레임워크>` | 프레임워크 규칙 문서 (예: `react`, `spring`)                     | 언어 공통 규칙, 검증 명령, Git·GitHub |
 
 `core`는 다른 패키지에 의존하지 않는다. 프리셋은 `core`의 `Preset` 타입만 쓰고, 프리셋끼리는 서로 의존하지 않는다.
 
@@ -38,11 +41,18 @@ check.ts ── 파일 읽기 ──▶ parse-doc-map.ts ──▶ DocMap
 
 ## 프리셋: 따로 고르고, 공통 파일은 조합에 맞게 만든다
 
-Git 규칙, 호스팅(GitHub), 언어 규칙은 독립된 프리셋이다. 사용자가 `--preset git,github,typescript`처럼 함께 고르면 모두 설치된다.
+Git 규칙, 호스팅(GitHub), 언어 규칙, 프레임워크 규칙은 독립된 프리셋이다. 사용자가 `--preset git,github,typescript,react`나 `--preset git,github,java,spring`처럼 함께 고르면 모두 설치된다.
+
+- 언어 프리셋은 그 언어를 쓰는 모든 프로젝트에 맞는 규칙만 둔다. 특정 프레임워크에만 맞는 규칙은 프레임워크 프리셋으로 나눈다.
+- 프레임워크 프리셋은 검증 명령과 런타임 버전 파일을 두지 않고 언어 프리셋에 맡긴다. 문서 이름은 `react-*`, `spring-*`처럼 접두어를 붙여 다른 프리셋 문서와 겹치지 않게 한다.
+- 프리셋 문서는 다른 프리셋 문서로 링크하지 않는다. 그 프리셋만 설치하면 링크가 깨지기 때문이다. 함께 고를 프리셋은 이름으로만 안내한다.
+  `check`는 `AGENTS.md`의 링크만 보므로, 문서 사이의 링크는 프리셋 테스트로 확인한다.
 
 - 프리셋은 AGENTS.md를 파일로 갖지 않는다. 대신 `docs`(문서와 읽는 시점), `rules`(핵심 규칙), `verify`(검증 명령)를 정의한다.
   `mergeAgentsMd`가 기존 AGENTS.md에 정의 가운데 빠진 항목만 넣는다. 지도를 파일로 두면 함께 설치할 때 한쪽이 건너뛰어져 다른 프리셋 문서가 지도에서 빠지기 때문이다.
   새로 만들 때(`renderAgentsMd`)도 빈 뼈대에 같은 함수로 합친다. 새로 만들 때와 나눠 설치할 때 결과 모양이 갈라지지 않게 하려는 것이다.
+  기존 AGENTS.md에 `## 문서 지도` 절이 없으면 사람이 다른 형식으로 쓴 지침으로 보고 바꾸지 않는다. 넣지 못한 항목은 `unplaced`로 돌려주고 `init`이 출력한다.
+  절 이름을 비슷한 말로 추측하지 않는 것은, 표의 열 순서까지 저장소마다 달라 엉뚱한 곳에 넣을 수 있기 때문이다.
   절을 찾고 넣는 일은 `markdown-sections.ts`가 맡는다.
 - 표는 대상 저장소의 `prettier --check`에 걸리지 않도록 Prettier와 같은 모양으로 정렬한다 (`markdown-table.ts`).
 - 커밋 검사는 `.githooks/pre-commit.d/<이름>`에 스크립트로 넣는다. 지금은 Git 프리셋의 `max-files`뿐이다.
@@ -75,6 +85,15 @@ Git 규칙, 호스팅(GitHub), 언어 규칙은 독립된 프리셋이다. 사�
    - 언어 규칙 문서(`docs/`)만 둔다. `AGENTS.md`, `CLAUDE.md`, `.githooks/`, `.github/`는 두지 않는다.
 2. `src/index.ts`에서 `Preset` 객체를 내보낸다. `docs`, `rules`, `verify`를 채우고, 수작업이 남으면 `nextSteps`를 채운다.
    `docs/` 아래 문서는 모두 `docs`에 올린다. 빠지면 `check`가 지도에 없는 문서로 잡는다.
+   - `rules`는 AGENTS.md의 핵심 규칙이 된다. 문서는 에이전트가 필요할 때만 열지만 AGENTS.md는 항상 읽히므로,
+     문서를 읽지 않은 작업에도 지켜야 할 규칙만 둔다. 아래를 모두 만족하는 규칙만 넣는다.
+     - 모든 작업에 해당한다. 특정 상황에서만 필요한 규칙은 문서에 두고 문서 지도의 "읽는 시점"으로 안내한다.
+     - 어기면 비용이 크거나 되돌리기 어렵다.
+     - 한 줄만 읽고 판단할 수 있다.
+     - 근거 문서가 있고, 그 문서와 같은 뜻이다. AGENTS.md에만 있는 규칙은 문서와 따로 자란다.
+   - 프리셋당 5개 이하로 둔다(`cli`의 `presets.test.ts`가 검사한다). 핵심 규칙은 고른 프리셋들의 규칙을 합친 목록이라, 프리셋마다 조금씩 늘면 함께 설치할 때 길어진다.
+     더 넣고 싶으면 기존 규칙과 바꾸거나 문서에만 둔다.
+   - 여러 프리셋에 같은 규칙이 있으면 문장을 똑같이 맞춘다. 같은 문장은 한 번만 들어간다.
 3. 그 프리셋만 설치한 결과(`installPreset` + `installEntryFiles`)가 `checkRepository`를 통과하는지 테스트한다.
    설치 직후 저장소가 바로 CI를 통과해야 하기 때문이다.
 4. `packages/cli/src/presets.ts`의 `PRESETS`에 추가하고 `cli`의 `package.json` 의존성에 넣는다.

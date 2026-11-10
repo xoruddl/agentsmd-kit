@@ -50,6 +50,25 @@ describe("runInit", () => {
     await expect(checkRepository({ root })).resolves.toEqual([]);
   });
 
+  it("typescript와 react를 함께 고르면 두 프리셋의 문서를 모두 설치한다", async () => {
+    await expect(runInit(["--preset", "typescript,react", "--skip-hooks"], io())).resolves.toBe(0);
+
+    const agents = await readFile(join(root, "AGENTS.md"), "utf8");
+    expect(agents).toContain("[docs/typescript.md](docs/typescript.md)");
+    expect(agents).toContain("[docs/react-components.md](docs/react-components.md)");
+    await expect(checkRepository({ root })).resolves.toEqual([]);
+  });
+
+  it("java와 spring을 함께 고르면 두 프리셋의 문서와 Java 검증 명령을 설치한다", async () => {
+    await expect(runInit(["--preset", "java,spring", "--skip-hooks"], io())).resolves.toBe(0);
+
+    const agents = await readFile(join(root, "AGENTS.md"), "utf8");
+    expect(agents).toContain("[docs/java-checklist.md](docs/java-checklist.md)");
+    expect(agents).toContain("[docs/spring-architecture.md](docs/spring-architecture.md)");
+    expect(agents).toContain("./gradlew spotlessCheck build");
+    await expect(checkRepository({ root })).resolves.toEqual([]);
+  });
+
   it("언어 프리셋만 고르면 Git 규칙은 설치하지 않는다", async () => {
     await expect(runInit(["--preset", "typescript", "--skip-hooks"], io())).resolves.toBe(0);
 
@@ -118,6 +137,21 @@ describe("runInit", () => {
     await expect(checkRepository({ root })).resolves.toEqual([]);
   });
 
+  it("문서 지도 절이 없는 AGENTS.md면 바꾸지 않고 직접 옮길 항목을 안내한다", async () => {
+    const existing = "# AGENTS.md\n\n## 작업 전 읽을 문서\n\n## 핵심 규칙 요약\n\n- 팀 규칙\n";
+    await writeFile(join(root, "AGENTS.md"), existing);
+
+    await expect(runInit(["--preset", "java", "--skip-hooks"], io())).resolves.toBe(0);
+
+    await expect(readFile(join(root, "AGENTS.md"), "utf8")).resolves.toBe(existing);
+    expect(out).not.toContain("AGENTS.md에 이미 모든 항목이 있어");
+    expect(out).toContain("AGENTS.md에 '## 문서 지도' 절이 없어 아래 항목을 넣지 않았습니다.");
+    expect(out).toMatch(/ {4}\[docs\/java-checklist\.md\]\(docs\/java-checklist\.md\) \| \S/);
+    expect(out).toContain("    ./gradlew spotlessCheck build");
+    // 옮기기 전에는 설치한 문서가 지도에 없으므로 check가 잡아낸다.
+    await expect(checkRepository({ root })).resolves.not.toEqual([]);
+  });
+
   it("같은 프리셋을 다시 설치하면 AGENTS.md를 바꾸지 않았다고 알린다", async () => {
     await runInit(["--preset", "git,java", "--skip-hooks"], io());
     out = "";
@@ -134,7 +168,7 @@ describe("runInit", () => {
     );
   });
 
-  it.each(["java", "typescript"])(
+  it.each(["java", "spring", "typescript", "react"])(
     "%s 프리셋만 고르면 Git 훅을 만들거나 연결하지 않는다",
     async (name) => {
       await git("git", ["-C", root, "init", "-q"]);
