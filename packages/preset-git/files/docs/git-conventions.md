@@ -81,7 +81,9 @@ push 후 쓰는 호스팅(GitHub, GitLab 등)에서 `main` 대상 PR을 만든�
   나쁨  [feat] 주문 취소 사유 필드 추가     ← 소문자 타입
   ```
 
-- 본문은 PR 템플릿이 있으면 채운다. `Closes #<이슈번호>`를 넣어 머지 시 이슈가 자동으로 닫히게 한다.
+- 본문은 PR 템플릿이 있으면 채운다. 이슈는 둘 중 하나로 연결한다.
+  - `Closes #<이슈번호>`: 이 PR로 이슈가 끝난다. 머지 시 이슈가 자동으로 닫힌다.
+  - `Refs #<이슈번호>`: 이슈를 여러 PR로 나눠 진행할 때 마지막이 아닌 PR. 이슈는 열어 둔다.
 - 변경 내용은 3줄 이내 불릿. 변경 파일을 나열하지 않는다. 빈 섹션은 지운다.
 - 커밋 10개, 변경 300줄 이하를 권장한다. 넘으면 PR을 나눈다.
 - CI와 PR 규칙 검사(`.githooks/check-pr`)가 통과해야 머지한다. 리뷰 반영 기준은 [code-review.md](code-review.md).
@@ -106,7 +108,7 @@ git merge main
 | ---------------------------------- | --------------------------------------------------------------- |
 | `.githooks/commit-msg`             | 커밋 형식, 제목 50자, 마침표, AI 서명                           |
 | `.githooks/pre-commit.d/max-files` | 커밋당 파일 수. `.githooks/pre-commit`이 다른 검사와 함께 실행  |
-| `.githooks/check-pr`               | 브랜치 이름, PR 제목, `Closes #N`. 훅이 아니라 CI가 PR마다 실행 |
+| `.githooks/check-pr`               | 브랜치 이름, PR 제목, 이슈 연결(`Closes #N`·`Refs #N`). CI가 PR마다 실행 |
 
 훅은 `agentsmd init`이 연결한다. 직접 연결하려면 `git config core.hooksPath .githooks`.
 
@@ -123,8 +125,8 @@ BRANCH=feat/12-order-cancel TITLE="[Feat] 주문 취소 사유 필드 추가" BO
 | --------------------- | -------------------------------------- | ---------------------------------------- | --------------------------------------- |
 | GitHub Actions        | `${{ github.head_ref }}`               | `${{ github.event.pull_request.title }}` | `${{ github.event.pull_request.body }}` |
 | GitLab CI             | `$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME` | `$CI_MERGE_REQUEST_TITLE`                | `$CI_MERGE_REQUEST_DESCRIPTION`         |
-| Jenkins (Multibranch) | `$CHANGE_BRANCH`                       | `$CHANGE_TITLE`                          | 넘기지 않음 (Closes 검사 건너뜀)        |
+| Jenkins (Multibranch) | `$CHANGE_BRANCH`                       | `$CHANGE_TITLE`                          | 넘기지 않음 (이슈 연결 검사 건너뜀)     |
 
 - 제목·본문은 PR 작성자가 쓴 값이다. CI 스크립트 본문에 직접 끼워 넣지 말고 환경변수로 넘긴다.
-- `BODY`를 넘기지 않으면 `Closes #N` 검사만 건너뛴다. 빈 문자열을 넘기면 검사해서 실패한다.
+- `BODY`를 넘기지 않으면 이슈 연결(`Closes #N`·`Refs #N`) 검사만 건너뛴다. 빈 문자열을 넘기면 검사해서 실패한다.
 - 검사가 실패하면 종료 코드 1, `BRANCH`·`TITLE`이 없으면 2를 돌려준다.
