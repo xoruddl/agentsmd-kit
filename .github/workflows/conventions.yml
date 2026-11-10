@@ -46,8 +46,9 @@ jobs:
             failed=1
           fi
 
-          if ! grep -qiE '(^|[^[:alnum:]])closes #[0-9]+' <<< "$BODY"; then
-            echo "::error::PR 본문에 'Closes #<이슈번호>'가 없습니다"
+          # 이슈를 닫는 Closes 와 이슈의 일부 작업인 Refs 둘 다 이슈 연결로 본다 (git 프리셋 check-pr 과 같은 규칙)
+          if ! grep -qiE '(^|[^[:alnum:]])(closes|refs) #[0-9]+' <<< "$BODY"; then
+            echo "::error::PR 본문에 'Closes #<이슈번호>'(이슈를 닫음) 또는 'Refs #<이슈번호>'(이슈의 일부 작업)가 없습니다"
             failed=1
           fi
 
