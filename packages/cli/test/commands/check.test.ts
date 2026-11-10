@@ -63,6 +63,17 @@ describe("runCheck", () => {
     );
   });
 
+  // CI 변수가 비어 `--agents ""`처럼 넘어오면 루트 디렉터리를 파일로 읽다 예외로 죽는다. 옵션 오류로 알린다.
+  it.each(["--root", "--agents", "--docs", "--claude"])(
+    "%s 값이 비어 있으면 안내와 함께 2를 돌려준다",
+    async (option) => {
+      await write({ "AGENTS.md": "" });
+
+      await expect(runCheck([option, ""], io())).resolves.toBe(2);
+      expect(err).toContain(`${option} 값이 비어 있습니다`);
+    },
+  );
+
   it("문서 지도가 없으면 안내와 함께 2를 돌려준다", async () => {
     await expect(runCheck([], io())).resolves.toBe(2);
     expect(err).toContain("문서 지도를 찾을 수 없습니다: AGENTS.md");

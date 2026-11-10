@@ -26,6 +26,8 @@ AGENTS.md 문서 지도가 저장소와 맞는지 검사합니다.
   2  옵션이 잘못됐거나 문서 지도가 없음
 `;
 
+const pathOptions = ["root", "agents", "docs", "claude"] as const;
+
 /** `agentsmd check` 명령. 문제가 있으면 1을 돌려줘 CI가 실패하게 한다. */
 export async function runCheck(args: readonly string[], io: Io): Promise<ExitCode> {
   const { values } = parseArgs({
@@ -44,6 +46,13 @@ export async function runCheck(args: readonly string[], io: Io): Promise<ExitCod
   if (values.help === true) {
     io.stdout(CHECK_USAGE);
     return 0;
+  }
+
+  // CI 변수가 비어 `--agents ""`처럼 오면 빈 경로가 루트 디렉터리로 풀려 예외로 죽는다. 옵션 오류로 알린다.
+  const empty = pathOptions.find((option) => values[option] === "");
+  if (empty !== undefined) {
+    io.stderr(`--${empty} 값이 비어 있습니다. 옵션을 빼면 기본값을 씁니다.\n`);
+    return 2;
   }
 
   try {
