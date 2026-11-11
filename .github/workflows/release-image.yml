@@ -22,16 +22,19 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      # 태그 push면 v를 뗀 태그 이름, 수동 실행이면 입력한 버전을 쓴다.
+      # 태그 push면 태그 이름, 수동 실행이면 입력한 버전을 쓴다. 둘 다 앞의 v를 떼서 이미지 태그를 같은 모양으로 맞춘다.
+      # latest는 릴리스 태그 push에서만 올린다. 수동 실행은 옛 버전을 다시 미는 경우가 있어 latest를 되돌리면 안 된다.
       - id: version
         run: |
-          if [ -n "$INPUT_VERSION" ]; then
-            version="$INPUT_VERSION"
-          else
-            version="${GITHUB_REF_NAME#v}"
-          fi
+          version="${INPUT_VERSION:-$GITHUB_REF_NAME}"
+          version="${version#v}"
           echo "full=$version" >> "$GITHUB_OUTPUT"
           echo "minor=${version%.*}" >> "$GITHUB_OUTPUT"
+          if [ "$GITHUB_EVENT_NAME" = "push" ]; then
+            echo "latest=ghcr.io/xoruddl/agentsmd:latest" >> "$GITHUB_OUTPUT"
+          else
+            echo "latest=" >> "$GITHUB_OUTPUT"
+          fi
         env:
           INPUT_VERSION: ${{ inputs.version }}
 
@@ -41,7 +44,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # 0.5.0, 0.5, latest 세 태그를 함께 올린다. action.yml은 0.5.0처럼 정확한 버전을 고정한다.
+      # 0.5.0, 0.5, (릴리스 태그 push면) latest를 함께 올린다. action.yml은 0.5.0처럼 정확한 버전을 고정한다.
       - uses: docker/build-push-action@v7
         with:
           context: .
@@ -49,4 +52,4 @@ jobs:
           tags: |
             ghcr.io/xoruddl/agentsmd:${{ steps.version.outputs.full }}
             ghcr.io/xoruddl/agentsmd:${{ steps.version.outputs.minor }}
-            ghcr.io/xoruddl/agentsmd:latest
+            ${{ steps.version.outputs.latest }}
