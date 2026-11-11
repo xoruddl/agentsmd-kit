@@ -48,8 +48,9 @@ export async function runCheck(args: readonly string[], io: Io): Promise<ExitCod
     return 0;
   }
 
-  // CI 변수가 비어 `--agents ""`처럼 오면 빈 경로가 루트 디렉터리로 풀려 예외로 죽는다. 옵션 오류로 알린다.
-  const empty = pathOptions.find((option) => values[option] === "");
+  // CI 변수가 비어 `--agents ""`처럼 오면 빈 경로가 루트 디렉터리로 풀려 예외로 죽고,
+  // 공백뿐이면 없는 디렉터리로 풀려 조용히 통과한다. 둘 다 옵션 오류로 알린다.
+  const empty = pathOptions.find((option) => values[option]?.trim() === "");
   if (empty !== undefined) {
     io.stderr(`--${empty} 값이 비어 있습니다. 옵션을 빼면 기본값을 씁니다.\n`);
     return 2;
