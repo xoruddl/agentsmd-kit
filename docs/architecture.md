@@ -55,7 +55,7 @@ Git 규칙, 호스팅(GitHub), 언어 규칙, 프레임워크 규칙은 독립�
   절 이름을 비슷한 말로 추측하지 않는 것은, 표의 열 순서까지 저장소마다 달라 엉뚱한 곳에 넣을 수 있기 때문이다.
   절을 찾고 넣는 일은 `markdown-sections.ts`가 맡는다.
 - 표는 대상 저장소의 `prettier --check`에 걸리지 않도록 Prettier와 같은 모양으로 정렬한다 (`markdown-table.ts`).
-- 커밋 검사는 `.githooks/pre-commit.d/<이름>`에 스크립트로 넣는다. 지금은 Git 프리셋의 `max-files`뿐이다.
+- 커밋 검사는 `.githooks/pre-commit.d/<이름>`에 스크립트로 넣는다. 지금은 넣은 프리셋이 없다.
   이것들을 실행하는 `.githooks/pre-commit`은 어느 프리셋에도 두지 않고 `installEntryFiles`가 만든다.
   검사를 더하는 프리셋이 생겨도 실행기를 나눠 갖지 않게 하기 위해서다.
 - 프리셋은 Git, 호스팅, 언어 가운데 한 축만 맡는다. Git 훅(`.githooks/`)은 Git 프리셋만, `.github/`는 GitHub 프리셋만 둔다.
