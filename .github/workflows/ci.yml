@@ -53,7 +53,14 @@ jobs:
           mkdir -p /tmp/bad/docs
           printf '# AGENTS.md\n\n## 문서 지도\n\n| 문서 | 언제 읽나 |\n| --- | --- |\n| [docs/a.md](docs/a.md) | 항상 |\n' > /tmp/bad/AGENTS.md
           touch /tmp/bad/docs/b.md
-          if docker run --rm -v /tmp/bad:/repo agentsmd:ci; then
-            echo "위반이 있는 저장소에서 check가 실패하지 않았습니다" >&2
+          # 이미지가 깨져 다른 코드로 죽는 경우와 구분하려고 종료 코드 1과 규칙 이름을 모두 확인한다.
+          set +e
+          output=$(docker run --rm -v /tmp/bad:/repo agentsmd:ci)
+          code=$?
+          set -e
+          echo "$output"
+          if [ "$code" -ne 1 ]; then
+            echo "위반이 있는 저장소에서 종료 코드 1을 기대했지만 $code 입니다" >&2
             exit 1
           fi
+          echo "$output" | grep -q broken-link && echo "$output" | grep -q unlisted-doc
