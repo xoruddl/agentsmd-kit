@@ -3,7 +3,6 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { installEntryFiles } from "../src/install-entry-files.js";
-import { PRE_COMMIT_HOOK } from "../src/pre-commit-hook.js";
 import type { Preset } from "../src/preset.js";
 
 const docsOnly = {
@@ -12,7 +11,6 @@ const docsOnly = {
   filesDir: "",
   docs: [{ path: "docs/workflow.md", when: "모든 작업 시작 전" }],
 } satisfies Preset;
-const withHooks = { ...docsOnly, name: "hooks", hooksPath: ".githooks" } satisfies Preset;
 
 let target: string;
 
@@ -38,20 +36,6 @@ describe("installEntryFiles", () => {
       "[docs/workflow.md](docs/workflow.md)",
     );
     await expect(readFile(join(target, "CLAUDE.md"), "utf8")).resolves.toContain("@AGENTS.md");
-  });
-
-  it("훅이 있는 프리셋을 고르면 실행 권한이 있는 pre-commit 실행기를 만든다", async () => {
-    const result = await installEntryFiles([docsOnly, withHooks], target);
-
-    expect(result.written).toContain(".githooks/pre-commit");
-    const hook = join(target, ".githooks/pre-commit");
-    await expect(readFile(hook, "utf8")).resolves.toBe(PRE_COMMIT_HOOK);
-    expect((await stat(hook)).mode & 0o111).not.toBe(0);
-  });
-
-  it("훅이 있는 프리셋이 없으면 pre-commit을 만들지 않는다", async () => {
-    const result = await installEntryFiles([docsOnly], target);
-    expect(result.written).not.toContain(".githooks/pre-commit");
   });
 
   it("이미 있는 AGENTS.md에는 빠진 문서만 합치고 사람이 쓴 내용은 남긴다", async () => {
@@ -96,10 +80,11 @@ describe("installEntryFiles", () => {
     expect(agents).toContain("[docs/workflow.md](docs/workflow.md)");
   });
 
-  it("다른 프리셋을 나중에 설치할 때, 내용이 같은 CLAUDE.md·훅 실행기는 건너뛴 목록에 넣지 않는다", async () => {
-    await installEntryFiles([withHooks], target);
+  it("다른 프리셋을 나중에 설치할 때, 내용이 같은 CLAUDE.md는 건너뛴 목록에 넣지 않는다", async () => {
+    const other = { ...docsOnly, name: "other" } satisfies Preset;
+    await installEntryFiles([other], target);
 
-    const result = await installEntryFiles([docsOnly, withHooks], target);
+    const result = await installEntryFiles([docsOnly, other], target);
 
     expect(result.written).toEqual([]);
     expect(result.skipped).toEqual([]);

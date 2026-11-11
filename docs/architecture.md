@@ -13,14 +13,14 @@ agentsmd (cli) ──▶ @agentsmd/core ◀── 모든 프리셋 (Preset 타�
       └──▶ @agentsmd/preset-react
 ```
 
-| 패키지                         | 책임                                                             | 모르는 것                             |
-| ------------------------------ | ---------------------------------------------------------------- | ------------------------------------- |
-| `packages/core`                | 문서 지도 파서, 검사 규칙, 프리셋 설치, AGENTS.md·훅 실행기 생성 | 명령줄, 출력 형식, Git                |
-| `packages/cli`                 | 인자 파싱, 명령 분기, 출력, 종료 코드, Git 훅 연결               | 규칙의 내용                           |
-| `packages/preset-git`          | 언어와 무관한 Git 작업 규칙, 커밋 훅, PR 규칙 검사 스크립트      | 언어, 호스팅, CI 서비스               |
-| `packages/preset-github`       | 이슈·PR 템플릿, GitHub 설정·CI 연결 안내                         | 언어, CI 서비스                       |
-| `packages/preset-<언어>`       | 언어 규칙 문서, 검증·CI 명령 문서                                | 설치 방법, Git·GitHub                 |
-| `packages/preset-<프레임워크>` | 프레임워크 규칙 문서 (예: `react`, `spring`)                     | 언어 공통 규칙, 검증 명령, Git·GitHub |
+| 패키지                         | 책임                                                        | 모르는 것                             |
+| ------------------------------ | ----------------------------------------------------------- | ------------------------------------- |
+| `packages/core`                | 문서 지도 파서, 검사 규칙, 프리셋 설치, AGENTS.md 생성      | 명령줄, 출력 형식, Git                |
+| `packages/cli`                 | 인자 파싱, 명령 분기, 출력, 종료 코드, Git 훅 연결          | 규칙의 내용                           |
+| `packages/preset-git`          | 언어와 무관한 Git 작업 규칙, 커밋 훅, PR 규칙 검사 스크립트 | 언어, 호스팅, CI 서비스               |
+| `packages/preset-github`       | 이슈·PR 템플릿, GitHub 설정·CI 연결 안내                    | 언어, CI 서비스                       |
+| `packages/preset-<언어>`       | 언어 규칙 문서, 검증·CI 명령 문서                           | 설치 방법, Git·GitHub                 |
+| `packages/preset-<프레임워크>` | 프레임워크 규칙 문서 (예: `react`, `spring`)                | 언어 공통 규칙, 검증 명령, Git·GitHub |
 
 `core`는 다른 패키지에 의존하지 않는다. 프리셋은 `core`의 `Preset` 타입만 쓰고, 프리셋끼리는 서로 의존하지 않는다.
 
@@ -55,9 +55,6 @@ Git 규칙, 호스팅(GitHub), 언어 규칙, 프레임워크 규칙은 독립�
   절 이름을 비슷한 말로 추측하지 않는 것은, 표의 열 순서까지 저장소마다 달라 엉뚱한 곳에 넣을 수 있기 때문이다.
   절을 찾고 넣는 일은 `markdown-sections.ts`가 맡는다.
 - 표는 대상 저장소의 `prettier --check`에 걸리지 않도록 Prettier와 같은 모양으로 정렬한다 (`markdown-table.ts`).
-- 커밋 검사는 `.githooks/pre-commit.d/<이름>`에 스크립트로 넣는다. 지금은 Git 프리셋의 `max-files`뿐이다.
-  이것들을 실행하는 `.githooks/pre-commit`은 어느 프리셋에도 두지 않고 `installEntryFiles`가 만든다.
-  검사를 더하는 프리셋이 생겨도 실행기를 나눠 갖지 않게 하기 위해서다.
 - 프리셋은 Git, 호스팅, 언어 가운데 한 축만 맡는다. Git 훅(`.githooks/`)은 Git 프리셋만, `.github/`는 GitHub 프리셋만 둔다.
   Git 규칙이나 GitHub를 원하지 않는 저장소에도 나머지를 설치할 수 있게 하기 위해서다.
 - 어느 프리셋도 CI 설정 파일(GitHub Actions 워크플로 등)을 두지 않는다. GitHub를 써도 CI는 Jenkins 등으로 돌릴 수 있기 때문이다.

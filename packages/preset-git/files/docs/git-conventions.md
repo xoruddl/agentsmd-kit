@@ -103,11 +103,10 @@ git merge main
 
 ## 자동 검사
 
-| 위치                               | 검사                                                           |
-| ---------------------------------- | -------------------------------------------------------------- |
-| `.githooks/commit-msg`             | 커밋 형식, 제목 50자, 마침표, AI 서명                          |
-| `.githooks/pre-commit.d/max-files` | 커밋당 파일 수. `.githooks/pre-commit`이 다른 검사와 함께 실행 |
-| `.githooks/check-pr`               | 브랜치 이름, PR 제목. 훅이 아니라 CI가 PR마다 실행             |
+| 위치                   | 검사                                               |
+| ---------------------- | -------------------------------------------------- |
+| `.githooks/commit-msg` | 커밋 형식, 제목 50자, 마침표, AI 서명              |
+| `.githooks/check-pr`   | 브랜치 이름, PR 제목. 훅이 아니라 CI가 PR마다 실행 |
 
 훅은 `agentsmd init`이 연결한다. 직접 연결하려면 `git config core.hooksPath .githooks`.
 

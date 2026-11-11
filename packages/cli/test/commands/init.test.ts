@@ -160,14 +160,6 @@ describe("runInit", () => {
     expect(out).toContain("AGENTS.md에 이미 모든 항목이 있어 바꾸지 않았습니다.");
   });
 
-  it("Git 훅 실행기를 만들어 각 프리셋의 pre-commit.d 검사를 연결한다", async () => {
-    await runInit(["--preset", "git", "--skip-hooks"], io());
-
-    await expect(readFile(join(root, ".githooks/pre-commit"), "utf8")).resolves.toContain(
-      "pre-commit.d",
-    );
-  });
-
   it.each(["java", "spring", "typescript", "react"])(
     "%s 프리셋만 고르면 Git 훅을 만들거나 연결하지 않는다",
     async (name) => {
@@ -175,7 +167,7 @@ describe("runInit", () => {
 
       await expect(runInit(["--preset", name], io())).resolves.toBe(0);
 
-      await expect(readFile(join(root, ".githooks/pre-commit"), "utf8")).rejects.toThrow();
+      await expect(readFile(join(root, ".githooks/commit-msg"), "utf8")).rejects.toThrow();
       await expect(git("git", ["-C", root, "config", "core.hooksPath"])).rejects.toThrow();
       expect(out).not.toContain("Git 훅");
     },

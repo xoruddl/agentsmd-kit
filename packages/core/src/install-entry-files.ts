@@ -1,5 +1,5 @@
 import { existsSync } from "node:fs";
-import { chmod, mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import {
   CLAUDE_MD,
@@ -10,7 +10,6 @@ import {
   type UnplacedItems,
 } from "./agents-md.js";
 import { hasContent, type InstallOptions, type InstallResult } from "./install.js";
-import { PRE_COMMIT_HOOK } from "./pre-commit-hook.js";
 import type { Preset } from "./preset.js";
 
 const AGENTS_MD = "AGENTS.md";
@@ -18,7 +17,6 @@ const AGENTS_MD = "AGENTS.md";
 interface EntryFile {
   readonly path: string;
   readonly content: string;
-  readonly executable: boolean;
 }
 
 export interface EntryFilesResult extends InstallResult {
@@ -33,7 +31,6 @@ export interface EntryFilesResult extends InstallResult {
  *
  * - `AGENTS.md`: 고른 프리셋들의 문서 지도를 합친 것
  * - `CLAUDE.md`: `AGENTS.md`를 불러오기만 한다
- * - `<hooksPath>/pre-commit`: 훅이 있는 프리셋을 골랐을 때만. 각 프리셋의 `pre-commit.d/` 검사를 실행한다
  *
  * `AGENTS.md`가 이미 있으면 빠진 문서·규칙·검증 명령만 합친다. 프리셋을 나눠 설치해도 지도에서 빠지지 않게 하려는 것이다.
  * 나머지 파일은 프리셋 파일과 같은 규칙으로, 이미 있으면 건너뛴다. `force`면 모두 새로 쓴다.
@@ -61,9 +58,6 @@ export async function installEntryFiles(
     }
     await mkdir(dirname(destination), { recursive: true });
     await writeFile(destination, file.content);
-    if (file.executable) {
-      await chmod(destination, 0o755);
-    }
     written.push(file.path);
   }
 
@@ -88,13 +82,8 @@ async function mergeExistingAgentsMd(
 }
 
 function entryFiles(presets: readonly Preset[]): EntryFile[] {
-  const files: EntryFile[] = [
-    { path: AGENTS_MD, content: renderAgentsMd(presets), executable: false },
-    { path: "CLAUDE.md", content: CLAUDE_MD, executable: false },
+  return [
+    { path: AGENTS_MD, content: renderAgentsMd(presets) },
+    { path: "CLAUDE.md", content: CLAUDE_MD },
   ];
-  const hooksPath = presets.find((preset) => preset.hooksPath !== undefined)?.hooksPath;
-  if (hooksPath !== undefined) {
-    files.push({ path: `${hooksPath}/pre-commit`, content: PRE_COMMIT_HOOK, executable: true });
-  }
-  return files;
 }
