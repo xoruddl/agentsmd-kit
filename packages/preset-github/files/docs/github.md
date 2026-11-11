@@ -71,6 +71,8 @@ jobs:
 ```
 
 만든 뒤 룰셋의 필수 체크에 `agentsmd`를 추가한다.
+이 Action은 Docker 이미지(`ghcr.io/xoruddl/agentsmd`)로 돌므로 Linux 러너(`ubuntu-*`)에서만 쓸 수 있다. 호출한 job의 Node 설정에는 영향을 주지 않는다.
+GitLab CI·Jenkins에서 같은 이미지를 쓰는 방법은 Git 작업 규칙 문서의 "문서 지도 검사를 CI에 연결" 절에 있다.
 
 ### PR 규칙 검사
 
