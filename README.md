@@ -113,6 +113,12 @@ GitHub Actions에서는 설치 없이 이 저장소의 Action을 한 줄로 씁�
 - uses: xoruddl/agentsmd-kit@v0.5
 ```
 
+Action이 쓰는 이미지 `ghcr.io/xoruddl/agentsmd`는 GitLab CI·Jenkins 등 Docker가 되는 CI에서 그대로 씁니다. Node가 없어도 됩니다. → [`packages/preset-git/files/docs/git-conventions.md`](packages/preset-git/files/docs/git-conventions.md)
+
+```sh
+docker run --rm -v "$PWD:/repo" ghcr.io/xoruddl/agentsmd:0.5 check
+```
+
 ## 개발
 
 ```bash

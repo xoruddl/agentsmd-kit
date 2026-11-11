@@ -40,10 +40,27 @@ jobs:
       - name: agentsmd check
         run: node packages/cli/dist/main.js check
 
-  # 사용자 저장소가 쓰는 루트 action.yml이 깨지지 않았는지 확인한다.
-  # 위 job은 이 브랜치의 코드로, 이 job은 npm에 배포된 cli로 검사하므로 역할이 다르다.
-  action:
+  # 루트 action.yml과 GitLab·Jenkins가 쓰는 이미지가 이 브랜치의 Dockerfile·코드로 빌드되고 동작하는지 확인한다.
+  # 배포된 이미지를 당기는 `uses: ./`는 쓰지 않는다. 릴리스 전 브랜치에서는 그 이미지가 없기 때문이다.
+  image:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: ./
+      - run: docker build -t agentsmd:ci .
+      # 통과해야 하는 저장소(이 저장소)와 실패해야 하는 저장소를 모두 돌려, 검사가 실제로 동작하는지 본다.
+      - run: docker run --rm -v "$PWD:/repo" agentsmd:ci
+      - run: |
+          mkdir -p /tmp/bad/docs
+          printf '# AGENTS.md\n\n## 문서 지도\n\n| 문서 | 언제 읽나 |\n| --- | --- |\n| [docs/a.md](docs/a.md) | 항상 |\n' > /tmp/bad/AGENTS.md
+          touch /tmp/bad/docs/b.md
+          # 이미지가 깨져 다른 코드로 죽는 경우와 구분하려고 종료 코드 1과 규칙 이름을 모두 확인한다.
+          set +e
+          output=$(docker run --rm -v /tmp/bad:/repo agentsmd:ci)
+          code=$?
+          set -e
+          echo "$output"
+          if [ "$code" -ne 1 ]; then
+            echo "위반이 있는 저장소에서 종료 코드 1을 기대했지만 $code 입니다" >&2
+            exit 1
+          fi
+          echo "$output" | grep -q broken-link && echo "$output" | grep -q unlisted-doc

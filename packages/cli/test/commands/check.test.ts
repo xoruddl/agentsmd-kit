@@ -63,6 +63,25 @@ describe("runCheck", () => {
     );
   });
 
+  // CI 변수가 비어 `--agents ""`처럼 넘어오면 루트 디렉터리를 파일로 읽다 예외로 죽는다. 옵션 오류로 알린다.
+  it.each(["--root", "--agents", "--docs", "--claude"])(
+    "%s 값이 비어 있으면 안내와 함께 2를 돌려준다",
+    async (option) => {
+      await write({ "AGENTS.md": "" });
+
+      await expect(runCheck([option, ""], io())).resolves.toBe(2);
+      expect(err).toContain(`${option} 값이 비어 있습니다`);
+    },
+  );
+
+  // 공백만 있는 값은 없는 디렉터리로 풀려 unlisted-doc 0건으로 조용히 통과한다. 빈 값과 같게 막는다.
+  it("--docs 값이 공백뿐이면 2를 돌려준다", async () => {
+    await write({ "AGENTS.md": "", "docs/a.md": "" });
+
+    await expect(runCheck(["--docs", " "], io())).resolves.toBe(2);
+    expect(err).toContain("--docs 값이 비어 있습니다");
+  });
+
   it("문서 지도가 없으면 안내와 함께 2를 돌려준다", async () => {
     await expect(runCheck([], io())).resolves.toBe(2);
     expect(err).toContain("문서 지도를 찾을 수 없습니다: AGENTS.md");

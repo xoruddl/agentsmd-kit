@@ -74,6 +74,8 @@ agentsmd check --root ../other-repo --docs design
 | `--docs <경로>`   | 지도에 모두 있어야 하는 문서 디렉터리. 루트 기준 | `docs`      |
 | `--claude <경로>` | Claude Code 지침 파일. 루트 기준                 | `CLAUDE.md` |
 
+옵션 값이 비어 있으면(`--docs ""`) 검사를 시작하지 않고 `2`를 돌려준다. CI 변수를 그대로 넘길 때 변수가 비어 있는 경우를 잡기 위해서다.
+
 ## 종료 코드
 
 | 코드 | 의미                                                   |
