@@ -167,7 +167,7 @@ describe("runInit", () => {
 
       await expect(runInit(["--preset", name], io())).resolves.toBe(0);
 
-      await expect(readFile(join(root, ".githooks/pre-commit"), "utf8")).rejects.toThrow();
+      await expect(readFile(join(root, ".githooks/commit-msg"), "utf8")).rejects.toThrow();
       await expect(git("git", ["-C", root, "config", "core.hooksPath"])).rejects.toThrow();
       expect(out).not.toContain("Git 훅");
     },

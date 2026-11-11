@@ -13,14 +13,14 @@ agentsmd (cli) ──▶ @agentsmd/core ◀── 모든 프리셋 (Preset 타�
       └──▶ @agentsmd/preset-react
 ```
 
-| 패키지                         | 책임                                                             | 모르는 것                             |
-| ------------------------------ | ---------------------------------------------------------------- | ------------------------------------- |
-| `packages/core`                | 문서 지도 파서, 검사 규칙, 프리셋 설치, AGENTS.md·훅 실행기 생성 | 명령줄, 출력 형식, Git                |
-| `packages/cli`                 | 인자 파싱, 명령 분기, 출력, 종료 코드, Git 훅 연결               | 규칙의 내용                           |
-| `packages/preset-git`          | 언어와 무관한 Git 작업 규칙, 커밋 훅, PR 규칙 검사 스크립트      | 언어, 호스팅, CI 서비스               |
-| `packages/preset-github`       | 이슈·PR 템플릿, GitHub 설정·CI 연결 안내                         | 언어, CI 서비스                       |
-| `packages/preset-<언어>`       | 언어 규칙 문서, 검증·CI 명령 문서                                | 설치 방법, Git·GitHub                 |
-| `packages/preset-<프레임워크>` | 프레임워크 규칙 문서 (예: `react`, `spring`)                     | 언어 공통 규칙, 검증 명령, Git·GitHub |
+| 패키지                         | 책임                                                        | 모르는 것                             |
+| ------------------------------ | ----------------------------------------------------------- | ------------------------------------- |
+| `packages/core`                | 문서 지도 파서, 검사 규칙, 프리셋 설치, AGENTS.md 생성      | 명령줄, 출력 형식, Git                |
+| `packages/cli`                 | 인자 파싱, 명령 분기, 출력, 종료 코드, Git 훅 연결          | 규칙의 내용                           |
+| `packages/preset-git`          | 언어와 무관한 Git 작업 규칙, 커밋 훅, PR 규칙 검사 스크립트 | 언어, 호스팅, CI 서비스               |
+| `packages/preset-github`       | 이슈·PR 템플릿, GitHub 설정·CI 연결 안내                    | 언어, CI 서비스                       |
+| `packages/preset-<언어>`       | 언어 규칙 문서, 검증·CI 명령 문서                           | 설치 방법, Git·GitHub                 |
+| `packages/preset-<프레임워크>` | 프레임워크 규칙 문서 (예: `react`, `spring`)                | 언어 공통 규칙, 검증 명령, Git·GitHub |
 
 `core`는 다른 패키지에 의존하지 않는다. 프리셋은 `core`의 `Preset` 타입만 쓰고, 프리셋끼리는 서로 의존하지 않는다.
 

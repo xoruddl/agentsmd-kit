@@ -92,7 +92,7 @@ export async function runInit(args: readonly string[], io: Io): Promise<ExitCode
   return 0;
 }
 
-/** 프리셋 파일을 설치한 뒤, 고른 프리셋 조합에 맞춘 AGENTS.md·CLAUDE.md·훅 실행기를 만든다. */
+/** 프리셋 파일을 설치한 뒤, 고른 프리셋 조합에 맞춘 AGENTS.md·CLAUDE.md를 만든다. */
 async function installAll(
   presets: readonly Preset[],
   root: string,
