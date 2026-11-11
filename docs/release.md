@@ -29,8 +29,9 @@ npm 패키지, Docker 이미지, GitHub Action 태그 세 가지를 같은 버�
    ```sh
    git tag vX.Y.Z main && git push origin vX.Y.Z
    ```
-   처음 올리는 패키지는 GHCR이 private으로 만든다. 그 상태로는 다른 저장소의 Action과 `docker run`이 인증 없이 `denied`로 실패하므로,
-   첫 푸시 뒤 한 번 GitHub의 Packages → `agentsmd` → Package settings → Danger Zone에서 visibility를 **Public**으로 바꾼다.
+   처음 올린 뒤에는 패키지가 **Public**인지 확인한다. 이 저장소의 워크플로가 올리면 public으로 연결되지만, private이면 다른 저장소의 Action과 `docker run`이 인증 없이 `denied`로 실패한다.
+   익명으로 `docker pull ghcr.io/xoruddl/agentsmd:X.Y.Z`가 되면 public이다. 아니면 GitHub의 Packages → `agentsmd` → Package settings → Danger Zone에서 바꾼다.
+   이미지는 amd64·arm64 두 플랫폼으로 올라간다. ARM 러너나 Apple Silicon에서 당겨 확인해도 된다.
 5. GitHub 릴리스를 `vX.Y.Z` 태그로 만들고 릴리스 노트를 쓴다.
 6. Action 태그 `vX.Y`를 `main`으로 옮긴다. 이미지가 올라간 뒤에 한다. 마이너가 바뀌었으면 새로 만든다.
    ```sh

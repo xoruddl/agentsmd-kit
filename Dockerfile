@@ -3,7 +3,9 @@
 # npm 배포본이 아니라 이 저장소 소스에서 빌드한다. CI가 브랜치 코드로 이미지를 만들어 검사하기 위해서다.
 # 루트 action.yml이 이 이미지를 쓴다. 빌드·푸시 절차는 docs/release.md.
 
-FROM node:22-alpine AS builder
+# 빌드 결과는 순수 JS라 플랫폼과 무관하다. 빌드는 호스트 플랫폼에서 한 번만 하고, 결과를 대상 플랫폼 이미지에 복사한다.
+# (amd64·arm64 이미지를 함께 만들 때 arm64 빌드를 에뮬레이션으로 돌리지 않기 위해서다)
+FROM --platform=$BUILDPLATFORM node:22-alpine AS builder
 WORKDIR /app
 # pnpm 버전은 package.json의 packageManager를 따른다.
 ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
