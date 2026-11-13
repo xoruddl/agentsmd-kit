@@ -14,19 +14,19 @@ export const javaPreset = {
   filesDir: fileURLToPath(new URL("../files", import.meta.url)),
   docs: [
     {
-      path: "docs/project-direction.md",
+      path: "docs/java/project-direction.md",
       when: "모든 작업 시작 전 (필수). 범위 밖 작업이면 먼저 질문",
     },
-    { path: "docs/code-style.md", when: "코드 작성, 주석" },
-    { path: "docs/clean-code.md", when: "코드 작성, 설계" },
-    { path: "docs/clean-code-examples.md", when: "코드 작성 시 참고 예시" },
-    { path: "docs/java-checklist.md", when: "Java 코드 작성·리뷰" },
-    { path: "docs/java-testing.md", when: "테스트를 쓸 때" },
+    { path: "docs/java/code-style.md", when: "코드 작성, 주석" },
+    { path: "docs/java/clean-code.md", when: "코드 작성, 설계" },
+    { path: "docs/java/clean-code-examples.md", when: "코드 작성 시 참고 예시" },
+    { path: "docs/java/checklist.md", when: "Java 코드 작성·리뷰" },
+    { path: "docs/java/testing.md", when: "테스트를 쓸 때" },
     {
-      path: "docs/java-logging-and-security.md",
+      path: "docs/java/logging-and-security.md",
       when: "로그를 남길 때, 비밀값·외부 입력·의존성을 다룰 때",
     },
-    { path: "docs/lint-and-ci.md", when: "린트·포맷·CI 설정" },
+    { path: "docs/java/lint-and-ci.md", when: "린트·포맷·CI 설정" },
   ],
   rules: [
     "주석에는 코드만 봐서는 알 수 없는 의도와 이유를 쓴다. 코드를 되풀이하지 않는다.",
@@ -37,7 +37,7 @@ export const javaPreset = {
   ],
   verify: "./gradlew spotlessCheck build",
   nextSteps: [
-    "docs/project-direction.md 에 프로젝트 목표와 범위를 채우세요.",
-    "Gradle 프로젝트라면 docs/lint-and-ci.md 의 Spotless·toolchain 설정을 build.gradle.kts 에 추가하세요.",
+    "docs/java/project-direction.md 에 프로젝트 목표와 범위를 채우세요.",
+    "Gradle 프로젝트라면 docs/java/lint-and-ci.md 의 Spotless·toolchain 설정을 build.gradle.kts 에 추가하세요.",
   ],
 } satisfies Preset;

@@ -45,11 +45,11 @@ oxlint 를 쓰면 `.oxlintrc.json` 에 아래 규칙을 켠다.
 
 | 규칙 | 막는 것 | 관련 문서 |
 | --- | --- | --- |
-| `typescript/no-explicit-any` | `any` | [typescript.md](typescript.md) |
-| `typescript/no-non-null-assertion` | `value!` | [typescript.md](typescript.md) |
-| `typescript/no-floating-promises` | 기다리지도, 처리하지도 않은 Promise | [typescript.md](typescript.md) |
-| `typescript/no-misused-promises` | `async` 함수를 `void` 를 기대하는 콜백에 넘기는 것, 조건문에 Promise 를 쓰는 것 | [typescript.md](typescript.md) |
-| `typescript/only-throw-error` | 문자열이나 일반 객체를 `throw` 하는 것 | [typescript.md](typescript.md) |
+| `typescript/no-explicit-any` | `any` | [rules.md](rules.md) |
+| `typescript/no-non-null-assertion` | `value!` | [rules.md](rules.md) |
+| `typescript/no-floating-promises` | 기다리지도, 처리하지도 않은 Promise | [rules.md](rules.md) |
+| `typescript/no-misused-promises` | `async` 함수를 `void` 를 기대하는 콜백에 넘기는 것, 조건문에 Promise 를 쓰는 것 | [rules.md](rules.md) |
+| `typescript/only-throw-error` | 문자열이나 일반 객체를 `throw` 하는 것 | [rules.md](rules.md) |
 
 ESLint 를 쓰면 typescript-eslint 로 같은 규칙을 켠다. `recommendedTypeChecked` 설정을 쓰면 위의 타입 정보가 필요한 규칙이 함께 켜진다.
 

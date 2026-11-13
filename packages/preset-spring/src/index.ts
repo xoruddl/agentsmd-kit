@@ -15,19 +15,19 @@ export const springPreset = {
   filesDir: fileURLToPath(new URL("../files", import.meta.url)),
   docs: [
     {
-      path: "docs/spring-architecture.md",
+      path: "docs/spring/architecture.md",
       when: "클래스·패키지를 만들 때. 패키지 구조, 의존 방향, 주입, DTO 경계, 설정",
     },
     {
-      path: "docs/spring-data-jpa.md",
+      path: "docs/spring/data-jpa.md",
       when: "엔티티·Repository·트랜잭션을 다룰 때. 지연 로딩, N+1, 스키마 마이그레이션",
     },
     {
-      path: "docs/spring-api.md",
+      path: "docs/spring/api.md",
       when: "컨트롤러·API 를 만들 때. URL, 상태 코드, 요청 검증, 오류 응답, 페이징",
     },
     {
-      path: "docs/spring-testing.md",
+      path: "docs/spring/testing.md",
       when: "Spring 이 필요한 테스트를 쓸 때. 슬라이스 테스트, @MockitoBean, Testcontainers",
     },
   ],
@@ -39,6 +39,6 @@ export const springPreset = {
   ],
   nextSteps: [
     "검증 명령은 java 프리셋이 넣습니다. 함께 설치하지 않았다면 agentsmd init --preset java 를 실행하세요.",
-    "application.yml 에 docs/spring-data-jpa.md 의 open-in-view·batch fetch 설정을 넣으세요.",
+    "application.yml 에 docs/spring/data-jpa.md 의 open-in-view·batch fetch 설정을 넣으세요.",
   ],
 } satisfies Preset;

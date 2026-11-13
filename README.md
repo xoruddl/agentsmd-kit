@@ -39,6 +39,19 @@ Git 규칙, 호스팅(GitHub), 언어 규칙, 프레임워크(React·Spring) 규
 | `java`       | Java·Gradle 프로젝트                               | 코드 스타일·클린 코드·체크리스트·테스트 문서, Spotless 설정, 검증 명령                                      |
 | `spring`     | Spring Boot 서버. `java`와 함께                    | 패키지 구조·JPA·트랜잭션·API·테스트 문서                                                                    |
 
+문서는 프리셋마다 `docs/<프리셋 이름>/` 폴더에 설치됩니다. `docs/` 바로 아래는 프로젝트 고유 문서를 두는 자리로 남습니다.
+
+```text
+docs/
+  git/         workflow.md, git-conventions.md, code-review.md, writing-style.md
+  github/      usage.md
+  typescript/  project-direction.md, rules.md, structure.md, testing.md, env-and-security.md, lint-and-ci.md
+  react/       components.md, testing.md, browser-security.md
+  java/        project-direction.md, code-style.md, clean-code.md, clean-code-examples.md, checklist.md,
+               testing.md, logging-and-security.md, lint-and-ci.md
+  spring/      architecture.md, data-jpa.md, api.md, testing.md
+```
+
 | 저장소                    | 명령                                        |
 | ------------------------- | ------------------------------------------- |
 | GitHub + TypeScript       | `init --preset git,github,typescript`       |
@@ -107,13 +120,13 @@ pnpm add -D @agentsmd/cli
 - run: pnpm exec agentsmd check
 ```
 
-GitHub Actions에서는 설치 없이 이 저장소의 Action을 한 줄로 씁니다. 검사 대상 경로는 `with:`로 바꿀 수 있고, 입력 이름은 `agentsmd check`의 옵션과 같습니다. → [`packages/preset-github/files/docs/github.md`](packages/preset-github/files/docs/github.md)
+GitHub Actions에서는 설치 없이 이 저장소의 Action을 한 줄로 씁니다. 검사 대상 경로는 `with:`로 바꿀 수 있고, 입력 이름은 `agentsmd check`의 옵션과 같습니다. → [`packages/preset-github/files/docs/github/usage.md`](packages/preset-github/files/docs/github/usage.md)
 
 ```yaml
 - uses: xoruddl/agentsmd-kit@v0
 ```
 
-Action이 쓰는 이미지 `ghcr.io/xoruddl/agentsmd`는 GitLab CI·Jenkins 등 Docker가 되는 CI에서 그대로 씁니다. Node가 없어도 됩니다. → [`packages/preset-git/files/docs/git-conventions.md`](packages/preset-git/files/docs/git-conventions.md)
+Action이 쓰는 이미지 `ghcr.io/xoruddl/agentsmd`는 GitLab CI·Jenkins 등 Docker가 되는 CI에서 그대로 씁니다. Node가 없어도 됩니다. → [`packages/preset-git/files/docs/git/git-conventions.md`](packages/preset-git/files/docs/git/git-conventions.md)
 
 ```sh
 docker run --rm -v "$PWD:/repo" ghcr.io/xoruddl/agentsmd:0 check

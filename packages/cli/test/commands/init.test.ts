@@ -45,8 +45,8 @@ describe("runInit", () => {
     await expect(runInit(["--preset", "git,typescript", "--skip-hooks"], io())).resolves.toBe(0);
 
     const agents = await readFile(join(root, "AGENTS.md"), "utf8");
-    expect(agents).toContain("[docs/git-conventions.md](docs/git-conventions.md)");
-    expect(agents).toContain("[docs/typescript.md](docs/typescript.md)");
+    expect(agents).toContain("[docs/git/git-conventions.md](docs/git/git-conventions.md)");
+    expect(agents).toContain("[docs/typescript/rules.md](docs/typescript/rules.md)");
     await expect(checkRepository({ root })).resolves.toEqual([]);
   });
 
@@ -54,8 +54,8 @@ describe("runInit", () => {
     await expect(runInit(["--preset", "typescript,react", "--skip-hooks"], io())).resolves.toBe(0);
 
     const agents = await readFile(join(root, "AGENTS.md"), "utf8");
-    expect(agents).toContain("[docs/typescript.md](docs/typescript.md)");
-    expect(agents).toContain("[docs/react-components.md](docs/react-components.md)");
+    expect(agents).toContain("[docs/typescript/rules.md](docs/typescript/rules.md)");
+    expect(agents).toContain("[docs/react/components.md](docs/react/components.md)");
     await expect(checkRepository({ root })).resolves.toEqual([]);
   });
 
@@ -63,8 +63,8 @@ describe("runInit", () => {
     await expect(runInit(["--preset", "java,spring", "--skip-hooks"], io())).resolves.toBe(0);
 
     const agents = await readFile(join(root, "AGENTS.md"), "utf8");
-    expect(agents).toContain("[docs/java-checklist.md](docs/java-checklist.md)");
-    expect(agents).toContain("[docs/spring-architecture.md](docs/spring-architecture.md)");
+    expect(agents).toContain("[docs/java/checklist.md](docs/java/checklist.md)");
+    expect(agents).toContain("[docs/spring/architecture.md](docs/spring/architecture.md)");
     expect(agents).toContain("./gradlew spotlessCheck build");
     await expect(checkRepository({ root })).resolves.toEqual([]);
   });
@@ -73,7 +73,7 @@ describe("runInit", () => {
     await expect(runInit(["--preset", "typescript", "--skip-hooks"], io())).resolves.toBe(0);
 
     expect(out).toMatch(/^typescript 프리셋: /);
-    await expect(readFile(join(root, "docs/git-conventions.md"), "utf8")).rejects.toThrow();
+    await expect(readFile(join(root, "docs/git/git-conventions.md"), "utf8")).rejects.toThrow();
     await expect(readFile(join(root, "AGENTS.md"), "utf8")).resolves.not.toContain(
       "git-conventions",
     );
@@ -101,8 +101,8 @@ describe("runInit", () => {
       readFile(join(root, ".github/pull_request_template.md"), "utf8"),
     ).resolves.toContain("Closes #");
     const agents = await readFile(join(root, "AGENTS.md"), "utf8");
-    expect(agents).toContain("[docs/git-conventions.md](docs/git-conventions.md)");
-    expect(agents).toContain("[docs/github.md](docs/github.md)");
+    expect(agents).toContain("[docs/git/git-conventions.md](docs/git/git-conventions.md)");
+    expect(agents).toContain("[docs/github/usage.md](docs/github/usage.md)");
     await expect(checkRepository({ root })).resolves.toEqual([]);
   });
 
@@ -132,8 +132,8 @@ describe("runInit", () => {
 
     expect(out).toMatch(/기존 AGENTS\.md에 문서 \d+개, 규칙 \d+개/);
     const agents = await readFile(join(root, "AGENTS.md"), "utf8");
-    expect(agents).toContain("[docs/git-conventions.md](docs/git-conventions.md)");
-    expect(agents).toContain("[docs/java-checklist.md](docs/java-checklist.md)");
+    expect(agents).toContain("[docs/git/git-conventions.md](docs/git/git-conventions.md)");
+    expect(agents).toContain("[docs/java/checklist.md](docs/java/checklist.md)");
     await expect(checkRepository({ root })).resolves.toEqual([]);
   });
 
@@ -146,7 +146,7 @@ describe("runInit", () => {
     await expect(readFile(join(root, "AGENTS.md"), "utf8")).resolves.toBe(existing);
     expect(out).not.toContain("AGENTS.md에 이미 모든 항목이 있어");
     expect(out).toContain("AGENTS.md에 '## 문서 지도' 절이 없어 아래 항목을 넣지 않았습니다.");
-    expect(out).toMatch(/ {4}\[docs\/java-checklist\.md\]\(docs\/java-checklist\.md\) \| \S/);
+    expect(out).toMatch(/ {4}\[docs\/java\/checklist\.md\]\(docs\/java\/checklist\.md\) \| \S/);
     expect(out).toContain("    ./gradlew spotlessCheck build");
     // 옮기기 전에는 설치한 문서가 지도에 없으므로 check가 잡아낸다.
     await expect(checkRepository({ root })).resolves.not.toEqual([]);
@@ -181,7 +181,7 @@ describe("runInit", () => {
   it("설치 후 사람이 할 일을 번호로 안내한다", async () => {
     await runInit(["--preset", "java", "--skip-hooks"], io());
     expect(out).toMatch(/ {2}1\. \S/);
-    expect(out).toContain("docs/project-direction.md 에 프로젝트 목표와 범위를 채우세요.");
+    expect(out).toContain("docs/java/project-direction.md 에 프로젝트 목표와 범위를 채우세요.");
     expect(out).toContain("agentsmd check 로 문서 지도를 검사하세요.");
   });
 

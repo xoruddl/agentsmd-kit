@@ -14,10 +14,10 @@ export const gitPreset = {
   filesDir: fileURLToPath(new URL("../files", import.meta.url)),
   hooksPath: ".githooks",
   docs: [
-    { path: "docs/workflow.md", when: "모든 작업 시작 전 (필수)" },
-    { path: "docs/git-conventions.md", when: "이슈·브랜치·커밋·PR·머지" },
-    { path: "docs/code-review.md", when: "PR 리뷰 확인·반영" },
-    { path: "docs/writing-style.md", when: "md 문서, 커밋·PR 메시지 작성" },
+    { path: "docs/git/workflow.md", when: "모든 작업 시작 전 (필수)" },
+    { path: "docs/git/git-conventions.md", when: "이슈·브랜치·커밋·PR·머지" },
+    { path: "docs/git/code-review.md", when: "PR 리뷰 확인·반영" },
+    { path: "docs/git/writing-style.md", when: "md 문서, 커밋·PR 메시지 작성" },
   ],
   rules: [
     "커밋 하나 = 책임 하나.",
@@ -26,5 +26,5 @@ export const gitPreset = {
     "커밋·PR 메시지는 사람이 쓴 것처럼 짧게 쓴다. AI 서명 금지.",
     "훅 우회(`--no-verify`) 금지.",
   ],
-  nextSteps: ["CI에서 PR마다 .githooks/check-pr 를 실행하세요. → docs/git-conventions.md"],
+  nextSteps: ["CI에서 PR마다 .githooks/check-pr 를 실행하세요. → docs/git/git-conventions.md"],
 } satisfies Preset;

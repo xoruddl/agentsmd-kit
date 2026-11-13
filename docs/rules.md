@@ -27,7 +27,7 @@ HTML 주석(`<!-- -->`) 안의 링크는 링크로 본다. 주석으로 가려 �
 
 ```text
 AGENTS.md:12  [broken-link]  링크 대상이 없습니다: docs/api.md
-docs/workflow.md:43  [broken-link]  링크 대상이 없습니다: code-review.md
+docs/git/workflow.md:43  [broken-link]  링크 대상이 없습니다: code-review.md
 ```
 
 - **왜:** 에이전트는 없는 문서를 찾다가 추측으로 작업한다. 문서를 옮기거나 이름을 바꾸고 그 문서를 가리키던 곳을 고치지 않을 때 생긴다.

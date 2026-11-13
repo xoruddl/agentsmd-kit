@@ -15,12 +15,12 @@ export const reactPreset = {
   filesDir: fileURLToPath(new URL("../files", import.meta.url)),
   docs: [
     {
-      path: "docs/react-components.md",
+      path: "docs/react/components.md",
       when: "컴포넌트·훅을 만들 때. 폴더, 화면 상태, 접근성, React 린트 규칙",
     },
-    { path: "docs/react-testing.md", when: "컴포넌트·훅·화면 테스트를 쓸 때" },
+    { path: "docs/react/testing.md", when: "컴포넌트·훅·화면 테스트를 쓸 때" },
     {
-      path: "docs/browser-security.md",
+      path: "docs/react/browser-security.md",
       when: "공개 환경변수, 사용자 입력을 화면에 그릴 때, 인증 토큰을 다룰 때",
     },
   ],
@@ -30,6 +30,6 @@ export const reactPreset = {
   ],
   nextSteps: [
     "검증 명령과 .nvmrc 는 typescript 프리셋이 넣습니다. 함께 설치하지 않았다면 agentsmd init --preset typescript 를 실행하세요.",
-    "린트 설정에 docs/react-components.md 의 React·jsx-a11y 규칙을 켜세요.",
+    "린트 설정에 docs/react/components.md 의 React·jsx-a11y 규칙을 켜세요.",
   ],
 } satisfies Preset;

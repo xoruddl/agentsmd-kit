@@ -25,7 +25,7 @@ export const config = {
 
 ## 화면에 그리는 값
 
-- `dangerouslySetInnerHTML` 을 쓰지 않는다. 꼭 필요하면 검증된 sanitize 라이브러리를 거치고 그 자리에 이유를 주석으로 적는다. (린트 `react/no-danger` 가 검사한다 → [react-components.md](react-components.md))
+- `dangerouslySetInnerHTML` 을 쓰지 않는다. 꼭 필요하면 검증된 sanitize 라이브러리를 거치고 그 자리에 이유를 주석으로 적는다. (린트 `react/no-danger` 가 검사한다 → [components.md](components.md))
 - 사용자 입력을 `href` 에 넣을 때 `http:`, `https:` 로 시작하는지 확인한다. (`javascript:` 차단)
 - 오류 화면에 서버 응답 원문, 토큰, 개인정보를 그대로 보여 주지 않는다.
 

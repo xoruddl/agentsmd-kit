@@ -14,7 +14,7 @@
 # 예: BRANCH=feat/12-login TITLE="[Feat] 로그인 추가" .githooks/check-pr
 #
 # 타입 목록은 .githooks/commit-msg 의 types 와 같게 유지한다. title_types 는 같은 목록을 제목용으로 쓴 것이다.
-# 규칙: docs/git-conventions.md
+# 규칙: docs/git/git-conventions.md
 
 set -uo pipefail
 

@@ -7,7 +7,7 @@
 #
 # 타입 목록은 .githooks/check-pr 의 types 와 같게 유지한다.
 # 사용: .githooks/commit-msg <메시지 파일>
-# 규칙: docs/git-conventions.md
+# 규칙: docs/git/git-conventions.md
 
 set -euo pipefail
 
@@ -27,7 +27,7 @@ subject="$(printf '%s\n' "$message" | head -n 1)"
 fail() {
   echo "commit-msg: $1" >&2
   echo "  제목: $subject" >&2
-  echo "  규칙: docs/git-conventions.md" >&2
+  echo "  규칙: docs/git/git-conventions.md" >&2
   exit 1
 }
 
@@ -51,7 +51,7 @@ if [[ "$subject" == *. ]]; then
   fail "제목을 마침표로 끝내지 않습니다."
 fi
 
-# 사람이 쓴 커밋처럼 보이도록 AI 도구 서명을 막는다. (docs/writing-style.md)
+# 사람이 쓴 커밋처럼 보이도록 AI 도구 서명을 막는다. (docs/git/writing-style.md)
 if printf '%s\n' "$message" | grep -qiE 'co-authored-by:.*(claude|anthropic)|generated with.*claude|🤖'; then
   fail "AI 서명이 포함돼 있습니다. 해당 줄을 지우세요."
 fi

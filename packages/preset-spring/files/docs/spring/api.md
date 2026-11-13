@@ -5,7 +5,7 @@ Spring MVC 로 REST API 를 만들 때의 규칙이다.
 ## 컨트롤러
 
 - 컨트롤러는 요청 검증, 서비스 호출, 응답 변환만 한다. 업무 규칙은 서비스와 도메인에 둔다.
-- 요청·응답은 DTO(record)로 받고 돌려준다. → [spring-architecture.md](spring-architecture.md)
+- 요청·응답은 DTO(record)로 받고 돌려준다. → [architecture.md](architecture.md)
 - 컨트롤러마다 try-catch 로 예외를 응답으로 바꾸지 않는다. 전역 예외 처리에 맡긴다.
 
 ## URL 과 메서드
