@@ -71,6 +71,28 @@ agentsmd init --preset git                     # Git 규칙만
 파일 덮어쓰기는 직접 고른 프리셋에만 적용한다. `--preset react --force`는 함께 설치하는 `typescript`의 문서나 `.nvmrc`를 덮어쓰지 않고, 그대로 둔 파일을 목록으로 알린다.
 그 파일까지 덮어쓰려면 `--preset typescript,react --force`처럼 프리셋을 직접 적는다.
 
+### 0.6 이하에서 올릴 때
+
+0.6 이하는 프리셋 문서를 `docs/` 한 층에 설치했다(`docs/workflow.md`). 0.7부터는 `docs/<프리셋 이름>/` 아래에 설치한다(`docs/git/workflow.md`).
+`init`은 기존 파일을 옮기거나 지우지 않으므로, 옛 저장소에서 다시 실행하면 옛 문서는 남고 새 위치에 같은 문서가 또 생긴다.
+둘 다 문서 지도에 올라 `check`는 통과한다. 그래서 `init`이 옛 위치에 남은 문서를 새 위치와 함께 알린다.
+
+```text
+옛 위치에 프리셋 문서 2개가 남아 있습니다. 프리셋 문서는 이제 docs/<프리셋>/ 아래에 설치합니다.
+  docs/workflow.md → docs/git/workflow.md
+  docs/github.md → docs/github/usage.md
+```
+
+안내가 나오면 아래 순서로 정리한다.
+
+1. 옛 문서를 고쳐 썼다면 내용을 새 위치의 문서로 옮긴다. 프로젝트 방향 문서(`docs/project-direction.md`)는 사람이 채운 문서이므로 반드시 옮긴다.
+2. 옛 파일을 지우고, `AGENTS.md` 문서 지도에서 옛 경로의 줄을 지운다.
+3. `.githooks/commit-msg`, `.githooks/check-pr`, `.github/pull_request_template.md`가 옛 경로를 안내하면 지우고 `init`을 다시 실행한다.
+4. `agentsmd check`로 확인한다.
+
+`docs/lint-and-ci.md`처럼 `java`와 `typescript`가 같은 이름으로 설치하던 문서는 새 위치 두 곳을 모두 알린다. 어느 프리셋의 문서였는지는 내용을 보고 정한다.
+옛 문서를 그대로 두고 `check`만 새 버전으로 돌리는 저장소는 손댈 것이 없다.
+
 ## agentsmd check
 
 문서 지도(`AGENTS.md`)가 저장소와 맞는지 검사한다. 규칙은 [rules.md](rules.md).
