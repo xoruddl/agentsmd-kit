@@ -20,4 +20,6 @@ export const projectPreset = {
     },
   ],
   nextSteps: ["docs/project/direction.md 에 프로젝트 목표와 범위를 채우세요."],
+  // 0.6 이하는 java·typescript 프리셋이 이 문서를 docs/ 바로 아래에 설치했다. 사람이 채워 둔 문서이므로 옮겨야 한다.
+  moved: [{ from: "docs/project-direction.md", to: "docs/project/direction.md" }],
 } satisfies Preset;

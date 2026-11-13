@@ -27,4 +27,11 @@ export const gitPreset = {
     "훅 우회(`--no-verify`) 금지.",
   ],
   nextSteps: ["CI에서 PR마다 .githooks/check-pr 를 실행하세요. → docs/git/git-conventions.md"],
+  // 0.6 이하는 문서를 docs/ 한 층에 설치했다.
+  moved: [
+    { from: "docs/workflow.md", to: "docs/git/workflow.md" },
+    { from: "docs/git-conventions.md", to: "docs/git/git-conventions.md" },
+    { from: "docs/code-review.md", to: "docs/git/code-review.md" },
+    { from: "docs/writing-style.md", to: "docs/git/writing-style.md" },
+  ],
 } satisfies Preset;
