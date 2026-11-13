@@ -175,7 +175,7 @@ describe("runInit", () => {
     // 사용자가 고르지 않은 프리셋이므로 "덮어쓰려면 --force"라고 안내하지 않는다. --force로는 덮이지 않는다.
     expect(out).not.toContain("(덮어쓰려면 --force)");
     expect(out).toMatch(
-      /함께 설치한 프리셋의 파일 1개는 이미 있어서 그대로 두었습니다.*\n {2}docs\/java\/testing\.md/,
+      /함께 설치한 프리셋의 파일 1개는 이미 있고 내용이 달라 그대로 두었습니다.*\n {2}docs\/java\/testing\.md/,
     );
     await expect(checkRepository({ root })).resolves.toEqual([]);
   });
@@ -214,7 +214,7 @@ describe("runInit", () => {
     await expect(readFile(join(root, ".nvmrc"), "utf8")).resolves.toBe("18\n");
     // 이미 --force를 줬으므로 "덮어쓰려면 --force"는 따를 수 없는 안내다. 실제 방법을 알린다.
     expect(out).not.toContain("(덮어쓰려면 --force)");
-    expect(out).toContain("덮어쓰려면 그 프리셋을 --preset 에 직접 적고 --force");
+    expect(out).toContain("원본으로 되돌릴 때만 그 프리셋을 --preset 에 직접 적고 --force");
     expect(out).toMatch(/\n {2}\.nvmrc\n/);
   });
 
@@ -266,10 +266,17 @@ describe("runInit", () => {
   });
 
   it("필요한 프리셋을 직접 골랐으면 더했다고 알리지 않는다", async () => {
+    await runInit(["--preset", "github,git", "--skip-hooks"], io());
+
+    expect(out).toMatch(/^git, github 프리셋:/);
+    expect(out).not.toContain("고르지 않았지만");
+  });
+
+  it("필요한 프리셋 가운데 직접 고르지 않은 것만 더했다고 알린다", async () => {
     await runInit(["--preset", "spring,java", "--skip-hooks"], io());
 
     expect(out).toMatch(/^project, java, spring 프리셋:/);
-    expect(out).not.toContain("java (spring에 필요");
+    expect(out).toContain("함께 설치했습니다: project (java에 필요)\n");
   });
 
   it("설치 직후의 저장소는 check 규칙을 모두 통과한다", async () => {

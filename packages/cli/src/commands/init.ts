@@ -18,7 +18,7 @@ const nameWidth = Math.max(...PRESETS.map((preset) => preset.name.length)) + 2;
 const presetList = PRESETS.map(
   (preset) => `  ${preset.name.padEnd(nameWidth)}${preset.description}`,
 ).join("\n");
-// 예: "github → git, spring → java, react → typescript"
+// `PRESETS`에 적힌 순서대로 "github → git, java → project, spring → java, ..."처럼 잇는다.
 const requiresList = PRESETS.flatMap((preset) =>
   (preset.requires ?? []).map((required) => `${preset.name} → ${required}`),
 ).join(", ");
@@ -41,7 +41,7 @@ ${presetList}
   agentsmd init --preset git,github,typescript   GitHub 템플릿까지 함께 설치
   agentsmd init --preset git,typescript,react    React 프론트엔드 규칙까지 함께 설치
   agentsmd init --preset git,java,spring         Spring Boot 서버 규칙까지 함께 설치
-  agentsmd init --preset java                    Java 규칙만 설치
+  agentsmd init --preset java                    Git 규칙 없이 Java 규칙과 프로젝트 방향 문서만 설치
 
 옵션:
   --preset <이름>   설치할 프리셋. 여러 개는 쉼표로 잇습니다 (필수)
@@ -174,9 +174,10 @@ function formatReport(
   }
   const addedSkipped = result.added.flatMap((item) => item.skipped);
   if (addedSkipped.length > 0) {
-    // --force는 함께 설치한 프리셋의 파일을 덮지 않으므로, 위 안내와 달리 덮어쓰는 방법을 따로 알린다.
+    // --force는 함께 설치한 프리셋의 파일을 덮지 않으므로, 위 안내와 달리 원본으로 되돌리는 방법을 따로 알린다.
+    // 프로젝트 방향 문서처럼 사람이 채우는 파일이 여기에 자주 오므로, 덮어쓰기를 권하는 말투로 쓰지 않는다.
     lines.push(
-      `함께 설치한 프리셋의 파일 ${String(addedSkipped.length)}개는 이미 있어서 그대로 두었습니다 (덮어쓰려면 그 프리셋을 --preset 에 직접 적고 --force):`,
+      `함께 설치한 프리셋의 파일 ${String(addedSkipped.length)}개는 이미 있고 내용이 달라 그대로 두었습니다 (원본으로 되돌릴 때만 그 프리셋을 --preset 에 직접 적고 --force):`,
       ...addedSkipped.map((file) => `  ${file}`),
     );
   }
