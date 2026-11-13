@@ -55,7 +55,7 @@ describe("runInit", () => {
 
     const agents = await readFile(join(root, "AGENTS.md"), "utf8");
     expect(agents).toContain("[docs/typescript/typescript.md](docs/typescript/typescript.md)");
-    expect(agents).toContain("[docs/react-components.md](docs/react-components.md)");
+    expect(agents).toContain("[docs/react/components.md](docs/react/components.md)");
     await expect(checkRepository({ root })).resolves.toEqual([]);
   });
 
