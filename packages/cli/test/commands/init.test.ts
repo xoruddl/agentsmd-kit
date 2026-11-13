@@ -106,6 +106,39 @@ describe("runInit", () => {
     await expect(checkRepository({ root })).resolves.toEqual([]);
   });
 
+  // github 프리셋의 PR 템플릿과 문서는 Git 작업 규칙 문서를 가리킨다. git 없이 설치하면 없는 문서를 가리키게 된다.
+  it("github만 골라도 git 프리셋을 함께 설치하고 그 사실을 알린다", async () => {
+    await expect(runInit(["--preset", "github", "--skip-hooks"], io())).resolves.toBe(0);
+
+    expect(out).toMatch(/^git, github 프리셋: 파일 \d+개를 설치했습니다\./);
+    expect(out).toContain("고르지 않았지만 필요한 프리셋을 함께 설치했습니다: git (github에 필요)");
+    await expect(readFile(join(root, ".githooks/commit-msg"), "utf8")).resolves.toContain("#!");
+    await expect(readFile(join(root, "docs/git/git-conventions.md"), "utf8")).resolves.not.toBe("");
+    await expect(checkRepository({ root })).resolves.toEqual([]);
+  });
+
+  // 프레임워크 프리셋은 검증 명령을 넣지 않는다. 언어 프리셋의 필수 문서가 문서 지도에서 위에 오게 먼저 설치한다.
+  it.each([
+    ["spring", "java", "docs/java/project-direction.md", "docs/spring/architecture.md"],
+    ["react", "typescript", "docs/typescript/project-direction.md", "docs/react/components.md"],
+  ])("%s만 골라도 %s 프리셋을 먼저 설치한다", async (name, required, first, second) => {
+    await expect(runInit(["--preset", name, "--skip-hooks"], io())).resolves.toBe(0);
+
+    expect(out).toContain(`${required} (${name}에 필요)`);
+    const agents = await readFile(join(root, "AGENTS.md"), "utf8");
+    expect(agents.indexOf(first)).toBeGreaterThan(-1);
+    expect(agents.indexOf(first)).toBeLessThan(agents.indexOf(second));
+    expect(agents).toContain("## 검증");
+    await expect(checkRepository({ root })).resolves.toEqual([]);
+  });
+
+  it("필요한 프리셋을 직접 골랐으면 더했다고 알리지 않는다", async () => {
+    await runInit(["--preset", "spring,java", "--skip-hooks"], io());
+
+    expect(out).toMatch(/^java, spring 프리셋:/);
+    expect(out).not.toContain("고르지 않았지만");
+  });
+
   it("설치 직후의 저장소는 check 규칙을 모두 통과한다", async () => {
     await runInit(["--preset", "java", "--skip-hooks"], io());
     await expect(checkRepository({ root })).resolves.toEqual([]);

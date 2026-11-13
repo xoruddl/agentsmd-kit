@@ -12,19 +12,24 @@ import {
 import { configureHooksPath, type HooksResult } from "../git-hooks.js";
 import { makeHooksExecutable } from "../hook-permissions.js";
 import type { ExitCode, Io } from "../io.js";
-import { PRESETS, selectPresets } from "../presets.js";
+import { PRESETS, selectPresets, type AddedPreset } from "../presets.js";
 
 // 이름 열 너비를 가장 긴 이름에 맞춰 설명과 붙지 않게 한다.
 const nameWidth = Math.max(...PRESETS.map((preset) => preset.name.length)) + 2;
 const presetList = PRESETS.map(
   (preset) => `  ${preset.name.padEnd(nameWidth)}${preset.description}`,
 ).join("\n");
+// 예: "github → git, spring → java, react → typescript"
+const requiresList = PRESETS.flatMap((preset) =>
+  (preset.requires ?? []).map((required) => `${preset.name} → ${required}`),
+).join(", ");
 
 export const INIT_USAGE = `사용법: agentsmd init --preset <이름>[,<이름>...] [옵션]
 
 AI 작업 지침(AGENTS.md, docs/)을 저장소에 설치합니다.
 Git 훅은 git 프리셋, GitHub 템플릿은 github 프리셋을 고를 때만 설치합니다.
-여러 프리셋을 고르면 문서 지도(AGENTS.md)를 적은 순서대로 합칩니다.
+다른 프리셋이 있어야 하는 프리셋을 고르면 그 프리셋을 먼저 함께 설치합니다 (${requiresList}).
+여러 프리셋을 고르면 문서 지도(AGENTS.md)를 설치한 순서대로 합칩니다.
 AGENTS.md가 이미 있으면 빠진 문서·규칙만 더하고, 다른 파일은 이미 있으면 건너뜁니다.
 AGENTS.md에 '## 문서 지도' 절이 없으면 바꾸지 않고 직접 옮길 항목을 알려 줍니다.
 
@@ -76,7 +81,7 @@ export async function runInit(args: readonly string[], io: Io): Promise<ExitCode
   }
 
   const root = resolve(io.cwd, values.root ?? ".");
-  const { presets } = selection;
+  const { presets, added } = selection;
   const result = await installAll(presets, root, values.force === true);
   const hooksPath = presets.find((p) => p.hooksPath !== undefined)?.hooksPath;
   if (hooksPath !== undefined) {
@@ -88,7 +93,7 @@ export async function runInit(args: readonly string[], io: Io): Promise<ExitCode
       ? undefined
       : await configureHooksPath(root, hooksPath);
 
-  io.stdout(formatReport(presets, result, hooksPath, hooks));
+  io.stdout(formatReport(presets, added, result, hooksPath, hooks));
   return 0;
 }
 
@@ -114,12 +119,18 @@ async function installAll(
 
 function formatReport(
   presets: readonly Preset[],
+  added: readonly AddedPreset[],
   result: EntryFilesResult,
   hooksPath: string | undefined,
   hooks: HooksResult | undefined,
 ): string {
   const names = presets.map((preset) => preset.name).join(", ");
   const lines = [`${names} 프리셋: 파일 ${String(result.written.length)}개를 설치했습니다.`];
+  if (added.length > 0) {
+    // 고르지 않은 프리셋의 파일이 생기므로, 무엇이 왜 더해졌는지 알린다.
+    const reasons = added.map(({ name, requiredBy }) => `${name} (${requiredBy}에 필요)`);
+    lines.push(`고르지 않았지만 필요한 프리셋을 함께 설치했습니다: ${reasons.join(", ")}`);
+  }
   const unplaced = result.unplaced === undefined ? [] : formatUnplaced(result.unplaced);
   if (result.merged !== undefined && unplaced.length === 0) {
     lines.push(formatMerged(result.merged));
