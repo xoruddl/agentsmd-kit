@@ -25,7 +25,7 @@ npm 패키지, Docker 이미지, GitHub Action 태그 세 가지를 같은 버�
    git switch main && git pull
    pnpm build && pnpm -r publish --access public --no-git-checks
    ```
-4. `main`에 `vX.Y.Z` 태그를 만들어 push한다. release-image 워크플로가 이미지를 `X.Y.Z`, `X.Y`, `latest`로 푸시한다.
+4. `main`에 `vX.Y.Z` 태그를 만들어 push한다. release-image 워크플로가 이미지를 `X.Y.Z`, `X.Y`, `0`, `latest`로 푸시한다.
    ```sh
    git tag vX.Y.Z main && git push origin vX.Y.Z
    ```
@@ -38,11 +38,12 @@ npm 패키지, Docker 이미지, GitHub Action 태그 세 가지를 같은 버�
    git tag -f v0 main && git push -f origin v0
    ```
    저장소 규칙은 force push를 금하지만, Action 태그는 GitHub Actions 관례대로 최신 릴리스를 가리키도록 옮긴다. 브랜치에는 적용하지 않는다.
-7. 다른 저장소에서 `uses: xoruddl/agentsmd-kit@v0`와 `docker run ghcr.io/xoruddl/agentsmd:X.Y`가 새 버전으로 도는지 확인하고 릴리스 이슈를 닫는다.
+7. 다른 저장소에서 `uses: xoruddl/agentsmd-kit@v0`와 `docker run ghcr.io/xoruddl/agentsmd:0`이 새 버전으로 도는지 확인하고 릴리스 이슈를 닫는다.
 
 ## 이미지만 다시 올릴 때
 
 Dockerfile만 고쳤거나 처음 올릴 때처럼 npm 버전은 그대로인데 이미지를 다시 밀어야 하면, Actions 화면에서 **Release image** 워크플로를 `workflow_dispatch`로 돌리고 `version`에 현재 버전을 넣는다. 돌린 브랜치의 코드로 빌드한다.
+이미지 태그 `0`도 함께 옮겨지므로 옛 버전을 넣어 돌리면 `0`이 옛 이미지로 되돌아간다. 그랬다면 최신 버전으로 한 번 더 돌린다.
 
 ## 태그 이름
 
@@ -50,4 +51,5 @@ Dockerfile만 고쳤거나 처음 올릴 때처럼 npm 버전은 그대로인데
 - `v0`: Action 사용자가 참조하는 메이저 태그. 릴리스마다 옮긴다. 1.0부터는 `v1`을 쓴다.
 - `v0.5`: 메이저 태그로 바꾸기 전에 안내하던 태그. 0.5.0에 남겨 두고 더 옮기지 않는다.
 - 사용자가 `@vX.Y.Z`로 Action을 참조하면 그 시점의 `action.yml`과 이미지로 고정된다. 새 릴리스를 받지 않으려는 경우에 쓴다. 문서에서는 `@v0`만 안내한다.
+- 이미지 태그도 같은 방식이다. 문서에서는 `ghcr.io/xoruddl/agentsmd:0`만 안내하고, 고정하려면 `:X.Y.Z`를 쓴다. `:X.Y`는 그 마이너의 최신 패치를 가리킨다.
 - 메이저 태그는 마이너 릴리스도 곧바로 사용자에게 닿는다. 기존 저장소의 검사가 새로 실패할 수 있는 변경은 릴리스 노트에 적는다.

@@ -133,11 +133,11 @@ BRANCH=feat/12-order-cancel TITLE="[Feat] 주문 취소 사유 필드 추가" .g
 문서를 손으로 더하거나 빼거나 옮기면 `AGENTS.md`의 문서 지도가 어긋난다. `agentsmd check`를 PR마다 돌려 어긋난 변경은 머지 전에 실패하게 한다.
 Node 없이 돌릴 수 있게 cli를 담은 이미지 `ghcr.io/xoruddl/agentsmd`가 있다. 저장소를 작업 디렉터리로 마운트하면 기본값으로 검사한다.
 
-| CI             | 설정                                                                          |
-| -------------- | ----------------------------------------------------------------------------- |
-| GitHub Actions | `uses: xoruddl/agentsmd-kit@v0` (같은 이미지를 쓰는 Action)                   |
-| GitLab CI      | `image: ghcr.io/xoruddl/agentsmd:0.6` + `script: [agentsmd check]`            |
-| Jenkins        | `docker.image('ghcr.io/xoruddl/agentsmd:0.6').inside { sh 'agentsmd check' }` |
+| CI             | 설정                                                                        |
+| -------------- | --------------------------------------------------------------------------- |
+| GitHub Actions | `uses: xoruddl/agentsmd-kit@v0` (같은 이미지를 쓰는 Action)                 |
+| GitLab CI      | `image: ghcr.io/xoruddl/agentsmd:0` + `script: [agentsmd check]`            |
+| Jenkins        | `docker.image('ghcr.io/xoruddl/agentsmd:0').inside { sh 'agentsmd check' }` |
 
 - 문서 지도 파일이나 문서 디렉터리 위치가 기본값과 다르면 `agentsmd check --docs guides`처럼 옵션으로 넘긴다. Action은 `with:`의 같은 이름으로 받는다.
 - 검사가 실패하면 종료 코드 1, 옵션이 잘못됐거나 문서 지도가 없으면 2를 돌려준다.
