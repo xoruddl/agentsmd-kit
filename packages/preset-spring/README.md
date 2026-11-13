@@ -11,5 +11,5 @@ npx @agentsmd/cli init --preset java,spring       # Java 규칙과 함께
 - JPA·트랜잭션: 엔티티 규칙, 지연 로딩과 N+1, `@Transactional`·`readOnly`, open-in-view, Flyway 마이그레이션
 - API: URL·상태 코드, Bean Validation, `ProblemDetail` 오류 응답, 페이징
 - 테스트: `@WebMvcTest`·`MockMvcTester`, `@DataJpaTest`, `@MockitoBean`, Testcontainers `@ServiceConnection`
-- Java 코드 규칙, 검증 명령, 포맷 설정은 넣지 않습니다. [Java 프리셋](https://www.npmjs.com/package/@agentsmd/preset-java)을 함께 고르면 더해집니다.
+- Java 코드 규칙, 검증 명령, 포맷 설정은 넣지 않습니다. [Java 프리셋](https://www.npmjs.com/package/@agentsmd/preset-java)이 맡습니다. `--preset spring`만 적어도 `init`이 Java 프리셋을 먼저 설치합니다.
 - Git 훅·GitHub 설정은 설치하지 않습니다. `AGENTS.md`는 고른 프리셋에 맞춰 만들어집니다.

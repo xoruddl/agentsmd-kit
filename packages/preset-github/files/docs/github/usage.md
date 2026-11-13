@@ -76,7 +76,7 @@ GitLab CI·Jenkins에서 같은 이미지를 쓰는 방법은 Git 작업 규칙 
 
 ### PR 규칙 검사
 
-Git 프리셋의 PR 규칙 검사(`.githooks/check-pr`)를 함께 설치했다면, 아래 파일을 `.github/workflows/conventions.yml`로 만든다.
+PR 규칙 검사(`.githooks/check-pr`)를 PR마다 돌리려면 아래 파일을 `.github/workflows/conventions.yml`로 만든다.
 
 ```yaml
 name: Conventions

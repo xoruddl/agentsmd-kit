@@ -5,14 +5,15 @@ import type { Preset } from "@agentsmd/core";
  * Spring Boot 서버용 프리셋. Spring Boot 4(Spring Framework 7) 기준이다.
  *
  * 패키지 구조·설정, JPA·트랜잭션, API·테스트 문서를 담는다.
- * Java 코드 규칙과 검증 명령, 포맷 설정은 넣지 않는다. Java 프리셋을 함께 고르면 더해진다.
- * 프리셋끼리 의존하지 않으므로, 이 프리셋만 설치해도 문서의 링크가 깨지지 않게 다른 프리셋 문서로 링크하지 않는다.
+ * Java 코드 규칙과 검증 명령, 포맷 설정은 넣지 않고 Java 프리셋에 맡긴다. `requires`로 적어 두면 `init`이 함께 설치한다.
+ * 패키지끼리는 의존하지 않는다. 이 프리셋만 따로 설치해도 문서의 링크가 깨지지 않게 다른 프리셋 문서로 링크하지 않는다.
  * `files/`는 빌드 결과(dist/)와 소스(src/) 어디서 실행해도 패키지 루트 기준으로 같은 위치다.
  */
 export const springPreset = {
   name: "spring",
   description: "Spring Boot 서버용 구조·JPA·트랜잭션·API·테스트 규칙",
   filesDir: fileURLToPath(new URL("../files", import.meta.url)),
+  requires: ["java"],
   docs: [
     {
       path: "docs/spring/architecture.md",
@@ -38,7 +39,6 @@ export const springPreset = {
     "`@Transactional` 은 service 에 두고, 조회는 `readOnly = true`. 트랜잭션 안에서 외부 API 를 부르지 않는다.",
   ],
   nextSteps: [
-    "검증 명령은 java 프리셋이 넣습니다. 함께 설치하지 않았다면 agentsmd init --preset java 를 실행하세요.",
     "application.yml 에 docs/spring/data-jpa.md 의 open-in-view·batch fetch 설정을 넣으세요.",
   ],
 } satisfies Preset;
