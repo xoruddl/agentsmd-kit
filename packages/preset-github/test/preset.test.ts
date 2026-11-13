@@ -19,8 +19,14 @@ afterEach(async () => {
 });
 
 describe("githubPreset", () => {
-  it("GitHub 프리셋만 설치해도 agentsmd check 규칙을 모두 통과한다", async () => {
+  // init은 git 프리셋을 함께 설치하지만, 이 프리셋의 문서 링크는 이 프리셋 안에서 닫혀 있어야 한다.
+  it("이 프리셋의 파일만으로도 agentsmd check 규칙을 모두 통과한다", async () => {
     await expect(checkRepository({ root: repo })).resolves.toEqual([]);
+  });
+
+  // PR 템플릿과 사용법 문서가 Git 작업 규칙 문서를 가리킨다. git 프리셋이 필요하다고 적어 init이 함께 설치하게 한다.
+  it("git 프리셋을 필요로 한다", () => {
+    expect(githubPreset.requires).toEqual(["git"]);
   });
 
   it("이슈·PR 템플릿을 설치한다", async () => {

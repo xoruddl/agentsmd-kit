@@ -113,7 +113,13 @@ describe("runInit", () => {
     expect(out).toMatch(/^git, github 프리셋: 파일 \d+개를 설치했습니다\./);
     expect(out).toContain("고르지 않았지만 필요한 프리셋을 함께 설치했습니다: git (github에 필요)");
     await expect(readFile(join(root, ".githooks/commit-msg"), "utf8")).resolves.toContain("#!");
-    await expect(readFile(join(root, "docs/git/git-conventions.md"), "utf8")).resolves.not.toBe("");
+    // PR 템플릿은 규칙 문서를 링크가 아닌 글자로 가리켜 check가 보지 못한다. 적힌 경로가 실제로 있는지 여기서 본다.
+    const template = await readFile(join(root, ".github/pull_request_template.md"), "utf8");
+    const mentioned = template.match(/docs\/[\w/-]+\.md/g) ?? [];
+    expect(mentioned).not.toEqual([]);
+    for (const path of mentioned) {
+      await expect(readFile(join(root, path), "utf8"), path).resolves.not.toBe("");
+    }
     await expect(checkRepository({ root })).resolves.toEqual([]);
   });
 
