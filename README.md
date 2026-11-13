@@ -44,7 +44,7 @@ Git 규칙, 호스팅(GitHub), 언어 규칙, 프레임워크(React·Spring) 규
 ```text
 docs/
   git/      workflow.md, git-conventions.md, code-review.md, writing-style.md
-  github/   repository-setup.md
+  github/   usage.md
   java/     project-direction.md, code-style.md, clean-code.md, checklist.md, testing.md, ...
   spring/   architecture.md, data-jpa.md, api.md, testing.md
 ```
@@ -117,7 +117,7 @@ pnpm add -D @agentsmd/cli
 - run: pnpm exec agentsmd check
 ```
 
-GitHub Actions에서는 설치 없이 이 저장소의 Action을 한 줄로 씁니다. 검사 대상 경로는 `with:`로 바꿀 수 있고, 입력 이름은 `agentsmd check`의 옵션과 같습니다. → [`packages/preset-github/files/docs/github/repository-setup.md`](packages/preset-github/files/docs/github/repository-setup.md)
+GitHub Actions에서는 설치 없이 이 저장소의 Action을 한 줄로 씁니다. 검사 대상 경로는 `with:`로 바꿀 수 있고, 입력 이름은 `agentsmd check`의 옵션과 같습니다. → [`packages/preset-github/files/docs/github/usage.md`](packages/preset-github/files/docs/github/usage.md)
 
 ```yaml
 - uses: xoruddl/agentsmd-kit@v0

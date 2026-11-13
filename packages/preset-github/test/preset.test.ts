@@ -47,9 +47,9 @@ describe("githubPreset", () => {
   // 워크플로를 설치하지 않는 대신, GitHub Actions에서 문서 지도를 검사하는 방법을 문서로 안내한다.
   it("설치 후 안내에서 문서 지도 검사 Action을 알린다", async () => {
     const step = githubPreset.nextSteps.find((line) => line.includes("agentsmd-kit"));
-    expect(step).toContain("docs/github/repository-setup.md");
+    expect(step).toContain("docs/github/usage.md");
     // 메이저 태그로 안내해야 마이너를 올려도 설치된 문서가 낡지 않는다. `@v0.5`처럼 뒤가 붙으면 통과하지 않게 줄 끝까지 맞춘다.
-    await expect(readFile(join(repo, "docs/github/repository-setup.md"), "utf8")).resolves.toMatch(
+    await expect(readFile(join(repo, "docs/github/usage.md"), "utf8")).resolves.toMatch(
       /uses: xoruddl\/agentsmd-kit@v\d+$/m,
     );
   });

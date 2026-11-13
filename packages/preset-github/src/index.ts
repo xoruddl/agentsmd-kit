@@ -14,14 +14,14 @@ export const githubPreset = {
   filesDir: fileURLToPath(new URL("../files", import.meta.url)),
   docs: [
     {
-      path: "docs/github/repository-setup.md",
+      path: "docs/github/usage.md",
       when: "이슈·PR 작성, gh 명령, 저장소 설정, CI 연결",
     },
   ],
   rules: ["이슈와 PR은 `.github/`의 템플릿을 채워 만든다."],
   nextSteps: [
-    "GitHub 저장소 설정에서 머지 방식을 'Allow merge commits'만 허용하세요. → docs/github/repository-setup.md",
-    "main 브랜치 룰셋을 만들고 CI 검사를 필수 체크로 거세요. → docs/github/repository-setup.md",
-    "GitHub Actions를 쓰면 PR마다 문서 지도를 검사하는 xoruddl/agentsmd-kit Action을 거세요. → docs/github/repository-setup.md",
+    "GitHub 저장소 설정에서 머지 방식을 'Allow merge commits'만 허용하세요. → docs/github/usage.md",
+    "main 브랜치 룰셋을 만들고 CI 검사를 필수 체크로 거세요. → docs/github/usage.md",
+    "GitHub Actions를 쓰면 PR마다 문서 지도를 검사하는 xoruddl/agentsmd-kit Action을 거세요. → docs/github/usage.md",
   ],
 } satisfies Preset;
