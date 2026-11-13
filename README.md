@@ -110,7 +110,7 @@ pnpm add -D @agentsmd/cli
 GitHub Actions에서는 설치 없이 이 저장소의 Action을 한 줄로 씁니다. 검사 대상 경로는 `with:`로 바꿀 수 있고, 입력 이름은 `agentsmd check`의 옵션과 같습니다. → [`packages/preset-github/files/docs/github.md`](packages/preset-github/files/docs/github.md)
 
 ```yaml
-- uses: xoruddl/agentsmd-kit@v0.5
+- uses: xoruddl/agentsmd-kit@v0
 ```
 
 Action이 쓰는 이미지 `ghcr.io/xoruddl/agentsmd`는 GitLab CI·Jenkins 등 Docker가 되는 CI에서 그대로 씁니다. Node가 없어도 됩니다. → [`packages/preset-git/files/docs/git-conventions.md`](packages/preset-git/files/docs/git-conventions.md)
