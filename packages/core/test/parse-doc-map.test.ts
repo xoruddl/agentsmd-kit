@@ -71,6 +71,36 @@ describe("parseDocMap", () => {
     expect(targets(markdown)).toEqual(["docs/ref.md", "docs/with space.md"]);
   });
 
+  it("참조형 링크 정의는 제목이 붙거나 꺾쇠로 감싸도 읽는다", () => {
+    const markdown = [
+      '[제목]: docs/titled.md "문서 제목"',
+      "[작은따옴표]: docs/single.md '문서 제목'",
+      "[꺾쇠]: <docs/with space.md>",
+    ].join("\n");
+    expect(targets(markdown)).toEqual(["docs/titled.md", "docs/single.md", "docs/with space.md"]);
+  });
+
+  // 본문 문서에는 각주가 흔하다. 각주 내용의 첫 단어를 경로로 읽으면 없는 파일이라고 알리게 된다.
+  it("각주 정의는 링크로 보지 않는다", () => {
+    expect(targets(["본문[^1]", "", "[^1]: 각주 설명", "[^note]: docs/a.md"].join("\n"))).toEqual(
+      [],
+    );
+  });
+
+  // 참조형 정의는 경로 뒤에 따옴표로 감싼 제목만 올 수 있다. 다른 글이 이어지면 그냥 문장이다.
+  it("대괄호와 콜론으로 시작해도 경로 뒤에 글이 이어지면 링크로 보지 않는다", () => {
+    expect(
+      targets(["[TODO]: 나중에 채움", "[주의]: 배포 전에 [문서](docs/a.md) 확인"].join("\n")),
+    ).toEqual(["docs/a.md"]);
+  });
+
+  // 주석을 가려내려면 여러 줄 주석까지 따라가야 한다. 지금은 가리지 않고 docs/rules.md에 그렇게 적어 둔다.
+  it("HTML 주석 안의 링크는 링크로 보고, HTML 태그의 href는 보지 않는다", () => {
+    expect(targets('<!-- [옛 문서](docs/old.md) --> <a href="docs/html.md">문서</a>')).toEqual([
+      "docs/old.md",
+    ]);
+  });
+
   it("퍼센트 인코딩을 풀어서 실제 파일 이름과 비교할 수 있게 한다", () => {
     expect(targets("[발표](docs/%EB%B0%9C%ED%91%9C.md)")).toEqual(["docs/발표.md"]);
   });
