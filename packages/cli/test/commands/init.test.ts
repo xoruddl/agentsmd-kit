@@ -45,7 +45,7 @@ describe("runInit", () => {
     await expect(runInit(["--preset", "git,typescript", "--skip-hooks"], io())).resolves.toBe(0);
 
     const agents = await readFile(join(root, "AGENTS.md"), "utf8");
-    expect(agents).toContain("[docs/git-conventions.md](docs/git-conventions.md)");
+    expect(agents).toContain("[docs/git/git-conventions.md](docs/git/git-conventions.md)");
     expect(agents).toContain("[docs/typescript.md](docs/typescript.md)");
     await expect(checkRepository({ root })).resolves.toEqual([]);
   });
@@ -73,7 +73,7 @@ describe("runInit", () => {
     await expect(runInit(["--preset", "typescript", "--skip-hooks"], io())).resolves.toBe(0);
 
     expect(out).toMatch(/^typescript 프리셋: /);
-    await expect(readFile(join(root, "docs/git-conventions.md"), "utf8")).rejects.toThrow();
+    await expect(readFile(join(root, "docs/git/git-conventions.md"), "utf8")).rejects.toThrow();
     await expect(readFile(join(root, "AGENTS.md"), "utf8")).resolves.not.toContain(
       "git-conventions",
     );
@@ -101,7 +101,7 @@ describe("runInit", () => {
       readFile(join(root, ".github/pull_request_template.md"), "utf8"),
     ).resolves.toContain("Closes #");
     const agents = await readFile(join(root, "AGENTS.md"), "utf8");
-    expect(agents).toContain("[docs/git-conventions.md](docs/git-conventions.md)");
+    expect(agents).toContain("[docs/git/git-conventions.md](docs/git/git-conventions.md)");
     expect(agents).toContain("[docs/github.md](docs/github.md)");
     await expect(checkRepository({ root })).resolves.toEqual([]);
   });
@@ -132,7 +132,7 @@ describe("runInit", () => {
 
     expect(out).toMatch(/기존 AGENTS\.md에 문서 \d+개, 규칙 \d+개/);
     const agents = await readFile(join(root, "AGENTS.md"), "utf8");
-    expect(agents).toContain("[docs/git-conventions.md](docs/git-conventions.md)");
+    expect(agents).toContain("[docs/git/git-conventions.md](docs/git/git-conventions.md)");
     expect(agents).toContain("[docs/java-checklist.md](docs/java-checklist.md)");
     await expect(checkRepository({ root })).resolves.toEqual([]);
   });
