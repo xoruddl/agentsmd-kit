@@ -32,7 +32,7 @@ inputs:
 
 runs:
   using: docker
-  image: docker://ghcr.io/xoruddl/agentsmd:0.5.0
+  image: docker://ghcr.io/xoruddl/agentsmd:0.6.0
   # 작업 디렉터리는 GitHub가 워크스페이스로 잡아 주므로 root 기본값 "."이 저장소 루트다.
   # 입력은 인자로 그대로 넘긴다. 빈 값은 cli가 종료 코드 2로 거부한다.
   args:
