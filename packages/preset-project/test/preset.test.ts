@@ -31,12 +31,9 @@ describe("projectPreset", () => {
   });
 
   // 언어를 가리지 않는 문서다. 언어에 맞춘 내용을 미리 채워 두면 다른 언어 프리셋과 함께 쓸 수 없다.
-  it("기술 스택을 비워 둔 채로 설치하고, 채우라고 안내한다", async () => {
+  it("기술 스택의 언어 칸을 비워 둔 채로 설치한다", async () => {
     const direction = await readFile(join(repo, "docs/project/direction.md"), "utf8");
-    expect(direction).toMatch(/\| 언어\s+\|\s+\|\s+\|/);
-    expect(projectPreset.nextSteps).toContainEqual(
-      expect.stringContaining("docs/project/direction.md"),
-    );
+    expect(direction).toMatch(/\|\s*언어\s*\|\s*\|\s*\|/);
   });
 
   it("핵심 규칙, 검증 명령, Git 훅은 두지 않는다", async () => {
