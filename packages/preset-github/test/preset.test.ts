@@ -49,7 +49,7 @@ describe("githubPreset", () => {
     const step = githubPreset.nextSteps.find((line) => line.includes("agentsmd-kit"));
     expect(step).toContain("docs/github.md");
     await expect(readFile(join(repo, "docs/github.md"), "utf8")).resolves.toContain(
-      "uses: xoruddl/agentsmd-kit@v0.5",
+      "uses: xoruddl/agentsmd-kit@v0",
     );
   });
 });
