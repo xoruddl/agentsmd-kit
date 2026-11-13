@@ -21,7 +21,7 @@ export const typescriptPreset = {
       when: "모든 작업 시작 전 (필수). 범위 밖 작업이면 먼저 질문",
     },
     {
-      path: "docs/typescript/typescript.md",
+      path: "docs/typescript/rules.md",
       when: "코드 작성·리뷰 (항상). 컴파일러 옵션, 타입 규칙",
     },
     {
@@ -42,7 +42,7 @@ export const typescriptPreset = {
   verify: "pnpm lint && pnpm format:check && pnpm typecheck && pnpm test && pnpm build",
   nextSteps: [
     "docs/typescript/project-direction.md 에 프로젝트 목표와 범위를 채우세요.",
-    "tsconfig 에 docs/typescript/typescript.md 의 필수 컴파일러 옵션을 켜세요.",
+    "tsconfig 에 docs/typescript/rules.md 의 필수 컴파일러 옵션을 켜세요.",
     "package.json 에 lint, format, format:check, typecheck, test, build 스크립트를 두세요. → docs/typescript/lint-and-ci.md",
     ".nvmrc 의 Node 버전을 프로젝트에 맞게 고치세요.",
   ],
