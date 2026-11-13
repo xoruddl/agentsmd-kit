@@ -13,7 +13,7 @@ export interface CheckOptions {
   readonly root: string;
   /** 문서 지도 파일. 루트 기준 상대 경로. 기본값 `AGENTS.md` */
   readonly agentsFile?: string;
-  /** 지도에 모두 올라 있어야 하는 문서 디렉터리. 루트 기준 상대 경로. 기본값 `docs` */
+  /** 문서 디렉터리. 안의 문서는 지도에 모두 올라 있어야 하고 링크도 검사한다. 루트 기준 상대 경로. 기본값 `docs` */
   readonly docsDir?: string;
   /** Claude Code용 지침 파일. 루트 기준 상대 경로. 기본값 `CLAUDE.md` */
   readonly claudeFile?: string;
