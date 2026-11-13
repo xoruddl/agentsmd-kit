@@ -66,10 +66,9 @@ export function resolvePresets(
   chosen: readonly string[],
   available: readonly Preset[],
 ): PresetSelection {
-  const names = [...new Set(chosen)];
+  const names = new Set(chosen);
   const byName = new Map(available.map((preset) => [preset.name, preset]));
-  const find = (name: string) => byName.get(name);
-  const unknown = names.filter((name) => find(name) === undefined);
+  const unknown = [...names].filter((name) => !byName.has(name));
   if (unknown.length > 0) {
     return { ok: false, unknown };
   }
@@ -84,22 +83,20 @@ export function resolvePresets(
     }
     entered.add(preset.name);
     for (const required of preset.requires ?? []) {
-      const found = find(required);
+      const found = byName.get(required);
       if (found === undefined) {
         throw new Error(`${preset.name} 프리셋이 필요로 하는 ${required} 프리셋이 없습니다`);
       }
       add(found, preset.name);
     }
     presets.push(preset);
-    if (requiredBy !== undefined && !names.includes(preset.name)) {
+    if (requiredBy !== undefined && !names.has(preset.name)) {
       added.push({ name: preset.name, requiredBy });
     }
   };
-  for (const name of names) {
-    const preset = find(name);
-    if (preset !== undefined) {
-      add(preset);
-    }
+  // 위에서 모르는 이름을 걸렀으므로 여기서는 모두 찾는다.
+  for (const preset of [...names].flatMap((name) => byName.get(name) ?? [])) {
+    add(preset);
   }
   return { ok: true, presets, added };
 }
