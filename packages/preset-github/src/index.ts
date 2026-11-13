@@ -25,4 +25,6 @@ export const githubPreset = {
     "main 브랜치 룰셋을 만들고 CI 검사를 필수 체크로 거세요. → docs/github/usage.md",
     "GitHub Actions를 쓰면 PR마다 문서 지도를 검사하는 xoruddl/agentsmd-kit Action을 거세요. → docs/github/usage.md",
   ],
+  // 0.6 이하는 문서를 docs/ 한 층에 설치했다.
+  moved: [{ from: "docs/github.md", to: "docs/github/usage.md" }],
 } satisfies Preset;

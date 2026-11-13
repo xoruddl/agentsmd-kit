@@ -28,6 +28,19 @@ export interface Preset {
   readonly verify?: string;
   /** 파일을 설치한 뒤 사람이 직접 해야 하는 일. 설치 결과 끝에 안내한다. */
   readonly nextSteps?: readonly string[];
+  /**
+   * 이전 버전에서 다른 경로에 설치하던 문서. 옛 경로에 파일이 남아 있으면 `init`이 새 경로를 알려 준다.
+   * 설치는 기존 파일을 지우거나 옮기지 않으므로, 경로를 바꾸면 여기에 적어 두지 않는 한 문서가 조용히 두 벌이 된다.
+   */
+  readonly moved?: readonly MovedDoc[];
+}
+
+/** 설치 경로가 바뀐 문서 하나. 둘 다 저장소 루트 기준 posix 경로다. */
+export interface MovedDoc {
+  /** 이전 버전이 설치하던 경로. 예: `docs/workflow.md` */
+  readonly from: string;
+  /** 지금 설치하는 경로. 예: `docs/git/workflow.md` */
+  readonly to: string;
 }
 
 /** 문서 지도의 한 줄. 어떤 문서를 언제 읽는지 알려 준다. */

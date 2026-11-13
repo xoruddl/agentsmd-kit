@@ -30,4 +30,10 @@ export const reactPreset = {
     "서버 데이터를 그리는 화면은 로딩·오류·빈 결과·성공 상태를 모두 그린다.",
   ],
   nextSteps: ["린트 설정에 docs/react/components.md 의 React·jsx-a11y 규칙을 켜세요."],
+  // 0.6 이하는 문서를 docs/ 한 층에 설치했다.
+  moved: [
+    { from: "docs/react-components.md", to: "docs/react/components.md" },
+    { from: "docs/react-testing.md", to: "docs/react/testing.md" },
+    { from: "docs/browser-security.md", to: "docs/react/browser-security.md" },
+  ],
 } satisfies Preset;

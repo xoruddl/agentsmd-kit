@@ -1,16 +1,19 @@
-import { resolve } from "node:path";
+import { existsSync } from "node:fs";
+import { join, resolve } from "node:path";
 import { parseArgs } from "node:util";
 import {
   installEntryFiles,
   installPreset,
   type AgentsMdAdditions,
   type EntryFilesResult,
+  type MovedDoc,
   type Preset,
   type UnplacedItems,
 } from "@agentsmd/core";
 import { configureHooksPath, type HooksResult } from "../git-hooks.js";
 import { makeHooksExecutable } from "../hook-permissions.js";
 import type { ExitCode, Io } from "../io.js";
+import { findLegacyDocs } from "../legacy-docs.js";
 import { PRESETS, selectPresets, type AddedPreset } from "../presets.js";
 
 // 이름 열 너비를 가장 긴 이름에 맞춰 설명과 붙지 않게 한다.
@@ -95,7 +98,8 @@ export async function runInit(args: readonly string[], io: Io): Promise<ExitCode
       ? undefined
       : await configureHooksPath(root, hooksPath);
 
-  io.stdout(formatReport(presets, result, hooksPath, hooks));
+  const legacy = findLegacyDocs(presets, (path) => existsSync(join(root, path)));
+  io.stdout(formatReport(presets, result, legacy, hooksPath, hooks));
   return 0;
 }
 
@@ -147,6 +151,7 @@ async function installAll(
 function formatReport(
   presets: readonly Preset[],
   result: InitResult,
+  legacy: readonly MovedDoc[],
   hooksPath: string | undefined,
   hooks: HooksResult | undefined,
 ): string {
@@ -182,6 +187,14 @@ function formatReport(
     );
   }
 
+  lines.push(
+    ...formatLegacy(legacy, {
+      // 합친 결과가 없으면 AGENTS.md가 없었거나 --force라서 새로 쓴 것이다.
+      mapRenewed: result.merged === undefined,
+      anySkipped: result.skipped.length > 0 || addedSkipped.length > 0,
+    }),
+  );
+
   if (hooks === "configured") {
     lines.push(`Git 훅을 연결했습니다: core.hooksPath=${hooksPath ?? ""}`);
   } else if (hooks === "not-a-repo") {
@@ -194,6 +207,43 @@ function formatReport(
   ];
   lines.push("", "다음 단계:", ...steps.map((step, index) => `  ${String(index + 1)}. ${step}`));
   return `${lines.join("\n")}\n`;
+}
+
+/**
+ * 옛 경로에 남은 프리셋 문서를 새 경로와 함께 알린다. 없으면 빈 배열.
+ *
+ * 옛 문서와 새 문서가 모두 문서 지도에 올라 `check`가 통과하므로, 여기서 알리지 않으면 같은 규칙이 두 벌인 채로 남는다.
+ * 사람이 고쳐 쓴 문서일 수 있어 옮기거나 지우지 않고 할 일만 안내한다.
+ */
+function formatLegacy(
+  legacy: readonly MovedDoc[],
+  state: { readonly mapRenewed: boolean; readonly anySkipped: boolean },
+): string[] {
+  if (legacy.length === 0) {
+    return [];
+  }
+  // 같은 옛 경로를 두 프리셋이 적었으면 한 줄로 묶는다. 어느 프리셋의 문서였는지는 내용을 봐야 안다.
+  const targets = new Map<string, string[]>();
+  for (const { from, to } of legacy) {
+    targets.set(from, [...(targets.get(from) ?? []), to]);
+  }
+  const rows = [...targets].map(([from, tos]) =>
+    tos.length === 1
+      ? `  ${from} → ${tos.join("")}`
+      : `  ${from} → ${tos.join(" 또는 ")} (내용을 보고 고르세요)`,
+  );
+  return [
+    // 파일 이름만 보고 찾으므로 직접 쓴 문서일 수도 있다. 지우라고 단정하지 않는다.
+    `설치 위치가 바뀐 프리셋 문서와 이름이 같은 문서 ${String(targets.size)}개가 옛 위치에 있습니다.`,
+    "이전 버전이 설치한 문서라면, 고쳐 쓴 내용을 새 위치로 옮긴 뒤 옛 파일을 지우세요. 직접 쓴 문서라면 그대로 두면 됩니다.",
+    // AGENTS.md를 새로 만들었으면 옛 줄이 없다. 없는 줄을 지우라고 안내하지 않는다.
+    ...(state.mapRenewed ? [] : ["옛 파일을 지웠으면 AGENTS.md 문서 지도에서 그 줄도 지우세요."]),
+    // 건너뛴 훅이나 PR 템플릿이 옛 문서 경로를 적고 있을 수 있다. 건너뛴 파일이 없으면 해당이 없다.
+    ...(state.anySkipped
+      ? ["위에서 건너뛴 파일이 옛 경로를 안내하면 그 파일을 지우고 다시 설치하세요."]
+      : []),
+    ...rows,
+  ];
 }
 
 /**

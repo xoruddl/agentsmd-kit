@@ -37,4 +37,14 @@ export const javaPreset = {
   nextSteps: [
     "Gradle 프로젝트라면 docs/java/lint-and-ci.md 의 Spotless·toolchain 설정을 build.gradle.kts 에 추가하세요.",
   ],
+  // 0.6 이하는 문서를 docs/ 한 층에 설치했다. lint-and-ci.md는 typescript 프리셋도 같은 이름으로 설치했다.
+  moved: [
+    { from: "docs/code-style.md", to: "docs/java/code-style.md" },
+    { from: "docs/clean-code.md", to: "docs/java/clean-code.md" },
+    { from: "docs/clean-code-examples.md", to: "docs/java/clean-code-examples.md" },
+    { from: "docs/java-checklist.md", to: "docs/java/checklist.md" },
+    { from: "docs/java-testing.md", to: "docs/java/testing.md" },
+    { from: "docs/java-logging-and-security.md", to: "docs/java/logging-and-security.md" },
+    { from: "docs/lint-and-ci.md", to: "docs/java/lint-and-ci.md" },
+  ],
 } satisfies Preset;
