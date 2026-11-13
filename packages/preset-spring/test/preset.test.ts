@@ -1,4 +1,4 @@
-import { access, mkdtemp, readdir, readFile, rm } from "node:fs/promises";
+import { access, mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { checkRepository, installEntryFiles, installPreset } from "@agentsmd/core";
@@ -20,21 +20,9 @@ afterEach(async () => {
 
 describe("springPreset", () => {
   // 다른 프리셋 문서로 링크하면 이 프리셋만 설치했을 때 링크가 깨진다.
+  // check가 문서끼리의 링크까지 보므로, 문서 4개가 서로 거는 링크도 여기서 함께 확인된다.
   it("Spring 프리셋만 설치해도 agentsmd check 규칙을 모두 통과한다", async () => {
     await expect(checkRepository({ root: repo })).resolves.toEqual([]);
-  });
-
-  // check는 AGENTS.md의 링크만 본다. 문서끼리의 링크는 여기서 확인한다.
-  it("문서 안의 상대 링크는 이 프리셋이 설치한 문서만 가리킨다", async () => {
-    const docsDir = join(repo, "docs");
-    for (const name of await readdir(docsDir)) {
-      const text = await readFile(join(docsDir, name), "utf8");
-      for (const match of text.matchAll(/\]\(([^)#\s:]+\.md)(?:#[^)]*)?\)/g)) {
-        const target = match[1];
-        if (target === undefined) continue;
-        await expect(access(join(docsDir, target)), `${name} → ${target}`).resolves.toBeUndefined();
-      }
-    }
   });
 
   it("검증 명령은 Java 프리셋에 맡긴다", () => {
