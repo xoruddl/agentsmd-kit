@@ -1,5 +1,5 @@
 <!--
-작성 규칙: docs/git-conventions.md, docs/writing-style.md
+작성 규칙: docs/git/git-conventions.md, docs/git/writing-style.md
 - 짧게, 사실만. 빈 섹션은 지운다.
 - 변경 파일 나열 금지.
 - 이 PR로 이슈가 끝나지 않으면 `Closes #` 줄을 지운다.

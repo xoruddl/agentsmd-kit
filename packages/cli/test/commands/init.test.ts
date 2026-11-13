@@ -102,7 +102,7 @@ describe("runInit", () => {
     ).resolves.toContain("Closes #");
     const agents = await readFile(join(root, "AGENTS.md"), "utf8");
     expect(agents).toContain("[docs/git/git-conventions.md](docs/git/git-conventions.md)");
-    expect(agents).toContain("[docs/github.md](docs/github.md)");
+    expect(agents).toContain("[docs/github/repository-setup.md](docs/github/repository-setup.md)");
     await expect(checkRepository({ root })).resolves.toEqual([]);
   });
 
