@@ -74,6 +74,12 @@ importers:
         specifier: workspace:*
         version: link:../core
 
+  packages/preset-project:
+    dependencies:
+      '@agentsmd/core':
+        specifier: workspace:*
+        version: link:../core
+
   packages/preset-react:
     dependencies:
       '@agentsmd/core':
