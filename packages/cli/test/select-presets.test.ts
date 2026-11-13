@@ -1,0 +1,84 @@
+import type { Preset } from "@agentsmd/core";
+import { describe, expect, it } from "vitest";
+import { PRESETS, selectPresets } from "../src/presets.js";
+
+function preset(name: string, requires?: readonly string[]): Preset {
+  return { name, description: "", filesDir: "", ...(requires === undefined ? {} : { requires }) };
+}
+
+const available = [
+  preset("base"),
+  preset("lang"),
+  preset("framework", ["lang"]),
+  preset("hosting", ["base"]),
+  preset("plugin", ["framework"]),
+];
+
+/** 고른 결과를 이름으로만 본다. */
+function select(value: string): { names: string[]; added: unknown } | { unknown: unknown } {
+  const selection = selectPresets(value, available);
+  return selection.ok
+    ? { names: selection.presets.map(({ name }) => name), added: selection.added }
+    : { unknown: selection.unknown };
+}
+
+describe("selectPresets", () => {
+  it("적은 순서대로 고르고, 같은 이름은 한 번만 고른다", () => {
+    expect(select("lang, base,lang,")).toEqual({ names: ["lang", "base"], added: [] });
+  });
+
+  // spring만 고르면 검증 명령이 없고, github만 고르면 PR 템플릿이 없는 문서를 가리킨다.
+  it("필요한 프리셋을 고르지 않았으면 그 프리셋 앞에 더하고 무엇 때문에 더했는지 알린다", () => {
+    expect(select("framework")).toEqual({
+      names: ["lang", "framework"],
+      added: [{ name: "lang", requiredBy: "framework" }],
+    });
+  });
+
+  it("필요한 프리셋이 또 다른 프리셋을 필요로 하면 그것까지 더한다", () => {
+    expect(select("base,plugin")).toEqual({
+      names: ["base", "lang", "framework", "plugin"],
+      added: [
+        { name: "lang", requiredBy: "framework" },
+        { name: "framework", requiredBy: "plugin" },
+      ],
+    });
+  });
+
+  // 문서 지도는 설치 순서대로 쌓인다. 언어 프리셋의 필수 문서가 프레임워크 문서보다 위에 오게 한다.
+  it("필요한 프리셋을 뒤에 적어도 앞으로 옮기고, 직접 고른 것이므로 더했다고 알리지 않는다", () => {
+    expect(select("framework,lang")).toEqual({ names: ["lang", "framework"], added: [] });
+  });
+
+  it("여러 프리셋이 같은 프리셋을 필요로 해도 한 번만 더한다", () => {
+    expect(select("hosting,hosting,base")).toEqual({ names: ["base", "hosting"], added: [] });
+  });
+
+  it("모르는 이름이 하나라도 있으면 모두 모아 알린다", () => {
+    expect(select("lang,kotlin,go")).toEqual({ unknown: ["kotlin", "go"] });
+  });
+
+  it("아무것도 적지 않으면 고른 것이 없다", () => {
+    expect(select(" , ")).toEqual({ names: [], added: [] });
+  });
+
+  // 서로를 필요로 하게 잘못 적어도 끝없이 돌지 않는다.
+  it("필요 관계가 돌고 돌아도 멈춘다", () => {
+    const cyclic = [preset("a", ["b"]), preset("b", ["a"])];
+    const selection = selectPresets("a", cyclic);
+    expect(selection.ok && selection.presets.map(({ name }) => name)).toEqual(["b", "a"]);
+  });
+});
+
+describe("PRESETS의 requires", () => {
+  // 이름만 적으므로 오타가 나도 타입 검사에 걸리지 않는다.
+  it.each(PRESETS.map((item) => [item.name, item] as const))(
+    "%s 프리셋이 필요로 하는 프리셋은 모두 목록에 있다",
+    (_name, item) => {
+      const names = PRESETS.map(({ name }) => name);
+      for (const required of item.requires ?? []) {
+        expect(names).toContain(required);
+      }
+    },
+  );
+});
