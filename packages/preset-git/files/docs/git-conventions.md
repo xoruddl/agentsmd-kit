@@ -136,8 +136,8 @@ Node 없이 돌릴 수 있게 cli를 담은 이미지 `ghcr.io/xoruddl/agentsmd`
 | CI             | 설정                                                                          |
 | -------------- | ----------------------------------------------------------------------------- |
 | GitHub Actions | `uses: xoruddl/agentsmd-kit@v0` (같은 이미지를 쓰는 Action)                   |
-| GitLab CI      | `image: ghcr.io/xoruddl/agentsmd:0.5` + `script: [agentsmd check]`            |
-| Jenkins        | `docker.image('ghcr.io/xoruddl/agentsmd:0.5').inside { sh 'agentsmd check' }` |
+| GitLab CI      | `image: ghcr.io/xoruddl/agentsmd:0.6` + `script: [agentsmd check]`            |
+| Jenkins        | `docker.image('ghcr.io/xoruddl/agentsmd:0.6').inside { sh 'agentsmd check' }` |
 
 - 문서 지도 파일이나 문서 디렉터리 위치가 기본값과 다르면 `agentsmd check --docs guides`처럼 옵션으로 넘긴다. Action은 `with:`의 같은 이름으로 받는다.
 - 검사가 실패하면 종료 코드 1, 옵션이 잘못됐거나 문서 지도가 없으면 2를 돌려준다.
