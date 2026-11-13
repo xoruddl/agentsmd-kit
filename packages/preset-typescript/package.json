@@ -1,6 +1,6 @@
 {
   "name": "@agentsmd/preset-typescript",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "TypeScript 프로젝트용 AI 작업 지침 프리셋 (타입·구조·테스트·보안 규칙, 린트·CI 명령)",
   "keywords": [
     "agents.md",
