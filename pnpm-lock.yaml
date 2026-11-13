@@ -44,6 +44,9 @@ importers:
       '@agentsmd/preset-java':
         specifier: workspace:*
         version: link:../preset-java
+      '@agentsmd/preset-project':
+        specifier: workspace:*
+        version: link:../preset-project
       '@agentsmd/preset-react':
         specifier: workspace:*
         version: link:../preset-react
