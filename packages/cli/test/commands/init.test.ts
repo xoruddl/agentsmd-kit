@@ -1,5 +1,5 @@
 import { execFile } from "node:child_process";
-import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { promisify } from "node:util";
@@ -356,6 +356,81 @@ describe("runInit", () => {
     expect(out).toMatch(/ {2}1\. \S/);
     expect(out).toContain("docs/project/direction.md 에 프로젝트 목표와 범위를 채우세요.");
     expect(out).toContain("agentsmd check 로 문서 지도를 검사하세요.");
+  });
+
+  describe("0.6 이하로 설치한 저장소", () => {
+    /** 0.6이 설치하던 대로 문서를 docs/ 바로 아래에 두고, 문서 지도에 올린다. */
+    async function installed06(names: readonly string[]): Promise<void> {
+      await mkdir(join(root, "docs"), { recursive: true });
+      for (const name of names) {
+        await writeFile(join(root, "docs", name), `# 사람이 고쳐 쓴 ${name}\n`);
+      }
+      const rows = names.map((name) => `| [docs/${name}](docs/${name}) | 항상 |`);
+      await writeFile(
+        join(root, "AGENTS.md"),
+        [
+          "# AGENTS.md",
+          "",
+          "## 문서 지도",
+          "",
+          "| 문서 | 읽는 시점 |",
+          "| --- | --- |",
+          ...rows,
+          "",
+        ].join("\n"),
+      );
+    }
+
+    // 옛 문서와 새 문서가 모두 지도에 올라 check가 통과한다. 알리지 않으면 같은 규칙이 두 벌인 채로 남는다.
+    it("옛 위치에 남은 문서를 새 위치와 함께 알리고, 옮기거나 지우지는 않는다", async () => {
+      await installed06(["workflow.md", "git-conventions.md"]);
+
+      await expect(runInit(["--preset", "git", "--skip-hooks"], io())).resolves.toBe(0);
+
+      expect(out).toContain("옛 위치에 프리셋 문서 2개가 남아 있습니다.");
+      expect(out).toContain("  docs/workflow.md → docs/git/workflow.md\n");
+      expect(out).toContain("  docs/git-conventions.md → docs/git/git-conventions.md\n");
+      expect(out).not.toContain("docs/code-review.md →");
+      await expect(readFile(join(root, "docs/workflow.md"), "utf8")).resolves.toBe(
+        "# 사람이 고쳐 쓴 workflow.md\n",
+      );
+      await expect(readFile(join(root, "docs/git/workflow.md"), "utf8")).resolves.not.toContain(
+        "사람이 고쳐 쓴",
+      );
+    });
+
+    // 사람이 채운 방향 문서다. 언어 프리셋을 고르면 project가 따라오므로 그때도 알려야 한다.
+    it("언어 프리셋을 고르면 옛 프로젝트 방향 문서도 알린다", async () => {
+      await installed06(["project-direction.md"]);
+
+      await runInit(["--preset", "java", "--skip-hooks"], io());
+
+      expect(out).toContain("  docs/project-direction.md → docs/project/direction.md\n");
+    });
+
+    // 0.6에서 java와 typescript가 같은 이름으로 설치하던 문서다. 어느 쪽 것인지는 내용을 봐야 안다.
+    it("두 프리셋이 같은 이름으로 설치하던 문서는 한 개로 세고 두 위치를 모두 알린다", async () => {
+      await installed06(["lint-and-ci.md"]);
+
+      await runInit(["--preset", "java,typescript", "--skip-hooks"], io());
+
+      expect(out).toContain("옛 위치에 프리셋 문서 1개가 남아 있습니다.");
+      expect(out).toContain("  docs/lint-and-ci.md → docs/java/lint-and-ci.md\n");
+      expect(out).toContain("  docs/lint-and-ci.md → docs/typescript/lint-and-ci.md\n");
+    });
+
+    it("고르지 않은 프리셋의 옛 문서는 알리지 않는다", async () => {
+      await installed06(["spring-api.md"]);
+
+      await runInit(["--preset", "git", "--skip-hooks"], io());
+
+      expect(out).not.toContain("옛 위치에");
+    });
+  });
+
+  it("새로 설치하는 저장소에는 옛 위치 안내가 나오지 않는다", async () => {
+    await runInit(["--preset", "git,github,java,spring", "--skip-hooks"], io());
+    expect(out).not.toContain("옛 위치에");
   });
 
   it("프리셋을 지정하지 않거나 모르는 프리셋이면 2를 돌려준다", async () => {

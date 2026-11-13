@@ -1,16 +1,19 @@
-import { resolve } from "node:path";
+import { existsSync } from "node:fs";
+import { join, resolve } from "node:path";
 import { parseArgs } from "node:util";
 import {
   installEntryFiles,
   installPreset,
   type AgentsMdAdditions,
   type EntryFilesResult,
+  type MovedDoc,
   type Preset,
   type UnplacedItems,
 } from "@agentsmd/core";
 import { configureHooksPath, type HooksResult } from "../git-hooks.js";
 import { makeHooksExecutable } from "../hook-permissions.js";
 import type { ExitCode, Io } from "../io.js";
+import { findLegacyDocs } from "../legacy-docs.js";
 import { PRESETS, selectPresets, type AddedPreset } from "../presets.js";
 
 // 이름 열 너비를 가장 긴 이름에 맞춰 설명과 붙지 않게 한다.
@@ -95,7 +98,8 @@ export async function runInit(args: readonly string[], io: Io): Promise<ExitCode
       ? undefined
       : await configureHooksPath(root, hooksPath);
 
-  io.stdout(formatReport(presets, result, hooksPath, hooks));
+  const legacy = findLegacyDocs(presets, (path) => existsSync(join(root, path)));
+  io.stdout(formatReport(presets, result, legacy, hooksPath, hooks));
   return 0;
 }
 
@@ -147,6 +151,7 @@ async function installAll(
 function formatReport(
   presets: readonly Preset[],
   result: InitResult,
+  legacy: readonly MovedDoc[],
   hooksPath: string | undefined,
   hooks: HooksResult | undefined,
 ): string {
@@ -182,6 +187,8 @@ function formatReport(
     );
   }
 
+  lines.push(...formatLegacy(legacy));
+
   if (hooks === "configured") {
     lines.push(`Git 훅을 연결했습니다: core.hooksPath=${hooksPath ?? ""}`);
   } else if (hooks === "not-a-repo") {
@@ -194,6 +201,24 @@ function formatReport(
   ];
   lines.push("", "다음 단계:", ...steps.map((step, index) => `  ${String(index + 1)}. ${step}`));
   return `${lines.join("\n")}\n`;
+}
+
+/**
+ * 옛 경로에 남은 프리셋 문서를 새 경로와 함께 알린다. 없으면 빈 배열.
+ *
+ * 옛 문서와 새 문서가 모두 문서 지도에 올라 `check`가 통과하므로, 여기서 알리지 않으면 같은 규칙이 두 벌인 채로 남는다.
+ * 사람이 고쳐 쓴 문서일 수 있어 옮기거나 지우지 않고 할 일만 안내한다.
+ */
+function formatLegacy(legacy: readonly MovedDoc[]): string[] {
+  if (legacy.length === 0) {
+    return [];
+  }
+  return [
+    `옛 위치에 프리셋 문서 ${String(new Set(legacy.map(({ from }) => from)).size)}개가 남아 있습니다. 프리셋 문서는 이제 docs/<프리셋>/ 아래에 설치합니다.`,
+    "고쳐 쓴 내용은 새 위치로 옮기고, 옛 파일과 AGENTS.md 문서 지도의 옛 줄을 지우세요.",
+    "건너뛴 Git 훅과 PR 템플릿이 옛 경로를 안내하면 그 파일을 지우고 다시 설치하세요.",
+    ...legacy.map(({ from, to }) => `  ${from} → ${to}`),
+  ];
 }
 
 /**
