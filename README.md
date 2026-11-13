@@ -43,10 +43,13 @@ Git 규칙, 호스팅(GitHub), 언어 규칙, 프레임워크(React·Spring) 규
 
 ```text
 docs/
-  git/      workflow.md, git-conventions.md, code-review.md, writing-style.md
-  github/   usage.md
-  java/     project-direction.md, code-style.md, clean-code.md, checklist.md, testing.md, ...
-  spring/   architecture.md, data-jpa.md, api.md, testing.md
+  git/         workflow.md, git-conventions.md, code-review.md, writing-style.md
+  github/      usage.md
+  typescript/  project-direction.md, rules.md, structure.md, testing.md, env-and-security.md, lint-and-ci.md
+  react/       components.md, testing.md, browser-security.md
+  java/        project-direction.md, code-style.md, clean-code.md, clean-code-examples.md, checklist.md,
+               testing.md, logging-and-security.md, lint-and-ci.md
+  spring/      architecture.md, data-jpa.md, api.md, testing.md
 ```
 
 | 저장소                    | 명령                                        |

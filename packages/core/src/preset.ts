@@ -26,7 +26,7 @@ export interface Preset {
 
 /** 문서 지도의 한 줄. 어떤 문서를 언제 읽는지 알려 준다. */
 export interface DocMapEntry {
-  /** 저장소 루트 기준 posix 경로. 예: `docs/workflow.md` */
+  /** 저장소 루트 기준 posix 경로. 프리셋 문서는 `docs/<프리셋 이름>/` 아래에 둔다. 예: `docs/git/workflow.md` */
   readonly path: string;
   /** 이 문서를 읽는 시점. */
   readonly when: string;
