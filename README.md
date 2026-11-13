@@ -39,6 +39,16 @@ Git 규칙, 호스팅(GitHub), 언어 규칙, 프레임워크(React·Spring) 규
 | `java`       | Java·Gradle 프로젝트                               | 코드 스타일·클린 코드·체크리스트·테스트 문서, Spotless 설정, 검증 명령                                      |
 | `spring`     | Spring Boot 서버. `java`와 함께                    | 패키지 구조·JPA·트랜잭션·API·테스트 문서                                                                    |
 
+문서는 프리셋마다 `docs/<프리셋 이름>/` 폴더에 설치됩니다. `docs/` 바로 아래는 프로젝트 고유 문서를 두는 자리로 남습니다.
+
+```text
+docs/
+  git/      workflow.md, git-conventions.md, code-review.md, writing-style.md
+  github/   repository-setup.md
+  java/     project-direction.md, code-style.md, clean-code.md, checklist.md, testing.md, ...
+  spring/   architecture.md, data-jpa.md, api.md, testing.md
+```
+
 | 저장소                    | 명령                                        |
 | ------------------------- | ------------------------------------------- |
 | GitHub + TypeScript       | `init --preset git,github,typescript`       |
