@@ -132,6 +132,76 @@ describe("runInit", () => {
     await expect(checkRepository({ root })).resolves.toEqual([]);
   });
 
+  // 함께 설치하는 프리셋은 사용자가 고른 것이 아니다. 이미 있으면 사람이 다듬은 문서와 AGENTS.md를 다시 건드리지 않는다.
+  it("필요한 프리셋이 이미 설치돼 있으면 다시 설치하지 않고 AGENTS.md에서 지운 규칙도 되살리지 않는다", async () => {
+    await runInit(["--preset", "java", "--skip-hooks"], io());
+    const removedRule = "새 의존성은 사용자에게 묻고 추가한다.";
+    const agentsPath = join(root, "AGENTS.md");
+    const trimmed = (await readFile(agentsPath, "utf8"))
+      .split("\n")
+      .filter((line) => !line.includes(removedRule))
+      .join("\n");
+    await writeFile(agentsPath, trimmed);
+    await writeFile(join(root, "docs/java/testing.md"), "# 우리 팀 테스트 규칙\n");
+    out = "";
+
+    await expect(runInit(["--preset", "spring", "--skip-hooks"], io())).resolves.toBe(0);
+
+    expect(out).toMatch(/^spring 프리셋: 파일 \d+개를 설치했습니다\./);
+    expect(out).not.toContain("고르지 않았지만");
+    expect(out).not.toContain("건너뛴 파일");
+    const agents = await readFile(agentsPath, "utf8");
+    expect(agents).not.toContain(removedRule);
+    expect(agents).toContain("[docs/spring/architecture.md](docs/spring/architecture.md)");
+    await expect(checkRepository({ root })).resolves.toEqual([]);
+  });
+
+  it("--force는 고른 프리셋만 덮어쓰고, 함께 설치하는 프리셋 자리에 있던 파일은 남긴다", async () => {
+    await writeFile(join(root, ".nvmrc"), "18\n");
+
+    await expect(runInit(["--preset", "react", "--skip-hooks", "--force"], io())).resolves.toBe(0);
+
+    expect(out).toContain("typescript (react에 필요)");
+    await expect(readFile(join(root, ".nvmrc"), "utf8")).resolves.toBe("18\n");
+  });
+
+  it("--force로 프레임워크 프리셋을 다시 설치해도 이미 있는 언어 프리셋 문서는 덮어쓰지 않는다", async () => {
+    await runInit(["--preset", "typescript,react", "--skip-hooks"], io());
+    await writeFile(join(root, "docs/typescript/rules.md"), "# 우리 팀 규칙\n");
+    await writeFile(join(root, "docs/react/components.md"), "# 고친 문서\n");
+
+    await runInit(["--preset", "react", "--skip-hooks", "--force"], io());
+
+    await expect(readFile(join(root, "docs/typescript/rules.md"), "utf8")).resolves.toBe(
+      "# 우리 팀 규칙\n",
+    );
+    await expect(readFile(join(root, "docs/react/components.md"), "utf8")).resolves.not.toBe(
+      "# 고친 문서\n",
+    );
+  });
+
+  // github을 고르면 git이 따라오므로 훅도 연결된다. 고르지 않은 설정이 바뀌므로 출력으로 알려야 한다.
+  it("github만 골라 git을 처음 설치하면 훅을 연결하고 알린다", async () => {
+    await git("git", ["-C", root, "init", "-q"]);
+
+    await runInit(["--preset", "github"], io());
+
+    const { stdout } = await git("git", ["-C", root, "config", "core.hooksPath"]);
+    expect(stdout.trim()).toBe(".githooks");
+    expect(out).toContain("Git 훅을 연결했습니다: core.hooksPath=.githooks");
+  });
+
+  it("git이 이미 설치돼 있으면 github을 더할 때 훅 설정을 건드리지 않는다", async () => {
+    await git("git", ["-C", root, "init", "-q"]);
+    await runInit(["--preset", "git", "--skip-hooks"], io());
+    out = "";
+
+    await runInit(["--preset", "github"], io());
+
+    await expect(git("git", ["-C", root, "config", "core.hooksPath"])).rejects.toThrow();
+    expect(out).not.toContain("Git 훅");
+  });
+
   it("필요한 프리셋을 직접 골랐으면 더했다고 알리지 않는다", async () => {
     await runInit(["--preset", "spring,java", "--skip-hooks"], io());
 

@@ -10,6 +10,7 @@ import {
   type UnplacedItems,
 } from "@agentsmd/core";
 import { configureHooksPath, type HooksResult } from "../git-hooks.js";
+import { isPresetInstalled } from "../installed-presets.js";
 import { makeHooksExecutable } from "../hook-permissions.js";
 import type { ExitCode, Io } from "../io.js";
 import { PRESETS, selectPresets, type AddedPreset } from "../presets.js";
@@ -27,8 +28,9 @@ const requiresList = PRESETS.flatMap((preset) =>
 export const INIT_USAGE = `사용법: agentsmd init --preset <이름>[,<이름>...] [옵션]
 
 AI 작업 지침(AGENTS.md, docs/)을 저장소에 설치합니다.
-Git 훅은 git 프리셋, GitHub 템플릿은 github 프리셋을 고를 때만 설치합니다.
+Git 훅은 git 프리셋에, GitHub 템플릿은 github 프리셋에 들어 있습니다.
 다른 프리셋이 있어야 하는 프리셋을 고르면 그 프리셋을 먼저 함께 설치합니다 (${requiresList}).
+함께 설치할 프리셋이 저장소에 이미 있으면 다시 설치하지 않고, --force 로도 덮어쓰지 않습니다.
 여러 프리셋을 고르면 문서 지도(AGENTS.md)를 설치한 순서대로 합칩니다.
 AGENTS.md가 이미 있으면 빠진 문서·규칙만 더하고, 다른 파일은 이미 있으면 건너뜁니다.
 AGENTS.md에 '## 문서 지도' 절이 없으면 바꾸지 않고 직접 옮길 항목을 알려 줍니다.
@@ -81,8 +83,17 @@ export async function runInit(args: readonly string[], io: Io): Promise<ExitCode
   }
 
   const root = resolve(io.cwd, values.root ?? ".");
-  const { presets, added } = selection;
-  const result = await installAll(presets, root, values.force === true);
+  // 고르지 않았는데 필요해서 더한 프리셋이 이미 설치돼 있으면 뺀다. 사람이 다듬은 문서와 AGENTS.md의 규칙,
+  // 훅 설정을 다시 건드리지 않기 위해서다. 직접 고른 프리셋은 이미 있어도 그대로 설치한다(빠진 파일을 채운다).
+  const present = new Set(
+    selection.presets
+      .filter((preset) => selection.added.some(({ name }) => name === preset.name))
+      .filter((preset) => isPresetInstalled(preset, root))
+      .map((preset) => preset.name),
+  );
+  const presets = selection.presets.filter((preset) => !present.has(preset.name));
+  const added = selection.added.filter(({ name }) => !present.has(name));
+  const result = await installAll(presets, added, root, values.force === true);
   const hooksPath = presets.find((p) => p.hooksPath !== undefined)?.hooksPath;
   if (hooksPath !== undefined) {
     // npm 패키지에서 풀린 훅은 실행 권한이 없으므로, 훅 연결 여부와 상관없이 권한을 맞춘다.
@@ -97,12 +108,19 @@ export async function runInit(args: readonly string[], io: Io): Promise<ExitCode
   return 0;
 }
 
-/** 프리셋 파일을 설치한 뒤, 고른 프리셋 조합에 맞춘 AGENTS.md·CLAUDE.md를 만든다. */
+/**
+ * 프리셋 파일을 설치한 뒤, 고른 프리셋 조합에 맞춘 AGENTS.md·CLAUDE.md를 만든다.
+ *
+ * `--force`는 사용자가 고른 프리셋에만 적용한다. 고르지 않았는데 함께 설치하는 프리셋의 경로에
+ * 사람이 둔 파일(예: `.nvmrc`)이 있으면 덮어쓰지 않는다.
+ */
 async function installAll(
   presets: readonly Preset[],
+  added: readonly AddedPreset[],
   root: string,
   force: boolean,
 ): Promise<EntryFilesResult> {
+  const addedNames = new Set(added.map(({ name }) => name));
   const written: string[] = [];
   const skipped: string[] = [];
   const collect = (result: InstallResult): void => {
@@ -110,7 +128,7 @@ async function installAll(
     skipped.push(...result.skipped);
   };
   for (const preset of presets) {
-    collect(await installPreset(preset, root, { force }));
+    collect(await installPreset(preset, root, { force: force && !addedNames.has(preset.name) }));
   }
   const entry = await installEntryFiles(presets, root, { force });
   collect(entry);
