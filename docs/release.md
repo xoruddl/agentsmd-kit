@@ -7,7 +7,7 @@ npm 패키지, Docker 이미지, GitHub Action 태그 세 가지를 같은 버�
 
 | 산출물        | 위치                            | 버전을 정하는 곳                                |
 | ------------- | ------------------------------- | ----------------------------------------------- |
-| npm 패키지    | `@agentsmd/cli` 외 7개          | `packages/*/package.json`                       |
+| npm 패키지    | `@agentsmd/cli` 외 8개          | `packages/*/package.json`                       |
 | Docker 이미지 | `ghcr.io/xoruddl/agentsmd`      | Git 태그 `vX.Y.Z` (release-image 워크플로)      |
 | GitHub Action | `uses: xoruddl/agentsmd-kit@v0` | 루트 `action.yml`의 `image:` 핀과 Git 태그 `v0` |
 

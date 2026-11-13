@@ -2,6 +2,7 @@ import type { Preset } from "@agentsmd/core";
 import { gitPreset } from "@agentsmd/preset-git";
 import { githubPreset } from "@agentsmd/preset-github";
 import { javaPreset } from "@agentsmd/preset-java";
+import { projectPreset } from "@agentsmd/preset-project";
 import { reactPreset } from "@agentsmd/preset-react";
 import { springPreset } from "@agentsmd/preset-spring";
 import { typescriptPreset } from "@agentsmd/preset-typescript";
@@ -11,10 +12,12 @@ import { typescriptPreset } from "@agentsmd/preset-typescript";
  *
  * Git 작업 규칙, 호스팅(GitHub), 언어 규칙, 프레임워크(React·Spring) 규칙은 따로 고른다.
  * 함께 쓰려면 `--preset git,github,typescript,react`처럼 쉼표로 잇는다.
+ * 프로젝트 방향 문서(`project`)는 언어 프리셋이 필요로 하므로 보통 직접 고르지 않는다.
  */
 export const PRESETS: readonly Preset[] = [
   gitPreset,
   githubPreset,
+  projectPreset,
   javaPreset,
   springPreset,
   typescriptPreset,
