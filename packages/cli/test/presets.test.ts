@@ -56,50 +56,60 @@ describe("PRESETS", () => {
   });
 
   // 옛 경로를 잘못 적으면 안내가 없는 파일을 가리키거나, 지금 설치하는 파일을 옛 것이라고 알리게 된다.
+  // 옛 경로는 다른 프리셋이 지금 설치하는 경로와도 겹치면 안 된다. 함께 설치하면 방금 쓴 파일을 지우라고 하게 된다.
   it.each(byName)(
-    "%s 프리셋이 적은 옮긴 문서는 지금 설치하는 문서를 가리킨다",
+    "%s 프리셋이 적은 옮긴 문서는 지금 설치하는 문서를 가리키고, 옛 경로는 어느 프리셋도 쓰지 않는다",
     async (_name, preset) => {
-      const installed = await presetFiles(preset.filesDir);
+      const own = await presetFiles(preset.filesDir);
+      const everyones = (
+        await Promise.all(PRESETS.map((each) => presetFiles(each.filesDir)))
+      ).flat();
       for (const { from, to } of preset.moved ?? []) {
-        expect(installed, `${from} → ${to}`).toContain(to);
-        expect(installed, `${from}는 지금도 설치하는 경로다`).not.toContain(from);
+        expect(own, `${from} → ${to}`).toContain(to);
+        expect(everyones, `${from}는 지금도 설치하는 경로다`).not.toContain(from);
       }
     },
   );
 
   // 0.6 이하는 모든 문서를 docs/ 바로 아래에 설치했다. 문서를 옮기고 옛 경로를 적지 않으면 다시 설치할 때 조용히 두 벌이 된다.
-  it("0.6에서 설치하던 문서는 빠짐없이 어느 프리셋의 옮긴 문서로 적혀 있다", () => {
-    const installedIn06 = [
-      "code-review.md",
-      "git-conventions.md",
-      "workflow.md",
-      "writing-style.md",
-      "github.md",
-      "clean-code-examples.md",
-      "clean-code.md",
-      "code-style.md",
-      "java-checklist.md",
-      "java-logging-and-security.md",
-      "java-testing.md",
-      "lint-and-ci.md",
-      "project-direction.md",
-      "browser-security.md",
-      "react-components.md",
-      "react-testing.md",
-      "spring-api.md",
-      "spring-architecture.md",
-      "spring-data-jpa.md",
-      "spring-testing.md",
-      "env-and-security.md",
-      "structure.md",
-      "testing.md",
-      "typescript.md",
-    ].map((name) => `docs/${name}`);
-    const declared = new Set(
-      PRESETS.flatMap((preset) => (preset.moved ?? []).map(({ from }) => from)),
-    );
+  // 프리셋별로 본다. 한 프리셋에서 빠져도 같은 이름을 다른 프리셋이 적고 있으면, 그 프리셋만 고를 때 안내가 나오지 않는다.
+  // 프로젝트 방향 문서는 0.6에서 java와 typescript가 설치했고, 지금은 project가 맡는다.
+  it.each([
+    ["git", ["workflow.md", "git-conventions.md", "code-review.md", "writing-style.md"]],
+    ["github", ["github.md"]],
+    ["project", ["project-direction.md"]],
+    [
+      "java",
+      [
+        "code-style.md",
+        "clean-code.md",
+        "clean-code-examples.md",
+        "java-checklist.md",
+        "java-testing.md",
+        "java-logging-and-security.md",
+        "lint-and-ci.md",
+      ],
+    ],
+    [
+      "spring",
+      ["spring-architecture.md", "spring-data-jpa.md", "spring-api.md", "spring-testing.md"],
+    ],
+    [
+      "typescript",
+      ["typescript.md", "structure.md", "testing.md", "env-and-security.md", "lint-and-ci.md"],
+    ],
+    ["react", ["react-components.md", "react-testing.md", "browser-security.md"]],
+  ] as const)("%s 프리셋은 0.6에서 설치하던 문서를 빠짐없이 옮긴 문서로 적는다", (name, docs) => {
+    const preset = PRESETS.find((each) => each.name === name);
+    const declared = (preset?.moved ?? []).map(({ from }) => from).sort();
 
-    expect(installedIn06.filter((path) => !declared.has(path))).toEqual([]);
+    expect(declared).toEqual(docs.map((doc) => `docs/${doc}`).sort());
+  });
+
+  it("옮긴 문서 검사는 모든 프리셋을 다룬다", () => {
+    expect(PRESETS.map(({ name }) => name).sort()).toEqual(
+      ["git", "github", "project", "java", "spring", "typescript", "react"].sort(),
+    );
   });
 
   it("모든 프리셋을 함께 설치하면 check를 통과한다", async () => {
