@@ -1,9 +1,9 @@
 # 사용자 저장소의 GitHub Actions에서 `agentsmd check`를 한 줄로 돌리는 Action.
-#   - uses: xoruddl/agentsmd-kit@v0.5
+#   - uses: xoruddl/agentsmd-kit@v0
 # 입력은 `agentsmd check`의 옵션과 같다. 자세한 규칙은 docs/rules.md, 옵션은 docs/commands.md.
 # 이 저장소의 Dockerfile로 만든 이미지(ghcr.io/xoruddl/agentsmd)를 쓴다. 컨테이너에서 돌므로 호출한 job의 Node와 무관하고,
 # 같은 이미지를 GitLab CI·Jenkins에서도 쓴다. Docker Action이라 Linux 러너에서만 돈다.
-# 이미지 버전은 아래에 고정한다. 릴리스 때 함께 바꾸고 `v0.5` 태그를 옮긴다. 순서는 docs/release.md.
+# 이미지 버전은 아래에 고정한다. 릴리스 때 함께 바꾸고 `v0` 태그를 옮긴다. 순서는 docs/release.md.
 name: agentsmd check
 description: AGENTS.md 문서 지도가 저장소와 맞는지 검사한다 (깨진 링크, 지도에 없는 문서, CLAUDE.md 불러오기)
 author: xoruddl

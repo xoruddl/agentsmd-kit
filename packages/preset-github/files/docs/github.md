@@ -58,13 +58,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: xoruddl/agentsmd-kit@v0.5
+      - uses: xoruddl/agentsmd-kit@v0
 ```
 
 `agentsmd check`와 같은 것을 검사한다. 문서 지도 파일이나 문서 디렉터리 위치가 기본값과 다르면 `with:`로 넘긴다. 입력 이름은 `agentsmd check`의 옵션과 같다.
 
 ```yaml
-- uses: xoruddl/agentsmd-kit@v0.5
+- uses: xoruddl/agentsmd-kit@v0
   with:
     root: packages/web # 검사할 저장소 루트 (기본 .)
     docs: guides # 문서 디렉터리 (기본 docs)

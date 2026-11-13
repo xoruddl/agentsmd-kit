@@ -48,8 +48,9 @@ describe("githubPreset", () => {
   it("설치 후 안내에서 문서 지도 검사 Action을 알린다", async () => {
     const step = githubPreset.nextSteps.find((line) => line.includes("agentsmd-kit"));
     expect(step).toContain("docs/github.md");
-    await expect(readFile(join(repo, "docs/github.md"), "utf8")).resolves.toContain(
-      "uses: xoruddl/agentsmd-kit@v0.5",
+    // 메이저 태그로 안내해야 마이너를 올려도 설치된 문서가 낡지 않는다. `@v0.5`처럼 뒤가 붙으면 통과하지 않게 줄 끝까지 맞춘다.
+    await expect(readFile(join(repo, "docs/github.md"), "utf8")).resolves.toMatch(
+      /uses: xoruddl\/agentsmd-kit@v\d+$/m,
     );
   });
 });
