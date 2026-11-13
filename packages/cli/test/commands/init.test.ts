@@ -64,7 +64,7 @@ describe("runInit", () => {
 
     const agents = await readFile(join(root, "AGENTS.md"), "utf8");
     expect(agents).toContain("[docs/java/checklist.md](docs/java/checklist.md)");
-    expect(agents).toContain("[docs/spring-architecture.md](docs/spring-architecture.md)");
+    expect(agents).toContain("[docs/spring/architecture.md](docs/spring/architecture.md)");
     expect(agents).toContain("./gradlew spotlessCheck build");
     await expect(checkRepository({ root })).resolves.toEqual([]);
   });

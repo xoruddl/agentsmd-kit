@@ -24,7 +24,7 @@ Spring 컨텍스트를 띄우는 테스트는 느리다. 가능한 한 아래 �
   같은 설정의 테스트끼리 컨텍스트 캐시를 함께 써서 컨테이너를 한 번만 띄운다.
 - `@DataJpaTest` 는 `@ServiceConnection` 으로 띄운 DB 를 내장 DB 로 바꾸지 않는다. (`@AutoConfigureTestDatabase` 기본값 `NON_TEST`)
 - 테스트마다 `@MockitoBean` 조합이나 설정이 다르면 컨텍스트를 새로 띄운다. 공통 조합은 기반 클래스나 설정으로 모은다.
-- 의존 방향 규칙은 ArchUnit 테스트로 검사할 수 있다. → [spring-architecture.md](spring-architecture.md)
+- 의존 방향 규칙은 ArchUnit 테스트로 검사할 수 있다. → [architecture.md](architecture.md)
 
 ## 예시
 
