@@ -150,9 +150,24 @@ describe("runInit", () => {
     expect(out).toMatch(/^spring 프리셋: 파일 \d+개를 설치했습니다\./);
     expect(out).not.toContain("고르지 않았지만");
     expect(out).not.toContain("건너뛴 파일");
+    // 설치된 것으로 잘못 봤을 때 사용자가 알아챌 수 있게 건드리지 않은 프리셋을 알린다.
+    expect(out).toContain("이미 설치돼 있어 다시 설치하지 않은 프리셋: java (spring에 필요)");
     const agents = await readFile(agentsPath, "utf8");
     expect(agents).not.toContain(removedRule);
     expect(agents).toContain("[docs/spring/architecture.md](docs/spring/architecture.md)");
+    await expect(checkRepository({ root })).resolves.toEqual([]);
+  });
+
+  // AGENTS.md를 새로 쓰면서 그대로 둔 프리셋을 빼면, 문서는 있는데 지도와 검증 명령에서 사라진다.
+  it("필요한 프리셋이 설치돼 있어도 AGENTS.md가 없으면 그 프리셋까지 넣어 새로 만든다", async () => {
+    await runInit(["--preset", "java", "--skip-hooks"], io());
+    await rm(join(root, "AGENTS.md"));
+
+    await runInit(["--preset", "spring", "--skip-hooks"], io());
+
+    const agents = await readFile(join(root, "AGENTS.md"), "utf8");
+    expect(agents).toContain("[docs/java/checklist.md](docs/java/checklist.md)");
+    expect(agents).toContain("./gradlew spotlessCheck build");
     await expect(checkRepository({ root })).resolves.toEqual([]);
   });
 
@@ -178,6 +193,11 @@ describe("runInit", () => {
     await expect(readFile(join(root, "docs/react/components.md"), "utf8")).resolves.not.toBe(
       "# 고친 문서\n",
     );
+    // --force는 AGENTS.md를 새로 쓴다. 그대로 둔 typescript의 문서와 검증 명령이 지도에서 빠지면 안 된다.
+    const agents = await readFile(join(root, "AGENTS.md"), "utf8");
+    expect(agents).toContain("[docs/typescript/rules.md](docs/typescript/rules.md)");
+    expect(agents).toContain("## 검증");
+    await expect(checkRepository({ root })).resolves.toEqual([]);
   });
 
   // github을 고르면 git이 따라오므로 훅도 연결된다. 고르지 않은 설정이 바뀌므로 출력으로 알려야 한다.
@@ -191,15 +211,20 @@ describe("runInit", () => {
     expect(out).toContain("Git 훅을 연결했습니다: core.hooksPath=.githooks");
   });
 
-  it("git이 이미 설치돼 있으면 github을 더할 때 훅 설정을 건드리지 않는다", async () => {
+  // Git 저장소가 아니면 "git init 후 다시 실행하세요"라고 안내한다. 다시 실행했을 때 git 프리셋이 이미 있다고
+  // 훅 연결까지 건너뛰면, 안내대로 했는데 훅이 동작하지 않는다.
+  it("git 프리셋 파일이 이미 있어도 다시 실행하면 훅을 연결한다", async () => {
+    await runInit(["--preset", "github"], io());
+    expect(out).toContain("Git 저장소가 아니어서 훅을 연결하지 않았습니다");
     await git("git", ["-C", root, "init", "-q"]);
-    await runInit(["--preset", "git", "--skip-hooks"], io());
     out = "";
 
     await runInit(["--preset", "github"], io());
 
-    await expect(git("git", ["-C", root, "config", "core.hooksPath"])).rejects.toThrow();
-    expect(out).not.toContain("Git 훅");
+    expect(out).toContain("이미 설치돼 있어 다시 설치하지 않은 프리셋: git (github에 필요)");
+    const { stdout } = await git("git", ["-C", root, "config", "core.hooksPath"]);
+    expect(stdout.trim()).toBe(".githooks");
+    expect(out).toContain("Git 훅을 연결했습니다: core.hooksPath=.githooks");
   });
 
   it("필요한 프리셋을 직접 골랐으면 더했다고 알리지 않는다", async () => {

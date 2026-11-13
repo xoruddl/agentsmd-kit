@@ -1,4 +1,5 @@
-import { resolve } from "node:path";
+import { existsSync } from "node:fs";
+import { join, resolve } from "node:path";
 import { parseArgs } from "node:util";
 import {
   installEntryFiles,
@@ -6,10 +7,10 @@ import {
   type AgentsMdAdditions,
   type EntryFilesResult,
   type InstallResult,
-  type Preset,
   type UnplacedItems,
 } from "@agentsmd/core";
 import { configureHooksPath, type HooksResult } from "../git-hooks.js";
+import { planInstall, type InstallPlan } from "../install-plan.js";
 import { isPresetInstalled } from "../installed-presets.js";
 import { makeHooksExecutable } from "../hook-permissions.js";
 import type { ExitCode, Io } from "../io.js";
@@ -20,6 +21,8 @@ const nameWidth = Math.max(...PRESETS.map((preset) => preset.name.length)) + 2;
 const presetList = PRESETS.map(
   (preset) => `  ${preset.name.padEnd(nameWidth)}${preset.description}`,
 ).join("\n");
+// `installEntryFiles`가 문서 지도를 쓰는 파일. 새로 쓰는지 합치는지 미리 알아야 해서 여기서도 본다.
+const AGENTS_FILE = "AGENTS.md";
 // 예: "github → git, spring → java, react → typescript"
 const requiresList = PRESETS.flatMap((preset) =>
   (preset.requires ?? []).map((required) => `${preset.name} → ${required}`),
@@ -30,7 +33,7 @@ export const INIT_USAGE = `사용법: agentsmd init --preset <이름>[,<이름>.
 AI 작업 지침(AGENTS.md, docs/)을 저장소에 설치합니다.
 Git 훅은 git 프리셋에, GitHub 템플릿은 github 프리셋에 들어 있습니다.
 다른 프리셋이 있어야 하는 프리셋을 고르면 그 프리셋을 먼저 함께 설치합니다 (${requiresList}).
-함께 설치할 프리셋이 저장소에 이미 있으면 다시 설치하지 않고, --force 로도 덮어쓰지 않습니다.
+함께 설치할 프리셋이 저장소에 이미 있으면 다시 설치하지 않습니다. --force 는 직접 고른 프리셋만 덮어씁니다.
 여러 프리셋을 고르면 문서 지도(AGENTS.md)를 설치한 순서대로 합칩니다.
 AGENTS.md가 이미 있으면 빠진 문서·규칙만 더하고, 다른 파일은 이미 있으면 건너뜁니다.
 AGENTS.md에 '## 문서 지도' 절이 없으면 바꾸지 않고 직접 옮길 항목을 알려 줍니다.
@@ -83,18 +86,13 @@ export async function runInit(args: readonly string[], io: Io): Promise<ExitCode
   }
 
   const root = resolve(io.cwd, values.root ?? ".");
-  // 고르지 않았는데 필요해서 더한 프리셋이 이미 설치돼 있으면 뺀다. 사람이 다듬은 문서와 AGENTS.md의 규칙,
-  // 훅 설정을 다시 건드리지 않기 위해서다. 직접 고른 프리셋은 이미 있어도 그대로 설치한다(빠진 파일을 채운다).
-  const present = new Set(
-    selection.presets
-      .filter((preset) => selection.added.some(({ name }) => name === preset.name))
-      .filter((preset) => isPresetInstalled(preset, root))
-      .map((preset) => preset.name),
+  const plan = planInstall(selection.presets, selection.added, (preset) =>
+    isPresetInstalled(preset, root),
   );
-  const presets = selection.presets.filter((preset) => !present.has(preset.name));
-  const added = selection.added.filter(({ name }) => !present.has(name));
-  const result = await installAll(presets, added, root, values.force === true);
-  const hooksPath = presets.find((p) => p.hooksPath !== undefined)?.hooksPath;
+  const result = await installAll(plan, root, values.force === true);
+  // 훅은 이번에 설치하지 않는 프리셋의 것도 연결한다. Git 저장소가 아니어서 못 했거나 --skip-hooks로 미룬 뒤
+  // 다시 실행한 경우에 연결되지 않은 채로 남지 않게 하기 위해서다.
+  const hooksPath = plan.all.find((p) => p.hooksPath !== undefined)?.hooksPath;
   if (hooksPath !== undefined) {
     // npm 패키지에서 풀린 훅은 실행 권한이 없으므로, 훅 연결 여부와 상관없이 권한을 맞춘다.
     await makeHooksExecutable(root, hooksPath);
@@ -104,50 +102,60 @@ export async function runInit(args: readonly string[], io: Io): Promise<ExitCode
       ? undefined
       : await configureHooksPath(root, hooksPath);
 
-  io.stdout(formatReport(presets, added, result, hooksPath, hooks));
+  io.stdout(formatReport(plan, result, hooksPath, hooks));
   return 0;
 }
 
 /**
- * 프리셋 파일을 설치한 뒤, 고른 프리셋 조합에 맞춘 AGENTS.md·CLAUDE.md를 만든다.
+ * 프리셋 파일을 설치한 뒤, 프리셋 조합에 맞춘 AGENTS.md·CLAUDE.md를 만든다.
  *
  * `--force`는 사용자가 고른 프리셋에만 적용한다. 고르지 않았는데 함께 설치하는 프리셋의 경로에
  * 사람이 둔 파일(예: `.nvmrc`)이 있으면 덮어쓰지 않는다.
  */
 async function installAll(
-  presets: readonly Preset[],
-  added: readonly AddedPreset[],
+  plan: InstallPlan,
   root: string,
   force: boolean,
 ): Promise<EntryFilesResult> {
-  const addedNames = new Set(added.map(({ name }) => name));
+  const addedNames = new Set(plan.added.map(({ name }) => name));
   const written: string[] = [];
   const skipped: string[] = [];
   const collect = (result: InstallResult): void => {
     written.push(...result.written);
     skipped.push(...result.skipped);
   };
-  for (const preset of presets) {
+  for (const preset of plan.installing) {
     collect(await installPreset(preset, root, { force: force && !addedNames.has(preset.name) }));
   }
-  const entry = await installEntryFiles(presets, root, { force });
+  // AGENTS.md를 새로 쓸 때(없거나 --force)는 이번에 설치하지 않는 프리셋까지 넣어야 문서 지도와 검증 명령이 빠지지 않는다.
+  // 이미 있는 AGENTS.md에 합칠 때는 이번에 설치한 프리셋만 더한다. 그대로 둔 프리셋에서 사람이 지운 규칙을 되살리지 않는다.
+  const rendersAnew = force || !existsSync(join(root, AGENTS_FILE));
+  const entry = await installEntryFiles(rendersAnew ? plan.all : plan.installing, root, { force });
   collect(entry);
   return { written, skipped, merged: entry.merged, unplaced: entry.unplaced };
 }
 
 function formatReport(
-  presets: readonly Preset[],
-  added: readonly AddedPreset[],
+  plan: InstallPlan,
   result: EntryFilesResult,
   hooksPath: string | undefined,
   hooks: HooksResult | undefined,
 ): string {
+  const presets = plan.installing;
   const names = presets.map((preset) => preset.name).join(", ");
   const lines = [`${names} 프리셋: 파일 ${String(result.written.length)}개를 설치했습니다.`];
-  if (added.length > 0) {
+  const reasons = (items: readonly AddedPreset[]): string =>
+    items.map(({ name, requiredBy }) => `${name} (${requiredBy}에 필요)`).join(", ");
+  if (plan.added.length > 0) {
     // 고르지 않은 프리셋의 파일이 생기므로, 무엇이 왜 더해졌는지 알린다.
-    const reasons = added.map(({ name, requiredBy }) => `${name} (${requiredBy}에 필요)`);
-    lines.push(`고르지 않았지만 필요한 프리셋을 함께 설치했습니다: ${reasons.join(", ")}`);
+    lines.push(`고르지 않았지만 필요한 프리셋을 함께 설치했습니다: ${reasons(plan.added)}`);
+  }
+  if (plan.kept.length > 0) {
+    // 설치된 것으로 잘못 본 경우에도 사용자가 알아채고 직접 설치할 수 있게 알린다.
+    lines.push(
+      `이미 설치돼 있어 다시 설치하지 않은 프리셋: ${reasons(plan.kept)}`,
+      "  빠진 파일을 채우려면 그 프리셋을 --preset 에 직접 적으세요.",
+    );
   }
   const unplaced = result.unplaced === undefined ? [] : formatUnplaced(result.unplaced);
   if (result.merged !== undefined && unplaced.length === 0) {
