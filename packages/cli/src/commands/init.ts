@@ -28,7 +28,7 @@ export const INIT_USAGE = `사용법: agentsmd init --preset <이름>[,<이름>.
 AI 작업 지침(AGENTS.md, docs/)을 저장소에 설치합니다.
 Git 훅은 git 프리셋에, GitHub 템플릿은 github 프리셋에 들어 있습니다.
 다른 프리셋이 있어야 하는 프리셋을 고르면 그 프리셋을 먼저 함께 설치합니다 (${requiresList}).
-github 만 골라도 git 프리셋의 훅이 설치되고 연결됩니다. --force 는 직접 고른 프리셋의 파일만 덮어씁니다.
+함께 설치하는 프리셋에 Git 훅이 있으면 그 훅도 설치하고 연결합니다.
 여러 프리셋을 고르면 문서 지도(AGENTS.md)를 설치한 순서대로 합칩니다.
 AGENTS.md가 이미 있으면 빠진 문서·규칙만 더하고, 다른 파일은 이미 있으면 건너뜁니다.
 AGENTS.md에 '## 문서 지도' 절이 없으면 바꾸지 않고 직접 옮길 항목을 알려 줍니다.
@@ -46,7 +46,7 @@ ${presetList}
 옵션:
   --preset <이름>   설치할 프리셋. 여러 개는 쉼표로 잇습니다 (필수)
   --root <경로>     설치할 저장소 루트 (기본값: 현재 디렉터리)
-  --force           이미 있는 파일도 덮어씁니다
+  --force           직접 고른 프리셋의 파일을 이미 있어도 덮어쓰고, AGENTS.md 를 새로 만듭니다
   --skip-hooks      core.hooksPath 를 설정하지 않습니다
   -h, --help        이 도움말
 `;
