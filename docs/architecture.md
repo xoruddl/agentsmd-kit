@@ -7,6 +7,7 @@ agentsmd (cli) ──▶ @agentsmd/core ◀── 모든 프리셋 (Preset 타�
       │
       ├──▶ @agentsmd/preset-git
       ├──▶ @agentsmd/preset-github
+      ├──▶ @agentsmd/preset-project
       ├──▶ @agentsmd/preset-java
       ├──▶ @agentsmd/preset-spring
       ├──▶ @agentsmd/preset-typescript
@@ -19,6 +20,7 @@ agentsmd (cli) ──▶ @agentsmd/core ◀── 모든 프리셋 (Preset 타�
 | `packages/cli`                 | 인자 파싱, 명령 분기, 출력, 종료 코드, Git 훅 연결          | 규칙의 내용                           |
 | `packages/preset-git`          | 언어와 무관한 Git 작업 규칙, 커밋 훅, PR 규칙 검사 스크립트 | 언어, 호스팅, CI 서비스               |
 | `packages/preset-github`       | 이슈·PR 템플릿, GitHub 설정·CI 연결 안내                    | 언어, CI 서비스                       |
+| `packages/preset-project`      | 사람이 채우는 프로젝트 방향 문서 (목표·범위·기술 스택)      | 언어, Git·GitHub                      |
 | `packages/preset-<언어>`       | 언어 규칙 문서, 검증·CI 명령 문서                           | 설치 방법, Git·GitHub                 |
 | `packages/preset-<프레임워크>` | 프레임워크 규칙 문서 (예: `react`, `spring`)                | 언어 공통 규칙, 검증 명령, Git·GitHub |
 
@@ -59,6 +61,8 @@ Git 규칙, 호스팅(GitHub), 언어 규칙, 프레임워크 규칙은 따로 �
   GitHub를 쓰지 않는 저장소에 Git 규칙만, Git 규칙을 원하지 않는 저장소에 언어 규칙만 설치할 수 있게 하기 위해서다.
 - 다른 프리셋이 있어야 뜻이 통하는 프리셋은 `requires`에 그 이름을 적는다. `github`은 `git`을(PR 템플릿과 문서가 Git 작업 규칙 문서를 가리킨다),
   `spring`은 `java`를, `react`는 `typescript`를(검증 명령을 언어 프리셋에 맡긴다) 필요로 한다.
+  언어 프리셋(`java`, `typescript`)은 `project`를 필요로 한다. 프로젝트 방향 문서는 언어와 무관해, 언어 프리셋마다 두면
+  두 언어를 함께 쓰는 저장소에 같은 문서가 두 벌 생긴다.
   `cli`의 `resolvePresets`가 빠진 프리셋을 그것을 필요로 하는 프리셋 앞에 더하고, `init`이 더했다고 알린다.
   더한 프리셋은 직접 고른 것과 같이 설치한다. 이미 설치돼 있는지 추측해서 건너뛰지 않는다. 문서 하나가 있다고 설치된 것으로 보면
   빠진 파일을 채우지 못하고, `AGENTS.md`를 새로 쓸 때 지도와 파일이 어긋난다. 빠진 파일은 채우고 있는 파일은 그대로 두는 기존 동작이면 충분하다.

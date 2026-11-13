@@ -26,7 +26,7 @@ agentsmd init --preset git                     # Git 규칙만
 
 동작 순서:
 
-1. 고른 프리셋에 필요한 프리셋이 빠져 있으면 더한다 (`github` → `git`, `spring` → `java`, `react` → `typescript`).
+1. 고른 프리셋에 필요한 프리셋이 빠져 있으면 더한다 (`github` → `git`, `java`·`typescript` → `project`, `spring` → `java`, `react` → `typescript`).
    필요한 프리셋은 그것을 필요로 하는 프리셋 앞에 두고, 고르지 않은 프리셋을 더했으면 출력으로 알린다.
    더한 프리셋은 직접 고른 것과 같이 다룬다. `--preset github`은 `--preset git,github`과 같고, 달라지는 것은 `--force`의 범위뿐이다(아래).
    더한 프리셋이 이미 설치돼 있어 새로 쓴 파일이 없으면 그렇다고 알린다.
@@ -41,6 +41,7 @@ agentsmd init --preset git                     # Git 규칙만
 | ------------ | -------------------------------------------------------------------------------------------------------------------------- |
 | `git`        | Git 작업 규칙·작업 흐름·리뷰 판단·문체 문서, 커밋 메시지 훅, PR 규칙 검사 스크립트(`.githooks/check-pr`), Claude Code 설정 |
 | `github`     | 이슈·PR 템플릿, GitHub 사용법 문서(gh 명령, 머지 방식·룰셋 설정, CI 연결 예시)                                             |
+| `project`    | 사람이 채우는 프로젝트 방향 문서(목표·범위·기술 스택). 언어 프리셋을 고르면 함께 설치된다                                  |
 | `java`       | Java 코드 규칙 문서, Spotless·Gradle 검증 명령 문서                                                                        |
 | `spring`     | 패키지 구조·JPA·트랜잭션·API·테스트 문서. 검증 명령은 `java`에 맡긴다                                                      |
 | `typescript` | 타입·구조·테스트·보안 문서, 린트·포맷·CI 명령 문서, `.nvmrc`                                                               |
@@ -60,7 +61,9 @@ agentsmd init --preset git                     # Git 규칙만
 
 나눠 설치하면 설치한 순서대로 표와 목록 끝에 쌓인다.
 프레임워크 프리셋(`spring`, `react`)은 검증 명령을 넣지 않고 언어 프리셋에 맡긴다. 그래서 `init --preset spring`만 실행해도 `java`를 먼저 설치하고,
-언어 프리셋의 필수 문서(`docs/java/project-direction.md` 등)가 프레임워크 문서보다 위에 온다. `--preset spring,java`처럼 뒤에 적어도 순서는 같다.
+언어 프리셋의 문서가 프레임워크 문서보다 위에 온다. `--preset spring,java`처럼 뒤에 적어도 순서는 같다.
+언어 프리셋은 프로젝트 방향 문서(`docs/project/direction.md`)를 담은 `project`를 함께 설치한다. 모든 작업 전에 읽는 문서라 언어 문서보다 위에 오고,
+`java`와 `typescript`를 함께 골라도 하나만 설치된다.
 `github`도 같은 방식으로 `git`을 함께 설치한다. PR 템플릿과 GitHub 사용법 문서가 Git 작업 규칙 문서를 가리키기 때문이다.
 
 `--force`를 붙이면 합치지 않고 `AGENTS.md`를 새로 만든다. 고른 프리셋과 그에 필요한 프리셋의 문서·규칙·검증 명령이 들어가고, 사람이 고치거나 더한 내용은 사라진다.
