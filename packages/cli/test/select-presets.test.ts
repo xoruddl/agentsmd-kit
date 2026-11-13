@@ -1,6 +1,6 @@
 import type { Preset } from "@agentsmd/core";
 import { describe, expect, it } from "vitest";
-import { PRESETS, selectPresets } from "../src/presets.js";
+import { PRESETS, resolvePresets, selectPresets } from "../src/presets.js";
 
 function preset(name: string, requires?: readonly string[]): Preset {
   return { name, description: "", filesDir: "", ...(requires === undefined ? {} : { requires }) };
@@ -16,15 +16,26 @@ const available = [
 
 /** 고른 결과를 이름으로만 본다. */
 function select(value: string): { names: string[]; added: unknown } | { unknown: unknown } {
-  const selection = selectPresets(value, available);
+  const selection = resolvePresets(value === "" ? [] : value.split(","), available);
   return selection.ok
     ? { names: selection.presets.map(({ name }) => name), added: selection.added }
     : { unknown: selection.unknown };
 }
 
 describe("selectPresets", () => {
-  it("적은 순서대로 고르고, 같은 이름은 한 번만 고른다", () => {
-    expect(select("lang, base,lang,")).toEqual({ names: ["lang", "base"], added: [] });
+  it("쉼표로 나눈 이름을 적은 순서대로 고르고, 공백과 빈 항목, 겹친 이름은 버린다", () => {
+    const selection = selectPresets(" java , git,java,, ");
+    expect(selection.ok && selection.presets.map(({ name }) => name)).toEqual(["java", "git"]);
+  });
+
+  it("모르는 이름은 모아서 알린다", () => {
+    expect(selectPresets("git,kotlin")).toEqual({ ok: false, unknown: ["kotlin"] });
+  });
+});
+
+describe("resolvePresets", () => {
+  it("적은 순서대로 고른다", () => {
+    expect(select("lang,base")).toEqual({ names: ["lang", "base"], added: [] });
   });
 
   // spring만 고르면 검증 명령이 없고, github만 고르면 PR 템플릿이 없는 문서를 가리킨다.
@@ -50,22 +61,26 @@ describe("selectPresets", () => {
     expect(select("framework,lang")).toEqual({ names: ["lang", "framework"], added: [] });
   });
 
-  it("여러 프리셋이 같은 프리셋을 필요로 해도 한 번만 더한다", () => {
-    expect(select("hosting,hosting,base")).toEqual({ names: ["base", "hosting"], added: [] });
+  it("여러 프리셋이 같은 프리셋을 필요로 해도 한 번만 더하고, 먼저 필요로 한 프리셋을 이유로 알린다", () => {
+    const shared = [preset("lang"), preset("one", ["lang"]), preset("two", ["lang"])];
+    expect(resolvePresets(["one", "two"], shared)).toMatchObject({
+      presets: [{ name: "lang" }, { name: "one" }, { name: "two" }],
+      added: [{ name: "lang", requiredBy: "one" }],
+    });
   });
 
   it("모르는 이름이 하나라도 있으면 모두 모아 알린다", () => {
     expect(select("lang,kotlin,go")).toEqual({ unknown: ["kotlin", "go"] });
   });
 
-  it("아무것도 적지 않으면 고른 것이 없다", () => {
-    expect(select(" , ")).toEqual({ names: [], added: [] });
+  it("아무것도 고르지 않으면 고른 것이 없다", () => {
+    expect(select("")).toEqual({ names: [], added: [] });
   });
 
   // 서로를 필요로 하게 잘못 적어도 끝없이 돌지 않는다.
   it("필요 관계가 돌고 돌아도 멈춘다", () => {
     const cyclic = [preset("a", ["b"]), preset("b", ["a"])];
-    const selection = selectPresets("a", cyclic);
+    const selection = resolvePresets(["a"], cyclic);
     expect(selection.ok && selection.presets.map(({ name }) => name)).toEqual(["b", "a"]);
   });
 });

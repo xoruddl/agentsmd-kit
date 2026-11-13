@@ -37,19 +37,11 @@ export type PresetSelection =
   | { readonly ok: false; readonly unknown: readonly string[] };
 
 /**
- * 쉼표로 구분한 프리셋 이름을 찾고, 그 프리셋에 필요한 프리셋(`requires`)을 함께 고른다.
+ * 쉼표로 구분한 프리셋 이름을 찾고, 그 프리셋에 필요한 프리셋까지 함께 고른다.
  *
- * 문서 지도는 이 순서로 합쳐진다. 적은 순서를 따르되, 필요한 프리셋은 그것을 필요로 하는 프리셋 앞에 둔다.
- * 그래야 언어 프리셋의 필수 문서가 프레임워크 문서보다 위에 온다. 같은 이름을 여러 번 적으면 한 번만 고른다.
- * 모르는 이름이 하나라도 있으면 아무것도 설치하지 않도록 모두 모아 알린다.
- *
- * @param available 고를 수 있는 프리셋. 기본값은 `PRESETS`이고, 테스트에서만 바꾼다.
+ * 같은 이름을 여러 번 적으면 한 번만 고른다. 순서와 필요한 프리셋을 더하는 규칙은 `resolvePresets`가 정한다.
  */
-export function selectPresets(
-  value: string,
-  available: readonly Preset[] = PRESETS,
-): PresetSelection {
-  const find = (name: string) => available.find((preset) => preset.name === name);
+export function selectPresets(value: string): PresetSelection {
   const names = [
     ...new Set(
       value
@@ -58,6 +50,24 @@ export function selectPresets(
         .filter((name) => name !== ""),
     ),
   ];
+  return resolvePresets(names, PRESETS);
+}
+
+/**
+ * 이름으로 프리셋을 찾고, 그 프리셋에 필요한 프리셋(`requires`)을 함께 고른다.
+ *
+ * 문서 지도는 이 순서로 합쳐진다. 적은 순서를 따르되, 필요한 프리셋은 그것을 필요로 하는 프리셋 앞에 둔다.
+ * 그래야 언어 프리셋의 필수 문서가 프레임워크 문서보다 위에 온다.
+ * 모르는 이름이 하나라도 있으면 아무것도 설치하지 않도록 모두 모아 알린다.
+ *
+ * @param names 사용자가 고른 이름. 겹치지 않아야 한다.
+ * @param available 고를 수 있는 프리셋.
+ */
+export function resolvePresets(
+  names: readonly string[],
+  available: readonly Preset[],
+): PresetSelection {
+  const find = (name: string) => available.find((preset) => preset.name === name);
   const unknown = names.filter((name) => find(name) === undefined);
   if (unknown.length > 0) {
     return { ok: false, unknown };
