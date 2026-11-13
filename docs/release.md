@@ -15,7 +15,7 @@ npm 패키지, Docker 이미지, GitHub Action 태그 세 가지를 같은 버�
 
 ## 순서
 
-1. 릴리스 이슈를 만들고 `build/<이슈>-release-X.Y.Z` 브랜치에서 아래 둘을 함께 올린다. `develop`으로 PR.
+1. 릴리스 이슈를 만들고 `build/<이슈>-release-X-Y-Z` 브랜치에서 아래 둘을 함께 올린다. `develop`으로 PR. 브랜치 이름 규칙이 점을 허용하지 않아 버전은 `-`로 잇는다.
    - `packages/*/package.json`의 `version`을 `X.Y.Z`로 올린다.
    - `action.yml`의 `image: docker://ghcr.io/xoruddl/agentsmd:X.Y.Z`를 새 버전으로 바꾼다.
      아직 없는 이미지를 가리키지만, CI는 배포된 이미지를 당기지 않으므로 괜찮다. 사용자는 아래 6번에서 태그를 옮기기 전까지 이전 이미지를 받는다.
