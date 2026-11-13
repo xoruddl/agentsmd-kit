@@ -24,8 +24,8 @@ function select(value: string): { names: string[]; added: unknown } | { unknown:
 
 describe("selectPresets", () => {
   it("쉼표로 나눈 이름을 적은 순서대로 고르고, 공백과 빈 항목, 겹친 이름은 버린다", () => {
-    const selection = selectPresets(" java , git,java,, ");
-    expect(selection.ok && selection.presets.map(({ name }) => name)).toEqual(["java", "git"]);
+    const selection = selectPresets(" github , git,github,, ");
+    expect(selection.ok && selection.presets.map(({ name }) => name)).toEqual(["git", "github"]);
   });
 
   it("모르는 이름은 모아서 알린다", () => {

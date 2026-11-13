@@ -37,7 +37,7 @@ describe("runInit", () => {
     const { stdout } = await git("git", ["-C", root, "config", "core.hooksPath"]);
     expect(stdout.trim()).toBe(".githooks");
     // 파일 수는 프리셋 내용이 바뀔 때마다 달라지므로 형식만 확인한다.
-    expect(out).toMatch(/^git, java 프리셋: 파일 \d+개를 설치했습니다\./);
+    expect(out).toMatch(/^git, project, java 프리셋: 파일 \d+개를 설치했습니다\./);
     expect(out).toContain("Git 훅을 연결했습니다");
   });
 
@@ -72,7 +72,7 @@ describe("runInit", () => {
   it("언어 프리셋만 고르면 Git 규칙은 설치하지 않는다", async () => {
     await expect(runInit(["--preset", "typescript", "--skip-hooks"], io())).resolves.toBe(0);
 
-    expect(out).toMatch(/^typescript 프리셋: /);
+    expect(out).toMatch(/^project, typescript 프리셋: /);
     await expect(readFile(join(root, "docs/git/git-conventions.md"), "utf8")).rejects.toThrow();
     await expect(readFile(join(root, "AGENTS.md"), "utf8")).resolves.not.toContain(
       "git-conventions",
@@ -123,10 +123,31 @@ describe("runInit", () => {
     await expect(checkRepository({ root })).resolves.toEqual([]);
   });
 
-  // 프레임워크 프리셋은 검증 명령을 넣지 않는다. 언어 프리셋의 필수 문서가 문서 지도에서 위에 오게 먼저 설치한다.
+  // 방향 문서를 언어 프리셋마다 두면 두 언어를 쓰는 저장소에서 목표와 범위를 두 파일에 따로 적게 된다.
+  it("java와 typescript를 함께 골라도 프로젝트 방향 문서는 하나만 설치하고 한 번만 안내한다", async () => {
+    await expect(runInit(["--preset", "java,typescript", "--skip-hooks"], io())).resolves.toBe(0);
+
+    expect(out).toMatch(/^project, java, typescript 프리셋:/);
+    expect(out).toContain("project (java에 필요)");
+    const count = (text: string, part: string): number => text.split(part).length - 1;
+    expect(count(out, "프로젝트 목표와 범위를 채우세요")).toBe(1);
+    const agents = await readFile(join(root, "AGENTS.md"), "utf8");
+    expect(count(agents, "모든 작업 시작 전 (필수)")).toBe(1);
+    // 모든 작업 전에 읽는 문서이므로 언어 문서보다 위에 온다.
+    expect(agents.indexOf("docs/project/direction.md")).toBeLessThan(
+      agents.indexOf("docs/java/code-style.md"),
+    );
+    await expect(readFile(join(root, "docs/java/project-direction.md"), "utf8")).rejects.toThrow();
+    await expect(
+      readFile(join(root, "docs/typescript/project-direction.md"), "utf8"),
+    ).rejects.toThrow();
+    await expect(checkRepository({ root })).resolves.toEqual([]);
+  });
+
+  // 프레임워크 프리셋은 검증 명령을 넣지 않는다. 언어 프리셋의 문서가 문서 지도에서 프레임워크 문서보다 위에 오게 먼저 설치한다.
   it.each([
-    ["spring", "java", "docs/java/project-direction.md", "docs/spring/architecture.md"],
-    ["react", "typescript", "docs/typescript/project-direction.md", "docs/react/components.md"],
+    ["spring", "java", "docs/java/code-style.md", "docs/spring/architecture.md"],
+    ["react", "typescript", "docs/typescript/rules.md", "docs/react/components.md"],
   ])("%s만 골라도 %s 프리셋을 먼저 설치한다", async (name, required, first, second) => {
     await expect(runInit(["--preset", name, "--skip-hooks"], io())).resolves.toBe(0);
 
@@ -146,7 +167,7 @@ describe("runInit", () => {
 
     await expect(runInit(["--preset", "spring", "--skip-hooks"], io())).resolves.toBe(0);
 
-    expect(out).toMatch(/^java, spring 프리셋: 파일 \d+개를 설치했습니다\./);
+    expect(out).toMatch(/^project, java, spring 프리셋: 파일 \d+개를 설치했습니다\./);
     expect(out).toContain("java (spring에 필요, 이미 있어 새로 쓴 파일 없음)");
     await expect(readFile(join(root, "docs/java/testing.md"), "utf8")).resolves.toBe(
       "# 우리 팀 테스트 규칙\n",
@@ -247,8 +268,8 @@ describe("runInit", () => {
   it("필요한 프리셋을 직접 골랐으면 더했다고 알리지 않는다", async () => {
     await runInit(["--preset", "spring,java", "--skip-hooks"], io());
 
-    expect(out).toMatch(/^java, spring 프리셋:/);
-    expect(out).not.toContain("고르지 않았지만");
+    expect(out).toMatch(/^project, java, spring 프리셋:/);
+    expect(out).not.toContain("java (spring에 필요");
   });
 
   it("설치 직후의 저장소는 check 규칙을 모두 통과한다", async () => {
@@ -326,7 +347,7 @@ describe("runInit", () => {
   it("설치 후 사람이 할 일을 번호로 안내한다", async () => {
     await runInit(["--preset", "java", "--skip-hooks"], io());
     expect(out).toMatch(/ {2}1\. \S/);
-    expect(out).toContain("docs/java/project-direction.md 에 프로젝트 목표와 범위를 채우세요.");
+    expect(out).toContain("docs/project/direction.md 에 프로젝트 목표와 범위를 채우세요.");
     expect(out).toContain("agentsmd check 로 문서 지도를 검사하세요.");
   });
 
