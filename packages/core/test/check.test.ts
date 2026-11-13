@@ -72,6 +72,89 @@ describe("checkRepository", () => {
     expect(findings.map((finding) => finding.file)).toEqual(["design/b.md"]);
   });
 
+  describe("문서 디렉터리 안의 링크", () => {
+    const base = {
+      "AGENTS.md": "[workflow](docs/workflow.md) [모듈](docs/modules/)",
+      "CLAUDE.md": "@AGENTS.md\n",
+    };
+
+    // 문서 이름을 바꾸고 그 문서를 가리키던 다른 문서를 고치지 않으면, 에이전트가 규칙을 읽다가 없는 문서를 찾게 된다.
+    it("문서 안의 깨진 링크를 그 문서의 파일·줄로 보고한다", async () => {
+      await write({
+        ...base,
+        "docs/workflow.md": ["# 작업 흐름", "", "리뷰는 [code-review.md](code-review.md)"].join(
+          "\n",
+        ),
+        "docs/modules/alert.md": "",
+      });
+
+      const findings = await checkRepository({ root });
+
+      expect(findings).toEqual([
+        {
+          ruleId: "broken-link",
+          file: "docs/workflow.md",
+          line: 3,
+          message: "링크 대상이 없습니다: code-review.md",
+        },
+      ]);
+    });
+
+    it("링크는 그 링크가 적힌 문서의 위치를 기준으로 푼다", async () => {
+      await write({
+        ...base,
+        "docs/workflow.md": "[알림](modules/alert.md) [소스](../src/main.ts)",
+        "docs/modules/alert.md": "[흐름](../workflow.md) [README](/README.md)",
+        "src/main.ts": "",
+        "README.md": "",
+      });
+      await expect(checkRepository({ root })).resolves.toEqual([]);
+    });
+
+    it("코드 블록 안의 링크와 저장소 밖을 가리키는 링크는 검사하지 않는다", async () => {
+      await write({
+        ...base,
+        "docs/workflow.md": [
+          "```md",
+          "[예시](없는-문서.md)",
+          "```",
+          "[옆 저장소](../../other/a.md)",
+        ].join("\n"),
+        "docs/modules/alert.md": "[사이트](https://example.com/a.md)",
+      });
+      await expect(checkRepository({ root })).resolves.toEqual([]);
+    });
+
+    it("지도에 없는 문서의 깨진 링크도 함께 알린다", async () => {
+      await write({
+        ...base,
+        "docs/workflow.md": "",
+        "docs/modules/alert.md": "",
+        "docs/draft.md": "[없음](missing.md)",
+      });
+
+      const findings = await checkRepository({ root });
+
+      // 줄이 없는 문제(파일 전체)가 같은 파일의 줄 있는 문제보다 먼저 온다.
+      expect(findings.map(({ ruleId, file }) => ({ ruleId, file }))).toEqual([
+        { ruleId: "unlisted-doc", file: "docs/draft.md" },
+        { ruleId: "broken-link", file: "docs/draft.md" },
+      ]);
+    });
+
+    it("문서 지도가 문서 디렉터리 안에 있어도 같은 링크를 두 번 보고하지 않는다", async () => {
+      await write({
+        "docs/AGENTS.md": "[자기 자신](AGENTS.md) [없음](missing.md)",
+      });
+
+      // `./docs/AGENTS.md`처럼 적어도 같은 파일로 알아본다.
+      for (const agentsFile of ["docs/AGENTS.md", "./docs/AGENTS.md"]) {
+        const findings = await checkRepository({ root, agentsFile });
+        expect(findings.filter((finding) => finding.ruleId === "broken-link")).toHaveLength(1);
+      }
+    });
+  });
+
   it("문서 지도가 없으면 DocMapNotFoundError를 던진다", async () => {
     await expect(checkRepository({ root })).rejects.toBeInstanceOf(DocMapNotFoundError);
   });

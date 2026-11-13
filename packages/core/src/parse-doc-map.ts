@@ -3,8 +3,10 @@ import type { DocLink, DocMap } from "./types.js";
 // [텍스트](경로) 또는 ![대체 텍스트](경로). 뒤에 "제목"이 올 수 있다.
 // 공백이 든 경로는 <...>로 감싸야 하므로 꺾쇠 형식(1번 그룹)과 일반 형식(2번 그룹)을 나눠 받는다.
 const INLINE_LINK = /!?\[(?:[^\]\\]|\\.)*\]\(\s*(?:<([^>\n]+)>|([^)\s]+))(?:\s+"[^"]*")?\s*\)/g;
-// [이름]: 경로  (참조형 링크 정의)
-const REFERENCE_DEFINITION = /^\s{0,3}\[[^\]]+\]:\s*<?(\S+?)>?(?:\s|$)/;
+// [이름]: 경로  또는  [이름]: 경로 "제목"  (참조형 링크 정의). 꺾쇠 형식(1번 그룹)과 일반 형식(2번 그룹)을 나눠 받는다.
+// `[^1]: 설명`은 각주이고, 경로 뒤에 제목이 아닌 글이 이어지면 문장이므로 둘 다 정의로 보지 않는다.
+const REFERENCE_DEFINITION =
+  /^\s{0,3}\[(?!\^)[^\]]+\]:\s*(?:<([^>\n]+)>|(\S+))(?:\s+(?:"[^"]*"|'[^']*'|\([^)]*\)))?\s*$/;
 // http:, mailto: 처럼 스킴이 붙은 주소는 저장소 안의 파일이 아니다.
 const URL_SCHEME = /^[a-z][a-z0-9+.-]*:/i;
 const FENCE = /^\s{0,3}(`{3,}|~{3,})/;
@@ -52,9 +54,9 @@ function nextFenceState(openFence: string | undefined, fence: string): string | 
 }
 
 function extractTargets(line: string): string[] {
-  const definition = REFERENCE_DEFINITION.exec(line)?.[1];
-  if (definition !== undefined) {
-    return [definition];
+  const definition = REFERENCE_DEFINITION.exec(line);
+  if (definition !== null) {
+    return [definition[1] ?? definition[2] ?? ""];
   }
   return Array.from(line.matchAll(INLINE_LINK), (match) => match[1] ?? match[2] ?? "");
 }
