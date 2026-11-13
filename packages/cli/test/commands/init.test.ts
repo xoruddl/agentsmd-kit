@@ -46,7 +46,7 @@ describe("runInit", () => {
 
     const agents = await readFile(join(root, "AGENTS.md"), "utf8");
     expect(agents).toContain("[docs/git/git-conventions.md](docs/git/git-conventions.md)");
-    expect(agents).toContain("[docs/typescript.md](docs/typescript.md)");
+    expect(agents).toContain("[docs/typescript/typescript.md](docs/typescript/typescript.md)");
     await expect(checkRepository({ root })).resolves.toEqual([]);
   });
 
@@ -54,7 +54,7 @@ describe("runInit", () => {
     await expect(runInit(["--preset", "typescript,react", "--skip-hooks"], io())).resolves.toBe(0);
 
     const agents = await readFile(join(root, "AGENTS.md"), "utf8");
-    expect(agents).toContain("[docs/typescript.md](docs/typescript.md)");
+    expect(agents).toContain("[docs/typescript/typescript.md](docs/typescript/typescript.md)");
     expect(agents).toContain("[docs/react-components.md](docs/react-components.md)");
     await expect(checkRepository({ root })).resolves.toEqual([]);
   });

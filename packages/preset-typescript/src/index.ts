@@ -17,14 +17,20 @@ export const typescriptPreset = {
   filesDir: fileURLToPath(new URL("../files", import.meta.url)),
   docs: [
     {
-      path: "docs/project-direction.md",
+      path: "docs/typescript/project-direction.md",
       when: "모든 작업 시작 전 (필수). 범위 밖 작업이면 먼저 질문",
     },
-    { path: "docs/typescript.md", when: "코드 작성·리뷰 (항상). 컴파일러 옵션, 타입 규칙" },
-    { path: "docs/structure.md", when: "파일·폴더를 만들 때. 기능 단위 폴더, 모듈 경계" },
-    { path: "docs/testing.md", when: "테스트를 쓸 때" },
-    { path: "docs/env-and-security.md", when: "환경변수·외부 입력·의존성을 다룰 때" },
-    { path: "docs/lint-and-ci.md", when: "스크립트·린트·포맷·CI 설정" },
+    {
+      path: "docs/typescript/typescript.md",
+      when: "코드 작성·리뷰 (항상). 컴파일러 옵션, 타입 규칙",
+    },
+    {
+      path: "docs/typescript/structure.md",
+      when: "파일·폴더를 만들 때. 기능 단위 폴더, 모듈 경계",
+    },
+    { path: "docs/typescript/testing.md", when: "테스트를 쓸 때" },
+    { path: "docs/typescript/env-and-security.md", when: "환경변수·외부 입력·의존성을 다룰 때" },
+    { path: "docs/typescript/lint-and-ci.md", when: "스크립트·린트·포맷·CI 설정" },
   ],
   rules: [
     "`any`, `as` 단언, `!` 로 타입 오류를 덮지 않는다.",
@@ -35,9 +41,9 @@ export const typescriptPreset = {
   ],
   verify: "pnpm lint && pnpm format:check && pnpm typecheck && pnpm test && pnpm build",
   nextSteps: [
-    "docs/project-direction.md 에 프로젝트 목표와 범위를 채우세요.",
-    "tsconfig 에 docs/typescript.md 의 필수 컴파일러 옵션을 켜세요.",
-    "package.json 에 lint, format, format:check, typecheck, test, build 스크립트를 두세요. → docs/lint-and-ci.md",
+    "docs/typescript/project-direction.md 에 프로젝트 목표와 범위를 채우세요.",
+    "tsconfig 에 docs/typescript/typescript.md 의 필수 컴파일러 옵션을 켜세요.",
+    "package.json 에 lint, format, format:check, typecheck, test, build 스크립트를 두세요. → docs/typescript/lint-and-ci.md",
     ".nvmrc 의 Node 버전을 프로젝트에 맞게 고치세요.",
   ],
 } satisfies Preset;
