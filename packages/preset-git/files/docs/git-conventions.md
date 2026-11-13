@@ -103,11 +103,10 @@ git merge main
 
 ## 자동 검사
 
-| 위치                               | 검사                                                           |
-| ---------------------------------- | -------------------------------------------------------------- |
-| `.githooks/commit-msg`             | 커밋 형식, 제목 50자, 마침표, AI 서명                          |
-| `.githooks/pre-commit.d/max-files` | 커밋당 파일 수. `.githooks/pre-commit`이 다른 검사와 함께 실행 |
-| `.githooks/check-pr`               | 브랜치 이름, PR 제목. 훅이 아니라 CI가 PR마다 실행             |
+| 위치                   | 검사                                               |
+| ---------------------- | -------------------------------------------------- |
+| `.githooks/commit-msg` | 커밋 형식, 제목 50자, 마침표, AI 서명              |
+| `.githooks/check-pr`   | 브랜치 이름, PR 제목. 훅이 아니라 CI가 PR마다 실행 |
 
 훅은 `agentsmd init`이 연결한다. 직접 연결하려면 `git config core.hooksPath .githooks`.
 
@@ -134,11 +133,11 @@ BRANCH=feat/12-order-cancel TITLE="[Feat] 주문 취소 사유 필드 추가" .g
 문서를 손으로 더하거나 빼거나 옮기면 `AGENTS.md`의 문서 지도가 어긋난다. `agentsmd check`를 PR마다 돌려 어긋난 변경은 머지 전에 실패하게 한다.
 Node 없이 돌릴 수 있게 cli를 담은 이미지 `ghcr.io/xoruddl/agentsmd`가 있다. 저장소를 작업 디렉터리로 마운트하면 기본값으로 검사한다.
 
-| CI             | 설정                                                                          |
-| -------------- | ----------------------------------------------------------------------------- |
-| GitHub Actions | `uses: xoruddl/agentsmd-kit@v0.5` (같은 이미지를 쓰는 Action)                 |
-| GitLab CI      | `image: ghcr.io/xoruddl/agentsmd:0.5` + `script: [agentsmd check]`            |
-| Jenkins        | `docker.image('ghcr.io/xoruddl/agentsmd:0.5').inside { sh 'agentsmd check' }` |
+| CI             | 설정                                                                        |
+| -------------- | --------------------------------------------------------------------------- |
+| GitHub Actions | `uses: xoruddl/agentsmd-kit@v0` (같은 이미지를 쓰는 Action)                 |
+| GitLab CI      | `image: ghcr.io/xoruddl/agentsmd:0` + `script: [agentsmd check]`            |
+| Jenkins        | `docker.image('ghcr.io/xoruddl/agentsmd:0').inside { sh 'agentsmd check' }` |
 
 - 문서 지도 파일이나 문서 디렉터리 위치가 기본값과 다르면 `agentsmd check --docs guides`처럼 옵션으로 넘긴다. Action은 `with:`의 같은 이름으로 받는다.
 - 검사가 실패하면 종료 코드 1, 옵션이 잘못됐거나 문서 지도가 없으면 2를 돌려준다.

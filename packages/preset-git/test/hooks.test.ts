@@ -3,7 +3,7 @@ import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { promisify } from "node:util";
-import { installEntryFiles, installPreset } from "@agentsmd/core";
+import { installPreset } from "@agentsmd/core";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { gitPreset } from "../src/index.js";
 
@@ -43,24 +43,10 @@ async function commitMsg(message: string) {
   return runHook("commit-msg", [file]);
 }
 
-async function stageFiles(count: number): Promise<void> {
-  for (let index = 0; index < count; index++) {
-    await writeFile(join(repo, `file-${String(index)}.txt`), String(index));
-  }
-  await exec("git", ["add", "."], { cwd: repo });
-}
-
 beforeEach(async () => {
   repo = await mkdtemp(join(tmpdir(), "agentsmd-hooks-"));
   await exec("git", ["init", "-q"], { cwd: repo });
   await installPreset(gitPreset, repo);
-  // pre-commit 실행기는 init이 만들어 넣으므로, 실제 설치와 같게 함께 만든다.
-  await installEntryFiles([gitPreset], repo);
-  // 훅 파일 자체는 스테이징 대상에서 빼서 파일 수 검사에 섞이지 않게 한다.
-  await writeFile(
-    join(repo, ".git", "info", "exclude"),
-    ".githooks/\n.github/\n.claude/\ndocs/\nAGENTS.md\nCLAUDE.md\n",
-  );
 });
 
 afterEach(async () => {
@@ -111,27 +97,6 @@ describe("commit-msg", () => {
 
   it("git이 만든 Merge 커밋 메시지는 검사하지 않는다", async () => {
     await expect(commitMsg("Merge branch 'main' into feat/12-order\n")).resolves.toMatchObject({
-      code: 0,
-    });
-  });
-});
-
-describe("pre-commit", () => {
-  it("스테이징 파일이 기본 한도 5개 이하면 통과한다", async () => {
-    await stageFiles(5);
-    await expect(runHook("pre-commit")).resolves.toMatchObject({ code: 0 });
-  });
-
-  it("기본 한도 5개를 넘으면 막고 파일 목록을 보여 준다", async () => {
-    await stageFiles(6);
-    const result = await runHook("pre-commit");
-    expect(result.code).toBe(1);
-    expect(result.stderr).toContain("스테이징된 파일 6개 (한도 5개)");
-  });
-
-  it("HARNESS_MAX_FILES로 한도를 바꿀 수 있다", async () => {
-    await stageFiles(6);
-    await expect(runHook("pre-commit", [], { HARNESS_MAX_FILES: "6" })).resolves.toMatchObject({
       code: 0,
     });
   });

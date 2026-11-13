@@ -1,5 +1,5 @@
 # agentsmd cli를 담은 이미지. 저장소를 마운트해 `agentsmd check`를 돌린다.
-#   docker run --rm -v "$PWD:/repo" -w /repo ghcr.io/xoruddl/agentsmd:0.5 check
+#   docker run --rm -v "$PWD:/repo" -w /repo ghcr.io/xoruddl/agentsmd:0 check
 # npm 배포본이 아니라 이 저장소 소스에서 빌드한다. CI가 브랜치 코드로 이미지를 만들어 검사하기 위해서다.
 # 루트 action.yml이 이 이미지를 쓴다. 빌드·푸시 절차는 docs/release.md.
 

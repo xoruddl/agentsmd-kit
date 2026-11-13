@@ -20,14 +20,11 @@ export const gitPreset = {
     { path: "docs/writing-style.md", when: "md 문서, 커밋·PR 메시지 작성" },
   ],
   rules: [
-    "커밋 하나 = 책임 하나, 파일 5개 이하.",
+    "커밋 하나 = 책임 하나.",
     "커밋 1개 후 작업을 멈추고 사용자 피드백을 기다린다.",
     "PR 은 한 가지 목적만 담는다.",
     "커밋·PR 메시지는 사람이 쓴 것처럼 짧게 쓴다. AI 서명 금지.",
     "훅 우회(`--no-verify`) 금지.",
   ],
-  nextSteps: [
-    "CI에서 PR마다 .githooks/check-pr 를 실행하세요. → docs/git-conventions.md",
-    "지침 도입 커밋만 파일 수 한도를 올려 한 번에 커밋하세요: HARNESS_MAX_FILES=99 git commit ...",
-  ],
+  nextSteps: ["CI에서 PR마다 .githooks/check-pr 를 실행하세요. → docs/git-conventions.md"],
 } satisfies Preset;

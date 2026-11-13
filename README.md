@@ -30,14 +30,14 @@ npx @agentsmd/cli check
 
 Git 규칙, 호스팅(GitHub), 언어 규칙, 프레임워크(React·Spring) 규칙은 따로 고릅니다. 필요한 것만 쉼표로 이으면 됩니다.
 
-| 프리셋       | 이럴 때                                            | 설치되는 것                                                                                                        |
-| ------------ | -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| `git`        | 커밋·PR 규칙과 Git 훅을 쓸 때. 호스팅·CI와 무관    | 작업 흐름·Git 규칙·리뷰 기준·문체 문서, 커밋 훅(형식·파일 수), PR 규칙 검사 스크립트(`check-pr`), Claude Code 설정 |
-| `github`     | GitHub에서 이슈·PR을 관리할 때                     | 이슈·PR 템플릿, GitHub 사용법 문서(gh 명령, 머지 방식·룰셋, CI 연결 예시)                                          |
-| `typescript` | TypeScript 프로젝트 (프론트엔드·백엔드·라이브러리) | 타입·구조·테스트·보안·린트 규칙 문서, 검증 명령, `.nvmrc`                                                          |
-| `react`      | React 프론트엔드. `typescript`와 함께              | 컴포넌트·접근성·화면 테스트·브라우저 보안 문서, React 린트 규칙                                                    |
-| `java`       | Java·Gradle 프로젝트                               | 코드 스타일·클린 코드·체크리스트·테스트 문서, Spotless 설정, 검증 명령                                             |
-| `spring`     | Spring Boot 서버. `java`와 함께                    | 패키지 구조·JPA·트랜잭션·API·테스트 문서                                                                           |
+| 프리셋       | 이럴 때                                            | 설치되는 것                                                                                                 |
+| ------------ | -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `git`        | 커밋·PR 규칙과 Git 훅을 쓸 때. 호스팅·CI와 무관    | 작업 흐름·Git 규칙·리뷰 기준·문체 문서, 커밋 메시지 훅, PR 규칙 검사 스크립트(`check-pr`), Claude Code 설정 |
+| `github`     | GitHub에서 이슈·PR을 관리할 때                     | 이슈·PR 템플릿, GitHub 사용법 문서(gh 명령, 머지 방식·룰셋, CI 연결 예시)                                   |
+| `typescript` | TypeScript 프로젝트 (프론트엔드·백엔드·라이브러리) | 타입·구조·테스트·보안·린트 규칙 문서, 검증 명령, `.nvmrc`                                                   |
+| `react`      | React 프론트엔드. `typescript`와 함께              | 컴포넌트·접근성·화면 테스트·브라우저 보안 문서, React 린트 규칙                                             |
+| `java`       | Java·Gradle 프로젝트                               | 코드 스타일·클린 코드·체크리스트·테스트 문서, Spotless 설정, 검증 명령                                      |
+| `spring`     | Spring Boot 서버. `java`와 함께                    | 패키지 구조·JPA·트랜잭션·API·테스트 문서                                                                    |
 
 | 저장소                    | 명령                                        |
 | ------------------------- | ------------------------------------------- |
@@ -110,13 +110,13 @@ pnpm add -D @agentsmd/cli
 GitHub Actions에서는 설치 없이 이 저장소의 Action을 한 줄로 씁니다. 검사 대상 경로는 `with:`로 바꿀 수 있고, 입력 이름은 `agentsmd check`의 옵션과 같습니다. → [`packages/preset-github/files/docs/github.md`](packages/preset-github/files/docs/github.md)
 
 ```yaml
-- uses: xoruddl/agentsmd-kit@v0.5
+- uses: xoruddl/agentsmd-kit@v0
 ```
 
 Action이 쓰는 이미지 `ghcr.io/xoruddl/agentsmd`는 GitLab CI·Jenkins 등 Docker가 되는 CI에서 그대로 씁니다. Node가 없어도 됩니다. → [`packages/preset-git/files/docs/git-conventions.md`](packages/preset-git/files/docs/git-conventions.md)
 
 ```sh
-docker run --rm -v "$PWD:/repo" ghcr.io/xoruddl/agentsmd:0.5 check
+docker run --rm -v "$PWD:/repo" ghcr.io/xoruddl/agentsmd:0 check
 ```
 
 ## 개발

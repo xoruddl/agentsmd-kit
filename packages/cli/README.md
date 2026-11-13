@@ -38,12 +38,12 @@ docs/requirements.md  [unlisted-doc]  문서 지도(AGENTS.md)에서 안내하�
 
 ## 프리셋
 
-| 프리셋       | 내용                                                                                                 |
-| ------------ | ---------------------------------------------------------------------------------------------------- |
-| `git`        | 언어와 무관한 Git 규칙: 이슈 → 브랜치 → PR → merge 커밋, 커밋 형식·파일 수 훅, PR 규칙 검사 스크립트 |
-| `github`     | GitHub 이슈·PR 템플릿, 머지 방식·룰셋 설정과 CI 연결 안내                                            |
-| `typescript` | TypeScript·React 프론트엔드: 필수 tsconfig 옵션, 타입·구조·접근성·테스트·보안 규칙, 린트·CI 명령     |
-| `java`       | Java·Gradle: 코드 규칙, palantir-java-format(Spotless)·Gradle 검증 명령                              |
+| 프리셋       | 내용                                                                                             |
+| ------------ | ------------------------------------------------------------------------------------------------ |
+| `git`        | 언어와 무관한 Git 규칙: 이슈 → 브랜치 → PR → merge 커밋, 커밋 메시지 훅, PR 규칙 검사 스크립트   |
+| `github`     | GitHub 이슈·PR 템플릿, 머지 방식·룰셋 설정과 CI 연결 안내                                        |
+| `typescript` | TypeScript·React 프론트엔드: 필수 tsconfig 옵션, 타입·구조·접근성·테스트·보안 규칙, 린트·CI 명령 |
+| `java`       | Java·Gradle: 코드 규칙, palantir-java-format(Spotless)·Gradle 검증 명령                          |
 
 Git 규칙, GitHub, 언어 규칙은 따로 고르고, 함께 쓰려면 쉼표로 잇습니다 (`--preset git,github,typescript`).
 CI 설정 파일은 설치하지 않습니다. GitHub Actions, GitLab CI, Jenkins 등 어디서든 문서에 적힌 명령과 `.githooks/check-pr`를 부르면 됩니다.
