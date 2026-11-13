@@ -387,16 +387,62 @@ describe("runInit", () => {
 
       await expect(runInit(["--preset", "git", "--skip-hooks"], io())).resolves.toBe(0);
 
-      expect(out).toContain("옛 위치에 프리셋 문서 2개가 남아 있습니다.");
+      expect(out).toContain("이름이 같은 문서 2개가 옛 위치에 있습니다.");
       expect(out).toContain("  docs/workflow.md → docs/git/workflow.md\n");
       expect(out).toContain("  docs/git-conventions.md → docs/git/git-conventions.md\n");
       expect(out).not.toContain("docs/code-review.md →");
+      // 기존 AGENTS.md에 합쳤으므로 옛 줄이 남아 있다.
+      expect(out).toContain("AGENTS.md 문서 지도에서 그 줄도 지우세요.");
       await expect(readFile(join(root, "docs/workflow.md"), "utf8")).resolves.toBe(
         "# 사람이 고쳐 쓴 workflow.md\n",
       );
       await expect(readFile(join(root, "docs/git/workflow.md"), "utf8")).resolves.not.toContain(
         "사람이 고쳐 쓴",
       );
+    });
+
+    // 파일 이름만 보고 찾는다. docs/testing.md처럼 흔한 이름은 직접 쓴 문서일 수 있으므로 지우라고 단정하지 않는다.
+    it("직접 쓴 문서일 수 있다고 알리고, 그대로 둬도 된다고 안내한다", async () => {
+      await installed06(["testing.md"]);
+
+      await runInit(["--preset", "typescript", "--skip-hooks"], io());
+
+      expect(out).toContain("  docs/testing.md → docs/typescript/testing.md\n");
+      expect(out).toContain("이전 버전이 설치한 문서라면");
+      expect(out).toContain("직접 쓴 문서라면 그대로 두면 됩니다.");
+    });
+
+    // --force는 AGENTS.md를 새로 만든다. 없는 줄을 지우라거나, 건너뛴 파일이 없는데 다시 설치하라고 안내하지 않는다.
+    it("--force로 AGENTS.md를 새로 만들었으면 지도의 옛 줄과 건너뛴 파일은 안내하지 않는다", async () => {
+      await installed06(["workflow.md"]);
+
+      await runInit(["--preset", "git", "--skip-hooks", "--force"], io());
+
+      expect(out).toContain("  docs/workflow.md → docs/git/workflow.md\n");
+      expect(out).not.toContain("문서 지도에서 그 줄도 지우세요");
+      expect(out).not.toContain("위에서 건너뛴 파일");
+    });
+
+    // 0.6의 훅과 PR 템플릿은 옛 문서 경로를 적고 있다. 내용이 달라 건너뛰므로 그대로 남는다.
+    it("건너뛴 파일이 있으면 옛 경로를 안내하는지 확인하라고 알린다", async () => {
+      await installed06(["workflow.md"]);
+      await mkdir(join(root, ".githooks"), { recursive: true });
+      await writeFile(join(root, ".githooks/commit-msg"), "# 규칙: docs/git-conventions.md\n");
+
+      await runInit(["--preset", "git", "--skip-hooks"], io());
+
+      expect(out).toContain(
+        "위에서 건너뛴 파일이 옛 경로를 안내하면 그 파일을 지우고 다시 설치하세요.",
+      );
+    });
+
+    it("건너뛴 파일이 없으면 그 안내는 하지 않는다", async () => {
+      await installed06(["code-style.md"]);
+
+      await runInit(["--preset", "java", "--skip-hooks"], io());
+
+      expect(out).toContain("  docs/code-style.md → docs/java/code-style.md\n");
+      expect(out).not.toContain("위에서 건너뛴 파일");
     });
 
     // 사람이 채운 방향 문서다. 언어 프리셋을 고르면 project가 따라오므로 그때도 알려야 한다.
@@ -409,14 +455,15 @@ describe("runInit", () => {
     });
 
     // 0.6에서 java와 typescript가 같은 이름으로 설치하던 문서다. 어느 쪽 것인지는 내용을 봐야 안다.
-    it("두 프리셋이 같은 이름으로 설치하던 문서는 한 개로 세고 두 위치를 모두 알린다", async () => {
+    it("두 프리셋이 같은 이름으로 설치하던 문서는 한 줄로 묶고 내용을 보고 고르라고 알린다", async () => {
       await installed06(["lint-and-ci.md"]);
 
       await runInit(["--preset", "java,typescript", "--skip-hooks"], io());
 
-      expect(out).toContain("옛 위치에 프리셋 문서 1개가 남아 있습니다.");
-      expect(out).toContain("  docs/lint-and-ci.md → docs/java/lint-and-ci.md\n");
-      expect(out).toContain("  docs/lint-and-ci.md → docs/typescript/lint-and-ci.md\n");
+      expect(out).toContain("이름이 같은 문서 1개가 옛 위치에 있습니다.");
+      expect(out).toContain(
+        "  docs/lint-and-ci.md → docs/java/lint-and-ci.md 또는 docs/typescript/lint-and-ci.md (내용을 보고 고르세요)\n",
+      );
     });
 
     it("고르지 않은 프리셋의 옛 문서는 알리지 않는다", async () => {
@@ -429,7 +476,7 @@ describe("runInit", () => {
   });
 
   it("새로 설치하는 저장소에는 옛 위치 안내가 나오지 않는다", async () => {
-    await runInit(["--preset", "git,github,java,spring", "--skip-hooks"], io());
+    await runInit(["--preset", "git,github,java,spring,typescript,react", "--skip-hooks"], io());
     expect(out).not.toContain("옛 위치에");
   });
 
