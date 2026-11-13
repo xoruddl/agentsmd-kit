@@ -34,8 +34,16 @@ describe("selectPresets", () => {
 });
 
 describe("resolvePresets", () => {
-  it("적은 순서대로 고른다", () => {
-    expect(select("lang,base")).toEqual({ names: ["lang", "base"], added: [] });
+  it("적은 순서대로 고르고, 겹친 이름은 한 번만 고른다", () => {
+    expect(select("lang,base,lang")).toEqual({ names: ["lang", "base"], added: [] });
+    expect(select("kotlin,kotlin")).toEqual({ unknown: ["kotlin"] });
+  });
+
+  // 프리셋 정의의 실수다. 사용자가 고를 수 있는 이름이 아니므로 모르는 프리셋으로 알리지 않고 바로 드러낸다.
+  it("프리셋이 없는 프리셋을 필요로 하면 예외를 던진다", () => {
+    expect(() => resolvePresets(["broken"], [preset("broken", ["missing"])])).toThrow(
+      "broken 프리셋이 필요로 하는 missing 프리셋이 없습니다",
+    );
   });
 
   // spring만 고르면 검증 명령이 없고, github만 고르면 PR 템플릿이 없는 문서를 가리킨다.

@@ -42,14 +42,10 @@ export type PresetSelection =
  * 같은 이름을 여러 번 적으면 한 번만 고른다. 순서와 필요한 프리셋을 더하는 규칙은 `resolvePresets`가 정한다.
  */
 export function selectPresets(value: string): PresetSelection {
-  const names = [
-    ...new Set(
-      value
-        .split(",")
-        .map((name) => name.trim())
-        .filter((name) => name !== ""),
-    ),
-  ];
+  const names = value
+    .split(",")
+    .map((name) => name.trim())
+    .filter((name) => name !== "");
   return resolvePresets(names, PRESETS);
 }
 
@@ -60,14 +56,19 @@ export function selectPresets(value: string): PresetSelection {
  * 그래야 언어 프리셋의 필수 문서가 프레임워크 문서보다 위에 온다.
  * 모르는 이름이 하나라도 있으면 아무것도 설치하지 않도록 모두 모아 알린다.
  *
- * @param names 사용자가 고른 이름. 겹치지 않아야 한다.
+ * 프리셋의 `requires`에 없는 이름이 적혀 있으면 프리셋 정의가 잘못된 것이므로 예외를 던진다.
+ * 사용자가 고칠 수 있는 입력 오류가 아니어서 `unknown`으로 돌려주지 않는다.
+ *
+ * @param chosen 사용자가 고른 이름. 겹친 이름은 한 번만 고른다.
  * @param available 고를 수 있는 프리셋.
  */
 export function resolvePresets(
-  names: readonly string[],
+  chosen: readonly string[],
   available: readonly Preset[],
 ): PresetSelection {
-  const find = (name: string) => available.find((preset) => preset.name === name);
+  const names = [...new Set(chosen)];
+  const byName = new Map(available.map((preset) => [preset.name, preset]));
+  const find = (name: string) => byName.get(name);
   const unknown = names.filter((name) => find(name) === undefined);
   if (unknown.length > 0) {
     return { ok: false, unknown };
