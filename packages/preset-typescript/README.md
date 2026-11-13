@@ -5,7 +5,7 @@
 ```bash
 npx @agentsmd/cli init --preset git,typescript         # Git 작업 규칙과 함께
 npx @agentsmd/cli init --preset git,typescript,react   # React 프론트엔드
-npx @agentsmd/cli init --preset typescript             # TypeScript 규칙만
+npx @agentsmd/cli init --preset typescript             # Git 규칙 없이 (프로젝트 방향 문서는 함께 설치된다)
 ```
 
 - 규칙 문서: 필수 tsconfig 옵션, `any`·`as`·`!` 금지, 외부 값 경계 검증, Promise·오류 처리, 기능 단위 폴더, Vitest·MSW 테스트, 환경변수·보안

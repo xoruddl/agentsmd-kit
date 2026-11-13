@@ -13,7 +13,7 @@ agentsmd init --preset git,github,typescript   # GitHub 템플릿까지
 agentsmd init --preset git,typescript,react    # React 프론트엔드 규칙까지
 agentsmd init --preset git,java                # Git 규칙 + Java 규칙
 agentsmd init --preset git,java,spring         # Spring Boot 서버 규칙까지
-agentsmd init --preset typescript              # TypeScript 규칙만
+agentsmd init --preset typescript              # Git 규칙 없이 TypeScript 규칙과 프로젝트 방향 문서만
 agentsmd init --preset git                     # Git 규칙만
 ```
 

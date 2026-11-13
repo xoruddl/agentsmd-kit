@@ -60,7 +60,7 @@ docs/
 | GitHub + React 프론트엔드 | `init --preset git,github,typescript,react` |
 | GitLab·사내 Git + Java    | `init --preset git,java`                    |
 | GitHub + Spring Boot      | `init --preset git,github,java,spring`      |
-| 언어 규칙만               | `init --preset typescript`                  |
+| Git 규칙 없이 언어 규칙만 | `init --preset typescript`                  |
 | Git 규칙만                | `init --preset git`                         |
 
 어느 조합이든 아래는 같습니다.
