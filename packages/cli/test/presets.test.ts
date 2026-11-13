@@ -55,6 +55,53 @@ describe("PRESETS", () => {
     expect(shared).toEqual([]);
   });
 
+  // 옛 경로를 잘못 적으면 안내가 없는 파일을 가리키거나, 지금 설치하는 파일을 옛 것이라고 알리게 된다.
+  it.each(byName)(
+    "%s 프리셋이 적은 옮긴 문서는 지금 설치하는 문서를 가리킨다",
+    async (_name, preset) => {
+      const installed = await presetFiles(preset.filesDir);
+      for (const { from, to } of preset.moved ?? []) {
+        expect(installed, `${from} → ${to}`).toContain(to);
+        expect(installed, `${from}는 지금도 설치하는 경로다`).not.toContain(from);
+      }
+    },
+  );
+
+  // 0.6 이하는 모든 문서를 docs/ 바로 아래에 설치했다. 문서를 옮기고 옛 경로를 적지 않으면 다시 설치할 때 조용히 두 벌이 된다.
+  it("0.6에서 설치하던 문서는 빠짐없이 어느 프리셋의 옮긴 문서로 적혀 있다", () => {
+    const installedIn06 = [
+      "code-review.md",
+      "git-conventions.md",
+      "workflow.md",
+      "writing-style.md",
+      "github.md",
+      "clean-code-examples.md",
+      "clean-code.md",
+      "code-style.md",
+      "java-checklist.md",
+      "java-logging-and-security.md",
+      "java-testing.md",
+      "lint-and-ci.md",
+      "project-direction.md",
+      "browser-security.md",
+      "react-components.md",
+      "react-testing.md",
+      "spring-api.md",
+      "spring-architecture.md",
+      "spring-data-jpa.md",
+      "spring-testing.md",
+      "env-and-security.md",
+      "structure.md",
+      "testing.md",
+      "typescript.md",
+    ].map((name) => `docs/${name}`);
+    const declared = new Set(
+      PRESETS.flatMap((preset) => (preset.moved ?? []).map(({ from }) => from)),
+    );
+
+    expect(installedIn06.filter((path) => !declared.has(path))).toEqual([]);
+  });
+
   it("모든 프리셋을 함께 설치하면 check를 통과한다", async () => {
     const root = await mkdtemp(join(tmpdir(), "agentsmd-presets-"));
     try {

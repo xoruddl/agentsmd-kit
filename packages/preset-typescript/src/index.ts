@@ -43,4 +43,12 @@ export const typescriptPreset = {
     "package.json 에 lint, format, format:check, typecheck, test, build 스크립트를 두세요. → docs/typescript/lint-and-ci.md",
     ".nvmrc 의 Node 버전을 프로젝트에 맞게 고치세요.",
   ],
+  // 0.6 이하는 문서를 docs/ 한 층에 설치했다. lint-and-ci.md는 java 프리셋도 같은 이름으로 설치했다.
+  moved: [
+    { from: "docs/typescript.md", to: "docs/typescript/rules.md" },
+    { from: "docs/structure.md", to: "docs/typescript/structure.md" },
+    { from: "docs/testing.md", to: "docs/typescript/testing.md" },
+    { from: "docs/env-and-security.md", to: "docs/typescript/env-and-security.md" },
+    { from: "docs/lint-and-ci.md", to: "docs/typescript/lint-and-ci.md" },
+  ],
 } satisfies Preset;

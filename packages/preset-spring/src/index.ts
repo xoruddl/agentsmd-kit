@@ -41,4 +41,11 @@ export const springPreset = {
   nextSteps: [
     "application.yml 에 docs/spring/data-jpa.md 의 open-in-view·batch fetch 설정을 넣으세요.",
   ],
+  // 0.6 이하는 문서를 docs/ 한 층에 설치했다.
+  moved: [
+    { from: "docs/spring-architecture.md", to: "docs/spring/architecture.md" },
+    { from: "docs/spring-data-jpa.md", to: "docs/spring/data-jpa.md" },
+    { from: "docs/spring-api.md", to: "docs/spring/api.md" },
+    { from: "docs/spring-testing.md", to: "docs/spring/testing.md" },
+  ],
 } satisfies Preset;
