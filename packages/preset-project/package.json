@@ -1,6 +1,6 @@
 {
   "name": "@agentsmd/preset-project",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "프로젝트 목표·범위·기술 스택을 적는 방향 문서 프리셋 (언어 프리셋이 함께 설치)",
   "keywords": [
     "agents.md",
