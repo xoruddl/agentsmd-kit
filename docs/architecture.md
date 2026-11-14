@@ -44,7 +44,7 @@ check.ts ── 파일 읽기 ──▶ parse-doc-map.ts ──▶ DocMap
 
 ## 프리셋: 따로 고르고, 공통 파일은 조합에 맞게 만든다
 
-Git 규칙, 호스팅(GitHub), 언어 규칙, 프레임워크 규칙은 따로 나눈 프리셋이다. 사용자가 `--preset git,github,typescript,react`나 `--preset git,github,java,spring-java`처럼 함께 고르면 모두 설치된다.
+Git 규칙, 호스팅(GitHub), 언어 규칙, 프레임워크 규칙은 따로 나눈 프리셋이다. 사용자가 `--preset git,github,typescript,react`나 `--preset git,github,spring-java`처럼 함께 고르면 모두 설치된다.
 호스팅 프리셋은 Git 프리셋을, 프레임워크 프리셋은 언어 프리셋을 필요로 한다. 필요한 프리셋은 고르지 않아도 함께 설치된다(아래 `requires`).
 
 - 언어 프리셋은 그 언어를 쓰는 모든 프로젝트에 맞는 규칙만 둔다. 특정 프레임워크에만 맞는 규칙은 프레임워크 프리셋으로 나눈다.
@@ -117,3 +117,9 @@ Git 규칙, 호스팅(GitHub), 언어 규칙, 프레임워크 규칙은 따로 �
 `cli`의 `findLegacyDocs`가 옛 경로에 남은 문서를 찾고 `init`이 새 경로와 함께 알린다. 옮기거나 지우지는 않는다. 사람이 고쳐 쓴 문서일 수 있다.
 파일 이름만 보고 찾으므로 직접 쓴 문서일 수 있다. 안내 문구는 지우라고 단정하지 않는다.
 `presets.test.ts`가 `to`가 지금 설치하는 문서인지, `from`을 지금 설치하는 프리셋이 없는지, 0.6이 설치하던 문서가 프리셋별로 빠짐없이 적혔는지 확인한다.
+
+### 프리셋의 이름을 바꿀 때
+
+프리셋의 `formerNames`에 옛 이름을 적는다. 적지 않으면 옛 이름은 오타와 구분되지 않는 "알 수 없는 프리셋"이 된다.
+`cli`의 `findRenamedPresets`가 옛 이름을 찾고 `init`이 새 이름을 알린다. 옛 이름으로 설치하지는 않는다. 이름을 바꾼 이유를 사용자가 알고 명령을 고쳐 쓰게 하기 위해서다.
+문서 폴더(`docs/<프리셋 이름>/`)도 함께 바뀌므로 `moved`를 고치고, 배포한 뒤 옛 npm 패키지를 deprecate 한다. → [release.md](release.md)

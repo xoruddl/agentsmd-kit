@@ -4,7 +4,7 @@
 
 ```bash
 npx @agentsmd/cli init --preset git,spring-java   # Git 규칙과 함께 (권장)
-npx @agentsmd/cli init --preset spring-java       # Java·Spring 규칙만
+npx @agentsmd/cli init --preset spring-java       # Git 규칙 없이 Java·Spring 규칙과 프로젝트 방향 문서만
 ```
 
 - 예제와 규칙이 `record`, `private final`, Lombok 같은 Java 문법을 전제합니다. Kotlin 프로젝트는 아직 지원하지 않습니다.

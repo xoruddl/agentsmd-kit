@@ -40,6 +40,18 @@ npm 패키지, Docker 이미지, GitHub Action 태그 세 가지를 같은 버�
    저장소 규칙은 force push를 금하지만, Action 태그는 GitHub Actions 관례대로 최신 릴리스를 가리키도록 옮긴다. 브랜치에는 적용하지 않는다.
 7. 다른 저장소에서 `uses: xoruddl/agentsmd-kit@v0`와 `docker run ghcr.io/xoruddl/agentsmd:0`이 새 버전으로 도는지 확인하고 릴리스 이슈를 닫는다.
 
+## 패키지 이름을 바꿨을 때
+
+`pnpm -r publish`는 새 이름을 새 패키지로 올릴 뿐이고, 옛 이름의 패키지는 npm에 그대로 남는다. 옛 패키지를 직접 설치한 사용자는 갱신이 끊긴 것을 알 수 없다.
+배포(3번)가 끝난 뒤 옛 패키지를 deprecate 한다. 설치할 때 이 문구가 경고로 나온다. 패키지를 지우지는 않는다.
+
+```sh
+npm deprecate @agentsmd/preset-spring "이름이 @agentsmd/preset-spring-java 로 바뀌었습니다"
+```
+
+- 0.7.0: `@agentsmd/preset-spring` → `@agentsmd/preset-spring-java`
+- 프리셋 이름(`--preset`)도 함께 바뀌었으면 릴리스 노트에 적는다. → [architecture.md](architecture.md)
+
 ## 이미지만 다시 올릴 때
 
 Dockerfile만 고쳤거나 처음 올릴 때처럼 npm 버전은 그대로인데 이미지를 다시 밀어야 하면, Actions 화면에서 **Release image** 워크플로를 `workflow_dispatch`로 돌리고 `version`에 현재 버전을 넣는다. 돌린 브랜치의 코드로 빌드한다.

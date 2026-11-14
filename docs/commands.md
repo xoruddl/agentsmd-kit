@@ -77,8 +77,6 @@ agentsmd init --preset git                     # Git 규칙만
 `init`은 기존 파일을 옮기거나 지우지 않으므로, 옛 저장소에서 다시 실행하면 옛 문서는 남고 새 위치에 같은 문서가 또 생긴다.
 둘 다 문서 지도에 올라 `check`는 통과한다. 그래서 `init`이 옛 위치에 남은 문서를 새 위치와 함께 알린다.
 
-`spring` 프리셋은 0.7부터 이름이 `spring-java`다. 문서가 Java 문법을 전제해 이름에 언어를 적었다. `--preset spring`은 알 수 없는 프리셋으로 끝나므로 `--preset spring-java`로 적는다.
-
 ```text
 설치 위치가 바뀐 프리셋 문서와 이름이 같은 문서 3개가 옛 위치에 있습니다.
 이전 버전이 설치한 문서라면, 고쳐 쓴 내용을 새 위치로 옮긴 뒤 옛 파일을 지우세요. 직접 쓴 문서라면 그대로 두면 됩니다.
@@ -103,6 +101,14 @@ agentsmd init --preset git                     # Git 규칙만
 
 `docs/lint-and-ci.md`처럼 `java`와 `typescript`가 같은 이름으로 설치하던 문서는 새 위치 두 곳을 모두 알린다. 어느 프리셋의 문서였는지는 내용을 보고 정한다.
 옛 문서를 그대로 두고 `check`만 새 버전으로 돌리는 저장소는 손댈 것이 없다.
+
+`spring` 프리셋은 0.7부터 이름이 `spring-java`다. 문서가 Java 문법을 전제해 이름에 언어를 적었다.
+`--preset spring`은 설치하지 않고 새 이름을 알린 뒤 종료 코드 2로 끝나므로, `--preset spring-java`로 고쳐 적는다.
+
+```text
+알 수 없는 프리셋입니다: spring
+spring 프리셋은 이름이 spring-java 로 바뀌었습니다.
+```
 
 ## agentsmd check
 
