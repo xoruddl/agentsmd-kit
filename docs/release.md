@@ -25,6 +25,7 @@ npm 패키지, Docker 이미지, GitHub Action 태그 세 가지를 같은 버�
    git switch main && git pull
    pnpm build && pnpm -r publish --access public --no-git-checks
    ```
+   이번 릴리스에서 패키지 이름을 바꿨으면 이어서 옛 패키지를 deprecate 한다. → [패키지 이름을 바꿨을 때](#패키지-이름을-바꿨을-때)
 4. `main`에 `vX.Y.Z` 태그를 만들어 push한다. release-image 워크플로가 이미지를 `X.Y.Z`, `X.Y`, `0`, `latest`로 푸시한다.
    ```sh
    git tag vX.Y.Z main && git push origin vX.Y.Z
