@@ -121,5 +121,5 @@ Git 규칙, 호스팅(GitHub), 언어 규칙, 프레임워크 규칙은 따로 �
 ### 프리셋의 이름을 바꿀 때
 
 프리셋의 `formerNames`에 옛 이름을 적는다. 적지 않으면 옛 이름은 오타와 구분되지 않는 "알 수 없는 프리셋"이 된다.
-`cli`의 `findRenamedPresets`가 옛 이름을 찾고 `init`이 새 이름을 알린다. 옛 이름으로 설치하지는 않는다. 이름을 바꾼 이유를 사용자가 알고 명령을 고쳐 쓰게 하기 위해서다.
+`cli`의 `resolvePresets`가 모르는 이름 가운데 옛 이름을 `renamed`로 나눠 돌려주고(`findRenamedPresets`), `init`이 새 이름을 알린다. 옛 이름으로 설치하지는 않는다. 이름을 바꾼 이유를 사용자가 알고 명령을 고쳐 쓰게 하기 위해서다.
 문서 폴더(`docs/<프리셋 이름>/`)도 함께 바뀌므로 `moved`를 고치고, 배포한 뒤 옛 npm 패키지를 deprecate 한다. → [release.md](release.md)

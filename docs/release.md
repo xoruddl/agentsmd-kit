@@ -49,6 +49,8 @@ npm 패키지, Docker 이미지, GitHub Action 태그 세 가지를 같은 버�
 npm deprecate @agentsmd/preset-spring "이름이 @agentsmd/preset-spring-java 로 바뀌었습니다"
 ```
 
+- 이전 버전의 `@agentsmd/cli`는 옛 패키지에 의존한다. deprecate 하면 `npx @agentsmd/cli@0.6.0`처럼 버전을 고정한 사용자도 설치할 때마다 이 경고를 본다.
+  0.7.0 때는 사용자가 없어 그대로 했다. 사용자가 생긴 뒤에는 경고를 감수할지 먼저 정한다.
 - 0.7.0: `@agentsmd/preset-spring` → `@agentsmd/preset-spring-java`
 - 프리셋 이름(`--preset`)도 함께 바뀌었으면 릴리스 노트에 적는다. → [architecture.md](architecture.md)
 

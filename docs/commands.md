@@ -106,9 +106,10 @@ agentsmd init --preset git                     # Git 규칙만
 `--preset spring`은 설치하지 않고 새 이름을 알린 뒤 종료 코드 2로 끝나므로, `--preset spring-java`로 고쳐 적는다.
 
 ```text
-알 수 없는 프리셋입니다: spring
-spring 프리셋은 이름이 spring-java 로 바뀌었습니다.
+이름이 바뀐 프리셋입니다: spring → spring-java
 ```
+
+오타와 구분하려고 "알 수 없는 프리셋입니다"와 다른 줄로 알린다. 둘을 함께 적으면 두 줄이 각각 나온다.
 
 ## agentsmd check
 
