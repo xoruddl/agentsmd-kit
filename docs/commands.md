@@ -12,7 +12,7 @@ agentsmd init --preset git,typescript          # Git 규칙 + TypeScript 규칙
 agentsmd init --preset git,github,typescript   # GitHub 템플릿까지
 agentsmd init --preset git,typescript,react    # React 프론트엔드 규칙까지
 agentsmd init --preset git,java                # Git 규칙 + Java 규칙
-agentsmd init --preset git,java,spring         # Spring Boot 서버 규칙까지
+agentsmd init --preset git,spring-java         # Java·Spring Boot 서버 규칙까지
 agentsmd init --preset typescript              # Git 규칙 없이 TypeScript 규칙과 프로젝트 방향 문서만
 agentsmd init --preset git                     # Git 규칙만
 ```
@@ -26,7 +26,7 @@ agentsmd init --preset git                     # Git 규칙만
 
 동작 순서:
 
-1. 고른 프리셋에 필요한 프리셋이 빠져 있으면 더한다 (`github` → `git`, `java`·`typescript` → `project`, `spring` → `java`, `react` → `typescript`).
+1. 고른 프리셋에 필요한 프리셋이 빠져 있으면 더한다 (`github` → `git`, `java`·`typescript` → `project`, `spring-java` → `java`, `react` → `typescript`).
    필요한 프리셋은 그것을 필요로 하는 프리셋 앞에 두고, 고르지 않은 프리셋을 더했으면 출력으로 알린다.
    더한 프리셋은 직접 고른 것과 같이 다룬다. `--preset github`은 `--preset git,github`과 같고, 달라지는 것은 `--force`의 범위뿐이다(아래).
    더한 프리셋이 이미 설치돼 있어 새로 쓴 파일이 없으면 그렇다고 알린다.
@@ -37,15 +37,15 @@ agentsmd init --preset git                     # Git 규칙만
    `git init` 전에 설치했다면 `git init` 후 같은 명령을 다시 실행하면 연결된다.
 5. 프리셋들이 정한 "설치 후 사람이 할 일"을 번호로 안내한다.
 
-| 프리셋       | 내용                                                                                                                       |
-| ------------ | -------------------------------------------------------------------------------------------------------------------------- |
-| `git`        | Git 작업 규칙·작업 흐름·리뷰 판단·문체 문서, 커밋 메시지 훅, PR 규칙 검사 스크립트(`.githooks/check-pr`), Claude Code 설정 |
-| `github`     | 이슈·PR 템플릿, GitHub 사용법 문서(gh 명령, 머지 방식·룰셋 설정, CI 연결 예시)                                             |
-| `project`    | 사람이 채우는 프로젝트 방향 문서(목표·범위·기술 스택). 언어 프리셋을 고르면 함께 설치된다                                  |
-| `java`       | Java 코드 규칙 문서, Spotless·Gradle 검증 명령 문서                                                                        |
-| `spring`     | 패키지 구조·JPA·트랜잭션·API·테스트 문서. 검증 명령은 `java`에 맡긴다                                                      |
-| `typescript` | 타입·구조·테스트·보안 문서, 린트·포맷·CI 명령 문서, `.nvmrc`                                                               |
-| `react`      | 컴포넌트·접근성·화면 테스트·브라우저 보안 문서. 검증 명령과 `.nvmrc`는 `typescript`에 맡긴다                               |
+| 프리셋        | 내용                                                                                                                       |
+| ------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `git`         | Git 작업 규칙·작업 흐름·리뷰 판단·문체 문서, 커밋 메시지 훅, PR 규칙 검사 스크립트(`.githooks/check-pr`), Claude Code 설정 |
+| `github`      | 이슈·PR 템플릿, GitHub 사용법 문서(gh 명령, 머지 방식·룰셋 설정, CI 연결 예시)                                             |
+| `project`     | 사람이 채우는 프로젝트 방향 문서(목표·범위·기술 스택). 언어 프리셋을 고르면 함께 설치된다                                  |
+| `java`        | Java 코드 규칙 문서, Spotless·Gradle 검증 명령 문서                                                                        |
+| `spring-java` | Java로 쓰는 Spring Boot 서버의 패키지 구조·JPA·트랜잭션·API·테스트 문서. 검증 명령은 `java`에 맡긴다                       |
+| `typescript`  | 타입·구조·테스트·보안 문서, 린트·포맷·CI 명령 문서, `.nvmrc`                                                               |
+| `react`       | 컴포넌트·접근성·화면 테스트·브라우저 보안 문서. 검증 명령과 `.nvmrc`는 `typescript`에 맡긴다                               |
 
 프리셋 문서는 `docs/<프리셋 이름>/` 아래에 설치한다(`docs/git/workflow.md`, `docs/java/testing.md`). `docs/` 바로 아래는 프로젝트가 직접 쓰는 문서의 자리다.
 
@@ -60,8 +60,8 @@ agentsmd init --preset git                     # Git 규칙만
 - 같은 프리셋을 다시 설치하면 아무것도 바뀌지 않는다.
 
 나눠 설치하면 설치한 순서대로 표와 목록 끝에 쌓인다.
-프레임워크 프리셋(`spring`, `react`)은 검증 명령을 넣지 않고 언어 프리셋에 맡긴다. 그래서 `init --preset spring`만 실행해도 `java`를 먼저 설치하고,
-언어 프리셋의 문서가 프레임워크 문서보다 위에 온다. `--preset spring,java`처럼 뒤에 적어도 순서는 같다.
+프레임워크 프리셋(`spring-java`, `react`)은 검증 명령을 넣지 않고 언어 프리셋에 맡긴다. 그래서 `init --preset spring-java`만 실행해도 `java`를 먼저 설치하고,
+언어 프리셋의 문서가 프레임워크 문서보다 위에 온다. `--preset spring-java,java`처럼 뒤에 적어도 순서는 같다.
 언어 프리셋은 프로젝트 방향 문서(`docs/project/direction.md`)를 담은 `project`를 함께 설치한다. 모든 작업 전에 읽는 문서라 언어 문서보다 위에 오고,
 `java`와 `typescript`를 함께 골라도 하나만 설치된다.
 `github`도 같은 방식으로 `git`을 함께 설치한다. PR 템플릿과 GitHub 사용법 문서가 Git 작업 규칙 문서를 가리키기 때문이다.
@@ -101,6 +101,15 @@ agentsmd init --preset git                     # Git 규칙만
 
 `docs/lint-and-ci.md`처럼 `java`와 `typescript`가 같은 이름으로 설치하던 문서는 새 위치 두 곳을 모두 알린다. 어느 프리셋의 문서였는지는 내용을 보고 정한다.
 옛 문서를 그대로 두고 `check`만 새 버전으로 돌리는 저장소는 손댈 것이 없다.
+
+`spring` 프리셋은 0.7부터 이름이 `spring-java`다. 문서가 Java 문법을 전제해 이름에 언어를 적었다.
+`--preset spring`은 설치하지 않고 새 이름을 알린 뒤 종료 코드 2로 끝나므로, `--preset spring-java`로 고쳐 적는다.
+
+```text
+이름이 바뀐 프리셋입니다: spring → spring-java
+```
+
+오타와 구분하려고 "알 수 없는 프리셋입니다"와 다른 줄로 알린다. 둘을 함께 적으면 두 줄이 각각 나오고, 이름 변경을 먼저 알린다.
 
 ## agentsmd check
 

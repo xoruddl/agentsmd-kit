@@ -15,13 +15,14 @@ import { makeHooksExecutable } from "../hook-permissions.js";
 import type { ExitCode, Io } from "../io.js";
 import { findLegacyDocs } from "../legacy-docs.js";
 import { PRESETS, selectPresets, type AddedPreset } from "../presets.js";
+import type { RenamedPreset } from "../renamed-presets.js";
 
 // 이름 열 너비를 가장 긴 이름에 맞춰 설명과 붙지 않게 한다.
 const nameWidth = Math.max(...PRESETS.map((preset) => preset.name.length)) + 2;
 const presetList = PRESETS.map(
   (preset) => `  ${preset.name.padEnd(nameWidth)}${preset.description}`,
 ).join("\n");
-// `PRESETS`에 적힌 순서대로 "github → git, java → project, spring → java, ..."처럼 잇는다.
+// `PRESETS`에 적힌 순서대로 "github → git, java → project, spring-java → java, ..."처럼 잇는다.
 const requiresList = PRESETS.flatMap((preset) =>
   (preset.requires ?? []).map((required) => `${preset.name} → ${required}`),
 ).join(", ");
@@ -43,7 +44,7 @@ ${presetList}
   agentsmd init --preset git,typescript          Git 규칙과 TypeScript 규칙을 함께 설치
   agentsmd init --preset git,github,typescript   GitHub 템플릿까지 함께 설치
   agentsmd init --preset git,typescript,react    React 프론트엔드 규칙까지 함께 설치
-  agentsmd init --preset git,java,spring         Spring Boot 서버 규칙까지 함께 설치
+  agentsmd init --preset git,spring-java         Java·Spring Boot 서버 규칙까지 함께 설치
   agentsmd init --preset java                    Git 규칙 없이 Java 규칙과 프로젝트 방향 문서만 설치
 
 옵션:
@@ -78,7 +79,7 @@ export async function runInit(args: readonly string[], io: Io): Promise<ExitCode
   if (!selection.ok || selection.presets.length === 0) {
     const reason = selection.ok
       ? "--preset 을 지정해야 합니다"
-      : `알 수 없는 프리셋입니다: ${selection.unknown.join(", ")}`;
+      : formatUnavailable(selection.unknown, selection.renamed);
     io.stderr(`${reason}\n\n프리셋:\n${presetList}\n`);
     return 2;
   }
@@ -101,6 +102,22 @@ export async function runInit(args: readonly string[], io: Io): Promise<ExitCode
   const legacy = findLegacyDocs(presets, (path) => existsSync(join(root, path)));
   io.stdout(formatReport(presets, result, legacy, hooksPath, hooks));
   return 0;
+}
+
+/**
+ * 고를 수 없는 이름을 알린다. 옛 이름은 "알 수 없는 프리셋"과 다른 줄로 알린다.
+ * 한 줄에 섞으면 이전 버전의 명령을 그대로 쓴 사용자가 오타로 읽고 목록에서 새 이름을 찾아야 한다.
+ * 이름 변경을 먼저 알린다. 이전 버전의 명령을 깨는 변경이라, 첫 줄만 보는 사용자가 오타 안내에 가려 놓치면 안 된다.
+ */
+function formatUnavailable(unknown: readonly string[], renamed: readonly RenamedPreset[]): string {
+  return [
+    ...(renamed.length === 0
+      ? []
+      : [
+          `이름이 바뀐 프리셋입니다: ${renamed.map(({ from, to }) => `${from} → ${to}`).join(", ")}`,
+        ]),
+    ...(unknown.length === 0 ? [] : [`알 수 없는 프리셋입니다: ${unknown.join(", ")}`]),
+  ].join("\n");
 }
 
 /** 고르지 않았지만 함께 설치한 프리셋 하나에서 일어난 일. */

@@ -15,11 +15,17 @@ const available = [
 ];
 
 /** 고른 결과를 이름으로만 본다. */
-function select(value: string): { names: string[]; added: unknown } | { unknown: unknown } {
+function select(
+  value: string,
+): { names: string[]; added: unknown } | { unknown: unknown; renamed?: unknown } {
   const selection = resolvePresets(value === "" ? [] : value.split(","), available);
-  return selection.ok
-    ? { names: selection.presets.map(({ name }) => name), added: selection.added }
-    : { unknown: selection.unknown };
+  if (selection.ok) {
+    return { names: selection.presets.map(({ name }) => name), added: selection.added };
+  }
+  // 이름이 바뀐 것이 없는 흔한 경우에는 기대값에 빈 목록을 되풀이해 적지 않게 한다.
+  return selection.renamed.length === 0
+    ? { unknown: selection.unknown }
+    : { unknown: selection.unknown, renamed: selection.renamed };
 }
 
 describe("selectPresets", () => {
@@ -29,7 +35,16 @@ describe("selectPresets", () => {
   });
 
   it("모르는 이름은 모아서 알린다", () => {
-    expect(selectPresets("git,kotlin")).toEqual({ ok: false, unknown: ["kotlin"] });
+    expect(selectPresets("git,kotlin")).toEqual({ ok: false, unknown: ["kotlin"], renamed: [] });
+  });
+
+  // 0.6 이하의 이름이다. 오타와 섞어 알리면 사용자가 오타로 읽는다.
+  it("옛 이름은 모르는 이름에 넣지 않고 지금 이름과 함께 알린다", () => {
+    expect(selectPresets("git,spring,kotlin")).toEqual({
+      ok: false,
+      unknown: ["kotlin"],
+      renamed: [{ from: "spring", to: "spring-java" }],
+    });
   });
 });
 
@@ -46,7 +61,7 @@ describe("resolvePresets", () => {
     );
   });
 
-  // spring만 고르면 검증 명령이 없고, github만 고르면 PR 템플릿이 없는 문서를 가리킨다.
+  // spring-java만 고르면 검증 명령이 없고, github만 고르면 PR 템플릿이 없는 문서를 가리킨다.
   it("필요한 프리셋을 고르지 않았으면 그 프리셋 앞에 더하고 무엇 때문에 더했는지 알린다", () => {
     expect(select("framework")).toEqual({
       names: ["lang", "framework"],

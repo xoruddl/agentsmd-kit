@@ -9,12 +9,17 @@
 export interface Preset {
   /** `--preset` 옵션에 쓰는 이름. 예: `java` */
   readonly name: string;
+  /**
+   * 이전 버전에서 쓰던 이름. 사용자가 옛 이름을 적으면 `init`이 새 이름을 알려 준다. 옛 이름으로 설치하지는 않는다.
+   * 적어 두지 않으면 이름을 바꾼 뒤 옛 이름은 오타와 구분되지 않는 "알 수 없는 프리셋"이 된다.
+   */
+  readonly formerNames?: readonly string[];
   /** 도움말에 보여 줄 한 줄 설명. */
   readonly description: string;
   /** 설치할 파일들이 있는 디렉터리의 절대 경로. */
   readonly filesDir: string;
   /**
-   * 이 프리셋과 함께 있어야 하는 프리셋의 이름. 예: `spring`은 검증 명령을 `java`에 맡기므로 `["java"]`.
+   * 이 프리셋과 함께 있어야 하는 프리셋의 이름. 예: `spring-java`는 검증 명령을 `java`에 맡기므로 `["java"]`.
    * 사용자가 고르지 않았으면 `init`이 이 프리셋보다 먼저 설치한다. 패키지를 불러오지 않고 이름만 적는다.
    */
   readonly requires?: readonly string[];
