@@ -504,11 +504,12 @@ describe("runInit", () => {
     await expect(readFile(join(root, "AGENTS.md"), "utf8")).rejects.toThrow();
   });
 
-  it("모르는 이름과 옛 이름을 함께 적으면 따로 알린다", async () => {
-    await expect(runInit(["--preset", "spring,kotlin"], io())).resolves.toBe(2);
+  // 이름 변경은 이전 버전의 명령을 깨는 변경이다. 오타 안내에 밀려 둘째 줄로 가면 첫 줄만 보는 사용자가 놓친다.
+  it("모르는 이름과 옛 이름을 함께 적으면 따로 알리고, 이름 변경을 먼저 알린다", async () => {
+    await expect(runInit(["--preset", "kotlin,spring"], io())).resolves.toBe(2);
 
     expect(err).toMatch(
-      /^알 수 없는 프리셋입니다: kotlin\n이름이 바뀐 프리셋입니다: spring → spring-java\n/,
+      /^이름이 바뀐 프리셋입니다: spring → spring-java\n알 수 없는 프리셋입니다: kotlin\n/,
     );
   });
 

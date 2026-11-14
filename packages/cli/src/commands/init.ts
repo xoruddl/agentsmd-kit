@@ -107,15 +107,16 @@ export async function runInit(args: readonly string[], io: Io): Promise<ExitCode
 /**
  * 고를 수 없는 이름을 알린다. 옛 이름은 "알 수 없는 프리셋"과 다른 줄로 알린다.
  * 한 줄에 섞으면 이전 버전의 명령을 그대로 쓴 사용자가 오타로 읽고 목록에서 새 이름을 찾아야 한다.
+ * 이름 변경을 먼저 알린다. 이전 버전의 명령을 깨는 변경이라, 첫 줄만 보는 사용자가 오타 안내에 가려 놓치면 안 된다.
  */
 function formatUnavailable(unknown: readonly string[], renamed: readonly RenamedPreset[]): string {
   return [
-    ...(unknown.length === 0 ? [] : [`알 수 없는 프리셋입니다: ${unknown.join(", ")}`]),
     ...(renamed.length === 0
       ? []
       : [
           `이름이 바뀐 프리셋입니다: ${renamed.map(({ from, to }) => `${from} → ${to}`).join(", ")}`,
         ]),
+    ...(unknown.length === 0 ? [] : [`알 수 없는 프리셋입니다: ${unknown.join(", ")}`]),
   ].join("\n");
 }
 
