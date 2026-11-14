@@ -272,6 +272,31 @@ describe("runInit", () => {
     await expect(readFile(join(root, ".githooks/commit-msg"), "utf8")).resolves.toContain("#!");
   });
 
+  // 전역 값을 저장소 설정으로 덮으면 그 저장소에서만 전역 훅이 꺼진다. 어디서 온 값인지 알려야 무엇을 잃는지 안다.
+  it("전역 설정의 core.hooksPath면 전역 설정이라고 알린다", async () => {
+    const globalConfig = join(root, "global.gitconfig");
+    await writeFile(globalConfig, "[core]\n\thooksPath = /opt/hooks\n");
+    vi.stubEnv("GIT_CONFIG_GLOBAL", globalConfig);
+    await git("git", ["-C", root, "init", "-q"]);
+
+    await runInit(["--preset", "git"], io());
+
+    expect(out).toContain(
+      "core.hooksPath가 전역 Git 설정에서 이미 /opt/hooks 로 설정돼 있어 바꾸지 않았습니다.",
+    );
+  });
+
+  // Git은 상대 경로인 core.hooksPath를 저장소 최상위 기준으로 해석한다.
+  it("--root가 저장소의 하위 디렉터리면 최상위 기준 경로로 훅을 연결한다", async () => {
+    await git("git", ["-C", root, "init", "-q"]);
+
+    await runInit(["--preset", "git", "--root", "packages/a"], io());
+
+    const { stdout } = await git("git", ["-C", root, "config", "core.hooksPath"]);
+    expect(stdout.trim()).toBe("packages/a/.githooks");
+    expect(out).toContain("Git 훅을 연결했습니다: core.hooksPath=packages/a/.githooks");
+  });
+
   // --force는 이 도구가 설치한 파일을 다시 쓰라는 뜻이다. 다른 도구의 훅을 끄는 것까지 포함하지 않는다.
   it("--force여도 이미 다른 값인 core.hooksPath는 바꾸지 않는다", async () => {
     await git("git", ["-C", root, "init", "-q"]);

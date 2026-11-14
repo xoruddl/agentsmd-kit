@@ -1,5 +1,5 @@
 import { execFile } from "node:child_process";
-import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { promisify } from "node:util";
@@ -7,6 +7,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { configureHooksPath } from "../src/git-hooks.js";
 
 const git = promisify(execFile);
+const CONFIGURED = { status: "configured", path: ".githooks" };
 let dir: string;
 
 beforeEach(async () => {
@@ -25,7 +26,7 @@ describe("configureHooksPath", () => {
   it("Git 저장소면 core.hooksPath를 설정한다", async () => {
     await git("git", ["-C", dir, "init", "-q"]);
 
-    await expect(configureHooksPath(dir, ".githooks")).resolves.toEqual({ status: "configured" });
+    await expect(configureHooksPath(dir, ".githooks")).resolves.toEqual(CONFIGURED);
 
     const { stdout } = await git("git", ["-C", dir, "config", "core.hooksPath"]);
     expect(stdout.trim()).toBe(".githooks");
@@ -42,7 +43,9 @@ describe("configureHooksPath", () => {
 
     await expect(configureHooksPath(dir, ".githooks")).resolves.toEqual({
       status: "kept",
+      path: ".githooks",
       current: ".husky",
+      scope: "local",
     });
 
     const { stdout } = await git("git", ["-C", dir, "config", "core.hooksPath"]);
@@ -53,7 +56,7 @@ describe("configureHooksPath", () => {
     await git("git", ["-C", dir, "init", "-q"]);
     await git("git", ["-C", dir, "config", "core.hooksPath", ".githooks"]);
 
-    await expect(configureHooksPath(dir, ".githooks")).resolves.toEqual({ status: "configured" });
+    await expect(configureHooksPath(dir, ".githooks")).resolves.toEqual(CONFIGURED);
   });
 
   it.each([".githooks/", "./.githooks"])(
@@ -62,7 +65,7 @@ describe("configureHooksPath", () => {
       await git("git", ["-C", dir, "init", "-q"]);
       await git("git", ["-C", dir, "config", "core.hooksPath", current]);
 
-      await expect(configureHooksPath(dir, ".githooks")).resolves.toEqual({ status: "configured" });
+      await expect(configureHooksPath(dir, ".githooks")).resolves.toEqual(CONFIGURED);
 
       const { stdout } = await git("git", ["-C", dir, "config", "core.hooksPath"]);
       expect(stdout.trim()).toBe(current);
@@ -78,17 +81,78 @@ describe("configureHooksPath", () => {
 
     await expect(configureHooksPath(dir, ".githooks")).resolves.toEqual({
       status: "kept",
+      path: ".githooks",
       current: "/opt/hooks",
+      scope: "global",
     });
 
     await expect(git("git", ["-C", dir, "config", "--local", "core.hooksPath"])).rejects.toThrow();
+  });
+
+  it("절대 경로로 적힌 같은 디렉터리는 연결된 것으로 본다", async () => {
+    await git("git", ["-C", dir, "init", "-q"]);
+    await git("git", ["-C", dir, "config", "core.hooksPath", join(dir, ".githooks")]);
+
+    await expect(configureHooksPath(dir, ".githooks")).resolves.toEqual(CONFIGURED);
+  });
+
+  // Git은 상대 경로인 core.hooksPath를 저장소 최상위 기준으로 해석한다.
+  describe("저장소의 하위 디렉터리에 설치할 때", () => {
+    let sub: string;
+
+    beforeEach(async () => {
+      await git("git", ["-C", dir, "init", "-q"]);
+      sub = join(dir, "packages", "a");
+      await mkdir(sub, { recursive: true });
+    });
+
+    it("최상위 기준 경로로 설정한다", async () => {
+      await expect(configureHooksPath(sub, ".githooks")).resolves.toEqual({
+        status: "configured",
+        path: "packages/a/.githooks",
+      });
+
+      const { stdout } = await git("git", ["-C", dir, "config", "core.hooksPath"]);
+      expect(stdout.trim()).toBe("packages/a/.githooks");
+    });
+
+    it("최상위의 같은 이름 디렉터리는 다른 값으로 보고 바꾸지 않는다", async () => {
+      await git("git", ["-C", dir, "config", "core.hooksPath", ".githooks"]);
+
+      await expect(configureHooksPath(sub, ".githooks")).resolves.toEqual({
+        status: "kept",
+        path: "packages/a/.githooks",
+        current: ".githooks",
+        scope: "local",
+      });
+    });
+
+    it("이미 그 하위 디렉터리를 가리키면 연결된 것으로 본다", async () => {
+      await git("git", ["-C", dir, "config", "core.hooksPath", "packages/a/.githooks"]);
+
+      await expect(configureHooksPath(sub, ".githooks")).resolves.toEqual({
+        status: "configured",
+        path: "packages/a/.githooks",
+      });
+    });
+  });
+
+  // 읽지 못한 값을 "없음"으로 보면 기존 훅 설정을 덮어쓴다.
+  it("기존 값을 읽지 못하면 덮어쓰지 않고 실패한다", async () => {
+    await git("git", ["-C", dir, "init", "-q"]);
+    await git("git", ["-C", dir, "config", "core.hooksPath", "~agentsmd-no-such-user/hooks"]);
+
+    await expect(configureHooksPath(dir, ".githooks")).rejects.toThrow();
+
+    const { stdout } = await git("git", ["-C", dir, "config", "core.hooksPath"]);
+    expect(stdout.trim()).toBe("~agentsmd-no-such-user/hooks");
   });
 
   it("값이 비어 있으면 설정이 없는 것으로 보고 연결한다", async () => {
     await git("git", ["-C", dir, "init", "-q"]);
     await git("git", ["-C", dir, "config", "core.hooksPath", ""]);
 
-    await expect(configureHooksPath(dir, ".githooks")).resolves.toEqual({ status: "configured" });
+    await expect(configureHooksPath(dir, ".githooks")).resolves.toEqual(CONFIGURED);
 
     const { stdout } = await git("git", ["-C", dir, "config", "core.hooksPath"]);
     expect(stdout.trim()).toBe(".githooks");
