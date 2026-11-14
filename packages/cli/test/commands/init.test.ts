@@ -7,6 +7,7 @@ import { checkRepository } from "@agentsmd/core";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { runInit } from "../../src/commands/init.js";
 import type { Io } from "../../src/io.js";
+import { PRESETS } from "../../src/presets.js";
 
 const git = promisify(execFile);
 let root: string;
@@ -493,11 +494,31 @@ describe("runInit", () => {
     expect(err).toContain("알 수 없는 프리셋입니다: kotlin");
   });
 
-  // 가장 긴 이름 뒤에도 두 칸을 띄우고, 짧은 이름은 설명이 같은 열에서 시작하게 채운다.
-  it("프리셋 목록에서 이름과 설명을 띄어 쓴다", async () => {
+  // 0.6 이하의 이름을 적은 사용자는 오타가 아니다. 목록에서 새 이름을 찾게 하지 않고 바로 알린다.
+  it("이름이 바뀐 프리셋을 옛 이름으로 고르면 새 이름을 알리고 설치하지 않는다", async () => {
+    await expect(runInit(["--preset", "git,java,spring"], io())).resolves.toBe(2);
+
+    expect(err).toContain("알 수 없는 프리셋입니다: spring\n");
+    expect(err).toContain("spring 프리셋은 이름이 spring-java 로 바뀌었습니다.\n");
+    await expect(readFile(join(root, "AGENTS.md"), "utf8")).rejects.toThrow();
+  });
+
+  it("옛 이름이 아닌 모르는 이름에는 바뀐 이름을 알리지 않는다", async () => {
     await runInit(["--preset", "kotlin"], io());
-    expect(err).toMatch(/ {2}spring-java {2}\S/);
-    expect(err).toMatch(/ {2}typescript {3}\S/);
+    expect(err).not.toContain("바뀌었습니다");
+  });
+
+  // 이름 길이와 무관하게 설명이 같은 열에서 시작하고, 가장 긴 이름과도 두 칸 떨어진다.
+  it("프리셋 목록에서 이름과 설명을 띄어 쓰고 설명을 같은 열에 맞춘다", async () => {
+    await runInit(["--preset", "kotlin"], io());
+
+    const rows = err.split("\n").flatMap((line) => {
+      const row = /^ {2}(\S+)( +)\S/.exec(line);
+      return row === null ? [] : [{ name: row[1] ?? "", gap: row[2] ?? "" }];
+    });
+    expect(rows.map(({ name }) => name)).toEqual(PRESETS.map(({ name }) => name));
+    expect(new Set(rows.map(({ name, gap }) => name.length + gap.length)).size).toBe(1);
+    expect(Math.min(...rows.map(({ gap }) => gap.length))).toBe(2);
   });
 
   it("모르는 프리셋이 섞여 있으면 아무것도 설치하지 않는다", async () => {

@@ -106,6 +106,15 @@ describe("PRESETS", () => {
     expect(declared).toEqual(docs.map((doc) => `docs/${doc}`).sort());
   });
 
+  // 옛 이름이 지금 이름과 겹치면 그 이름은 설치되므로 바뀌었다는 안내가 나올 수 없다. 두 프리셋이 같은 옛 이름을 적으면 어느 쪽인지 알 수 없다.
+  it("옛 이름은 지금 쓰는 이름과도, 다른 프리셋의 옛 이름과도 겹치지 않는다", () => {
+    const current = PRESETS.map(({ name }) => name);
+    const former = PRESETS.flatMap(({ formerNames }) => formerNames ?? []);
+
+    expect(former.filter((name) => current.includes(name))).toEqual([]);
+    expect(new Set(former).size).toBe(former.length);
+  });
+
   it("옮긴 문서 검사는 모든 프리셋을 다룬다", () => {
     expect(PRESETS.map(({ name }) => name).sort()).toEqual(
       ["git", "github", "project", "java", "spring-java", "typescript", "react"].sort(),

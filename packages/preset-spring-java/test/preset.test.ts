@@ -25,14 +25,6 @@ describe("springJavaPreset", () => {
     await expect(checkRepository({ root: repo })).resolves.toEqual([]);
   });
 
-  // 예제와 규칙이 Java 문법을 전제한다. 이름만 보고 Kotlin 프로젝트에 고르지 않게 언어를 적는다.
-  it("이름과 문서 폴더에 언어를 적는다", () => {
-    expect(springJavaPreset.name).toBe("spring-java");
-    for (const { path } of springJavaPreset.docs) {
-      expect(path).toMatch(/^docs\/spring-java\//);
-    }
-  });
-
   it("검증 명령은 Java 프리셋에 맡긴다", () => {
     expect(springJavaPreset).not.toHaveProperty("verify");
   });
