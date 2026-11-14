@@ -498,14 +498,23 @@ describe("runInit", () => {
   it("이름이 바뀐 프리셋을 옛 이름으로 고르면 새 이름을 알리고 설치하지 않는다", async () => {
     await expect(runInit(["--preset", "git,java,spring"], io())).resolves.toBe(2);
 
-    expect(err).toContain("알 수 없는 프리셋입니다: spring\n");
-    expect(err).toContain("spring 프리셋은 이름이 spring-java 로 바뀌었습니다.\n");
+    // 첫 줄만 봐도 오타가 아님을 알 수 있어야 한다.
+    expect(err).toMatch(/^이름이 바뀐 프리셋입니다: spring → spring-java\n/);
+    expect(err).not.toContain("알 수 없는 프리셋");
     await expect(readFile(join(root, "AGENTS.md"), "utf8")).rejects.toThrow();
+  });
+
+  it("모르는 이름과 옛 이름을 함께 적으면 따로 알린다", async () => {
+    await expect(runInit(["--preset", "spring,kotlin"], io())).resolves.toBe(2);
+
+    expect(err).toMatch(
+      /^알 수 없는 프리셋입니다: kotlin\n이름이 바뀐 프리셋입니다: spring → spring-java\n/,
+    );
   });
 
   it("옛 이름이 아닌 모르는 이름에는 바뀐 이름을 알리지 않는다", async () => {
     await runInit(["--preset", "kotlin"], io());
-    expect(err).not.toContain("바뀌었습니다");
+    expect(err).not.toContain("이름이 바뀐");
   });
 
   // 이름 길이와 무관하게 설명이 같은 열에서 시작하고, 가장 긴 이름과도 두 칸 떨어진다.

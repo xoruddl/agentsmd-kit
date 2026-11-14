@@ -15,7 +15,7 @@ import { makeHooksExecutable } from "../hook-permissions.js";
 import type { ExitCode, Io } from "../io.js";
 import { findLegacyDocs } from "../legacy-docs.js";
 import { PRESETS, selectPresets, type AddedPreset } from "../presets.js";
-import { findRenamedPresets } from "../renamed-presets.js";
+import type { RenamedPreset } from "../renamed-presets.js";
 
 // 이름 열 너비를 가장 긴 이름에 맞춰 설명과 붙지 않게 한다.
 const nameWidth = Math.max(...PRESETS.map((preset) => preset.name.length)) + 2;
@@ -79,13 +79,7 @@ export async function runInit(args: readonly string[], io: Io): Promise<ExitCode
   if (!selection.ok || selection.presets.length === 0) {
     const reason = selection.ok
       ? "--preset 을 지정해야 합니다"
-      : [
-          `알 수 없는 프리셋입니다: ${selection.unknown.join(", ")}`,
-          // 이전 버전의 이름을 적은 사용자에게는 오타가 아니라 이름이 바뀐 것임을 알린다.
-          ...findRenamedPresets(selection.unknown, PRESETS).map(
-            ({ from, to }) => `${from} 프리셋은 이름이 ${to} 로 바뀌었습니다.`,
-          ),
-        ].join("\n");
+      : formatUnavailable(selection.unknown, selection.renamed);
     io.stderr(`${reason}\n\n프리셋:\n${presetList}\n`);
     return 2;
   }
@@ -108,6 +102,21 @@ export async function runInit(args: readonly string[], io: Io): Promise<ExitCode
   const legacy = findLegacyDocs(presets, (path) => existsSync(join(root, path)));
   io.stdout(formatReport(presets, result, legacy, hooksPath, hooks));
   return 0;
+}
+
+/**
+ * 고를 수 없는 이름을 알린다. 옛 이름은 "알 수 없는 프리셋"과 다른 줄로 알린다.
+ * 한 줄에 섞으면 이전 버전의 명령을 그대로 쓴 사용자가 오타로 읽고 목록에서 새 이름을 찾아야 한다.
+ */
+function formatUnavailable(unknown: readonly string[], renamed: readonly RenamedPreset[]): string {
+  return [
+    ...(unknown.length === 0 ? [] : [`알 수 없는 프리셋입니다: ${unknown.join(", ")}`]),
+    ...(renamed.length === 0
+      ? []
+      : [
+          `이름이 바뀐 프리셋입니다: ${renamed.map(({ from, to }) => `${from} → ${to}`).join(", ")}`,
+        ]),
+  ].join("\n");
 }
 
 /** 고르지 않았지만 함께 설치한 프리셋 하나에서 일어난 일. */
