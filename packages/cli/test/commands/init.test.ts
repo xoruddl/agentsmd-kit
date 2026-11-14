@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { promisify } from "node:util";
 import { checkRepository } from "@agentsmd/core";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { runInit } from "../../src/commands/init.js";
 import type { Io } from "../../src/io.js";
 import { PRESETS } from "../../src/presets.js";
@@ -22,9 +22,13 @@ beforeEach(async () => {
   root = await mkdtemp(join(tmpdir(), "agentsmd-init-"));
   out = "";
   err = "";
+  // 훅 연결은 전역 설정까지 합친 core.hooksPath를 본다. 테스트를 돌리는 사람의 전역 설정이 결과를 바꾸지 않게 한다.
+  vi.stubEnv("GIT_CONFIG_GLOBAL", "/dev/null");
+  vi.stubEnv("GIT_CONFIG_NOSYSTEM", "1");
 });
 
 afterEach(async () => {
+  vi.unstubAllEnvs();
   await rm(root, { recursive: true, force: true });
 });
 
@@ -250,6 +254,73 @@ describe("runInit", () => {
     const { stdout } = await git("git", ["-C", root, "config", "core.hooksPath"]);
     expect(stdout.trim()).toBe(".githooks");
     expect(out).toContain("Git 훅을 연결했습니다: core.hooksPath=.githooks");
+  });
+
+  // husky 등으로 이미 다른 훅 디렉터리를 쓰면 바꾸지 않는다. 바꾸면 기존 훅이 조용히 꺼진다.
+  it("core.hooksPath가 이미 다른 값이면 바꾸지 않고 기존 값과 바꾸는 방법을 알린다", async () => {
+    await git("git", ["-C", root, "init", "-q"]);
+    await git("git", ["-C", root, "config", "core.hooksPath", ".husky"]);
+
+    await expect(runInit(["--preset", "github"], io())).resolves.toBe(0);
+
+    const { stdout } = await git("git", ["-C", root, "config", "core.hooksPath"]);
+    expect(stdout.trim()).toBe(".husky");
+    expect(out).toContain("core.hooksPath가 이미 .husky 로 설정돼 있어 바꾸지 않았습니다.");
+    expect(out).toContain("git config core.hooksPath .githooks 를 실행하세요.");
+    expect(out).not.toContain("Git 훅을 연결했습니다");
+    // 훅 파일은 설치해 둔다. 기존 훅에서 불러 쓰거나 나중에 연결할 수 있어야 한다.
+    await expect(readFile(join(root, ".githooks/commit-msg"), "utf8")).resolves.toContain("#!");
+  });
+
+  // 전역 값을 저장소 설정으로 덮으면 그 저장소에서만 전역 훅이 꺼진다. 어디서 온 값인지 알려야 무엇을 잃는지 안다.
+  it("전역 설정의 core.hooksPath면 전역 설정이라고 알린다", async () => {
+    const globalConfig = join(root, "global.gitconfig");
+    await writeFile(globalConfig, "[core]\n\thooksPath = /opt/hooks\n");
+    vi.stubEnv("GIT_CONFIG_GLOBAL", globalConfig);
+    await git("git", ["-C", root, "init", "-q"]);
+
+    await runInit(["--preset", "git"], io());
+
+    expect(out).toContain(
+      "core.hooksPath가 전역 Git 설정에서 이미 /opt/hooks 로 설정돼 있어 바꾸지 않았습니다.",
+    );
+  });
+
+  // Git은 상대 경로인 core.hooksPath를 저장소 최상위 기준으로 해석한다.
+  it("--root가 저장소의 하위 디렉터리면 최상위 기준 경로로 훅을 연결한다", async () => {
+    await git("git", ["-C", root, "init", "-q"]);
+
+    await runInit(["--preset", "git", "--root", "packages/a"], io());
+
+    const { stdout } = await git("git", ["-C", root, "config", "core.hooksPath"]);
+    expect(stdout.trim()).toBe("packages/a/.githooks");
+    expect(out).toContain("Git 훅을 연결했습니다: core.hooksPath=packages/a/.githooks");
+  });
+
+  // 파일 설치는 이미 끝났다. 훅 연결에서 죽으면 무엇이 설치됐는지 알 수 없다.
+  it("기존 core.hooksPath를 읽지 못해도 설치 결과를 알리고 훅만 연결하지 못했다고 알린다", async () => {
+    await git("git", ["-C", root, "init", "-q"]);
+    await git("git", ["-C", root, "config", "core.hooksPath", "~agentsmd-no-such-user/hooks"]);
+
+    await expect(runInit(["--preset", "git"], io())).resolves.toBe(0);
+
+    expect(out).toMatch(/^git 프리셋: 파일 \d+개를 설치했습니다\./);
+    expect(out).toContain("Git 훅을 연결하지 못했습니다: ");
+    expect(out).toContain("훅 파일은 설치했습니다. 원인을 고친 뒤 같은 명령을 다시 실행하세요.");
+    const { stdout } = await git("git", ["-C", root, "config", "core.hooksPath"]);
+    expect(stdout.trim()).toBe("~agentsmd-no-such-user/hooks");
+  });
+
+  // --force는 이 도구가 설치한 파일을 다시 쓰라는 뜻이다. 다른 도구의 훅을 끄는 것까지 포함하지 않는다.
+  it("--force여도 이미 다른 값인 core.hooksPath는 바꾸지 않는다", async () => {
+    await git("git", ["-C", root, "init", "-q"]);
+    await git("git", ["-C", root, "config", "core.hooksPath", ".husky"]);
+
+    await runInit(["--preset", "git", "--force"], io());
+
+    const { stdout } = await git("git", ["-C", root, "config", "core.hooksPath"]);
+    expect(stdout.trim()).toBe(".husky");
+    expect(out).toContain("core.hooksPath가 이미 .husky 로 설정돼 있어 바꾸지 않았습니다.");
   });
 
   // Git 저장소가 아니면 "git init 후 다시 실행하세요"라고 안내한다. 다시 실행했을 때 git 프리셋이 이미 있다고

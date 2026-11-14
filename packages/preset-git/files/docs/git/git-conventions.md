@@ -108,7 +108,8 @@ git merge main
 | `.githooks/commit-msg` | 커밋 형식, 제목 50자, 마침표, AI 서명              |
 | `.githooks/check-pr`   | 브랜치 이름, PR 제목. 훅이 아니라 CI가 PR마다 실행 |
 
-훅은 `agentsmd init`이 연결한다. 직접 연결하려면 `git config core.hooksPath .githooks`.
+훅은 `agentsmd init`이 연결한다. 이미 다른 훅 디렉터리를 쓰고 있으면 바꾸지 않고, 직접 연결하는 명령을 알려 준다.
+직접 연결하려면 `git config core.hooksPath .githooks`. 경로는 저장소 최상위 기준으로 적는다.
 
 ### PR 규칙 검사를 CI에 연결
 

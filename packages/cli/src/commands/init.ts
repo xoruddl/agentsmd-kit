@@ -52,6 +52,7 @@ ${presetList}
   --root <경로>     설치할 저장소 루트 (기본값: 현재 디렉터리)
   --force           직접 고른 프리셋의 파일을 이미 있어도 덮어쓰고, AGENTS.md 를 새로 만듭니다
   --skip-hooks      core.hooksPath 를 설정하지 않습니다
+                    이미 다른 값이 있으면 이 옵션이 없어도 바꾸지 않고 알립니다 (--force 도 같음)
   -h, --help        이 도움말
 `;
 
@@ -100,7 +101,7 @@ export async function runInit(args: readonly string[], io: Io): Promise<ExitCode
       : await configureHooksPath(root, hooksPath);
 
   const legacy = findLegacyDocs(presets, (path) => existsSync(join(root, path)));
-  io.stdout(formatReport(presets, result, legacy, hooksPath, hooks));
+  io.stdout(formatReport(presets, result, legacy, hooks));
   return 0;
 }
 
@@ -165,11 +166,37 @@ async function installAll(
   return { written, skipped, merged: entry.merged, unplaced: entry.unplaced, added: addedResults };
 }
 
+/** 저장소 밖에서 온 값이면 어디에 적힌 값인지 알린다. 저장소 설정으로 덮으면 그 저장소에서만 전역 훅이 꺼진다. */
+const HOOKS_SCOPE_LABELS: Readonly<Record<string, string>> = {
+  global: "전역 Git 설정에서 ",
+  system: "시스템 Git 설정에서 ",
+};
+
+function formatHooks(hooks: HooksResult): string[] {
+  switch (hooks.status) {
+    case "configured":
+      return [`Git 훅을 연결했습니다: core.hooksPath=${hooks.path}`];
+    case "not-a-repo":
+      return ["Git 저장소가 아니어서 훅을 연결하지 않았습니다. git init 후 다시 실행하세요."];
+    case "kept":
+      // 바꾸지 않은 이유와 직접 바꾸는 방법을 함께 알린다. --force로도 바꾸지 않으므로 명령을 그대로 적는다.
+      return [
+        `core.hooksPath가 ${HOOKS_SCOPE_LABELS[hooks.scope] ?? ""}이미 ${hooks.current} 로 설정돼 있어 바꾸지 않았습니다.`,
+        `${hooks.path} 의 훅을 쓰려면 기존 훅에서 불러오거나 git config core.hooksPath ${hooks.path} 를 실행하세요.`,
+      ];
+    case "failed":
+      // 파일 설치는 끝났으므로 설치 보고는 그대로 내고, 훅만 연결하지 못했다고 알린다.
+      return [
+        `Git 훅을 연결하지 못했습니다: ${hooks.detail}`,
+        "훅 파일은 설치했습니다. 원인을 고친 뒤 같은 명령을 다시 실행하세요.",
+      ];
+  }
+}
+
 function formatReport(
   presets: readonly Preset[],
   result: InitResult,
   legacy: readonly MovedDoc[],
-  hooksPath: string | undefined,
   hooks: HooksResult | undefined,
 ): string {
   const names = presets.map((preset) => preset.name).join(", ");
@@ -212,10 +239,8 @@ function formatReport(
     }),
   );
 
-  if (hooks === "configured") {
-    lines.push(`Git 훅을 연결했습니다: core.hooksPath=${hooksPath ?? ""}`);
-  } else if (hooks === "not-a-repo") {
-    lines.push("Git 저장소가 아니어서 훅을 연결하지 않았습니다. git init 후 다시 실행하세요.");
+  if (hooks !== undefined) {
+    lines.push(...formatHooks(hooks));
   }
 
   const steps = [
