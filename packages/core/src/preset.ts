@@ -14,7 +14,7 @@ export interface Preset {
   /** 설치할 파일들이 있는 디렉터리의 절대 경로. */
   readonly filesDir: string;
   /**
-   * 이 프리셋과 함께 있어야 하는 프리셋의 이름. 예: `spring`은 검증 명령을 `java`에 맡기므로 `["java"]`.
+   * 이 프리셋과 함께 있어야 하는 프리셋의 이름. 예: `spring-java`는 검증 명령을 `java`에 맡기므로 `["java"]`.
    * 사용자가 고르지 않았으면 `init`이 이 프리셋보다 먼저 설치한다. 패키지를 불러오지 않고 이름만 적는다.
    */
   readonly requires?: readonly string[];
