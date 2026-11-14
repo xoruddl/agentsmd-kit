@@ -30,28 +30,44 @@ npx @agentsmd/cli check
 
 Git 규칙, 호스팅(GitHub), 언어 규칙, 프레임워크(React·Spring) 규칙은 따로 고릅니다. 필요한 것만 쉼표로 이으면 됩니다.
 
-| 프리셋       | 이럴 때                                            | 설치되는 것                                                                                                 |
-| ------------ | -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| `git`        | 커밋·PR 규칙과 Git 훅을 쓸 때. 호스팅·CI와 무관    | 작업 흐름·Git 규칙·리뷰 기준·문체 문서, 커밋 메시지 훅, PR 규칙 검사 스크립트(`check-pr`), Claude Code 설정 |
-| `github`     | GitHub에서 이슈·PR을 관리할 때                     | 이슈·PR 템플릿, GitHub 사용법 문서(gh 명령, 머지 방식·룰셋, CI 연결 예시)                                   |
-| `typescript` | TypeScript 프로젝트 (프론트엔드·백엔드·라이브러리) | 타입·구조·테스트·보안·린트 규칙 문서, 검증 명령, `.nvmrc`                                                   |
-| `react`      | React 프론트엔드. `typescript`와 함께              | 컴포넌트·접근성·화면 테스트·브라우저 보안 문서, React 린트 규칙                                             |
-| `java`       | Java·Gradle 프로젝트                               | 코드 스타일·클린 코드·체크리스트·테스트 문서, Spotless 설정, 검증 명령                                      |
-| `spring`     | Spring Boot 서버. `java`와 함께                    | 패키지 구조·JPA·트랜잭션·API·테스트 문서                                                                    |
+| 프리셋        | 이럴 때                                             | 설치되는 것                                                                                                 |
+| ------------- | --------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `git`         | 커밋·PR 규칙과 Git 훅을 쓸 때. 호스팅·CI와 무관     | 작업 흐름·Git 규칙·리뷰 기준·문체 문서, 커밋 메시지 훅, PR 규칙 검사 스크립트(`check-pr`), Claude Code 설정 |
+| `github`      | GitHub에서 이슈·PR을 관리할 때. `git`과 함께        | 이슈·PR 템플릿, GitHub 사용법 문서(gh 명령, 머지 방식·룰셋, CI 연결 예시)                                   |
+| `project`     | 언어 프리셋을 고르면 함께 설치. 직접 고를 일은 드묾 | 사람이 채우는 프로젝트 방향 문서(목표·범위·하지 않는 것·기술 스택)                                          |
+| `typescript`  | TypeScript 프로젝트 (프론트엔드·백엔드·라이브러리)  | 타입·구조·테스트·보안·린트 규칙 문서, 검증 명령, `.nvmrc`                                                   |
+| `react`       | React 프론트엔드. `typescript`와 함께               | 컴포넌트·접근성·화면 테스트·브라우저 보안 문서, React 린트 규칙                                             |
+| `java`        | Java·Gradle 프로젝트                                | 코드 스타일·클린 코드·체크리스트·테스트 문서, Spotless 설정, 검증 명령                                      |
+| `spring-java` | Java로 쓰는 Spring Boot 서버. `java`와 함께         | 패키지 구조·JPA·트랜잭션·API·테스트 문서                                                                    |
 
-| 저장소                    | 명령                                        |
-| ------------------------- | ------------------------------------------- |
-| GitHub + TypeScript       | `init --preset git,github,typescript`       |
-| GitHub + React 프론트엔드 | `init --preset git,github,typescript,react` |
-| GitLab·사내 Git + Java    | `init --preset git,java`                    |
-| GitHub + Spring Boot      | `init --preset git,github,java,spring`      |
-| 언어 규칙만               | `init --preset typescript`                  |
-| Git 규칙만                | `init --preset git`                         |
+문서는 프리셋마다 `docs/<프리셋 이름>/` 폴더에 설치됩니다. `docs/` 바로 아래는 프로젝트 고유 문서를 두는 자리로 남습니다.
+
+```text
+docs/
+  git/         workflow.md, git-conventions.md, code-review.md, writing-style.md
+  github/      usage.md
+  project/     direction.md
+  typescript/  rules.md, structure.md, testing.md, env-and-security.md, lint-and-ci.md
+  react/       components.md, testing.md, browser-security.md
+  java/        code-style.md, clean-code.md, clean-code-examples.md, checklist.md, testing.md,
+               logging-and-security.md, lint-and-ci.md
+  spring-java/ architecture.md, data-jpa.md, api.md, testing.md
+```
+
+| 저장소                      | 명령                                        |
+| --------------------------- | ------------------------------------------- |
+| GitHub + TypeScript         | `init --preset git,github,typescript`       |
+| GitHub + React 프론트엔드   | `init --preset git,github,typescript,react` |
+| GitLab·사내 Git + Java      | `init --preset git,java`                    |
+| GitHub + Spring Boot (Java) | `init --preset git,github,spring-java`      |
+| Git 규칙 없이 언어 규칙만   | `init --preset typescript`                  |
+| Git 규칙만                  | `init --preset git`                         |
 
 어느 조합이든 아래는 같습니다.
 
 - `AGENTS.md`(문서 지도·핵심 규칙·검증 명령)와 이를 불러오는 `CLAUDE.md`를 고른 프리셋에 맞춰 만듭니다.
-- 이미 있는 파일은 덮어쓰지 않습니다. `AGENTS.md`가 있으면 빠진 문서·규칙만 더하므로, 프리셋을 나중에 추가해도 됩니다. 나눠 설치할 때는 언어 프리셋(`java`, `typescript`)을 먼저 설치합니다.
+- 이미 있는 파일은 덮어쓰지 않습니다. `AGENTS.md`가 있으면 빠진 문서·규칙만 더하므로, 프리셋을 나중에 추가해도 됩니다.
+- 다른 프리셋이 있어야 하는 프리셋은 그 프리셋을 함께 설치합니다. `github`은 `git`을, `spring-java`는 `java`를, `react`는 `typescript`를, 언어 프리셋은 `project`를 먼저 설치하고 출력으로 알립니다. `--force`는 직접 고른 프리셋의 파일만 덮어씁니다.
 - CI 설정 파일은 설치하지 않습니다. GitHub Actions, GitLab CI, Jenkins 등 쓰는 CI에서 문서에 적힌 검증 명령과 `.githooks/check-pr`를 부르면 됩니다.
 
 프리셋별 파일 목록은 [docs/commands.md](docs/commands.md)와 각 패키지 README에 있습니다.
@@ -82,16 +98,17 @@ CI에 `agentsmd check` 한 단계를 넣으면 지도와 어긋난 변경은 머
 
 ## 패키지
 
-| 패키지                                                      | 역할                                                                                   |
-| ----------------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| [`@agentsmd/cli`](packages/cli)                             | CLI(`agentsmd` 명령). 명령 분기, 출력, 종료 코드, Git 훅 연결                          |
-| [`@agentsmd/core`](packages/core)                           | 문서 지도 파서, 검사 규칙, 프리셋 설치, 고른 프리셋에 맞춘 AGENTS.md 생성. 언어와 무관 |
-| [`@agentsmd/preset-git`](packages/preset-git)               | 언어·호스팅과 무관한 Git 작업 규칙, 커밋 훅, PR 규칙 검사 스크립트                     |
-| [`@agentsmd/preset-github`](packages/preset-github)         | GitHub 이슈·PR 템플릿, 저장소 설정·CI 연결 안내                                        |
-| [`@agentsmd/preset-java`](packages/preset-java)             | Java·Gradle용 코드 규칙, Spotless(palantir-java-format)·Gradle 검증 명령               |
-| [`@agentsmd/preset-spring`](packages/preset-spring)         | Spring Boot 서버용 구조·JPA·트랜잭션·API·테스트 규칙                                   |
-| [`@agentsmd/preset-typescript`](packages/preset-typescript) | TypeScript 프로젝트용 타입·구조·테스트·보안 규칙, 린트·CI 명령                         |
-| [`@agentsmd/preset-react`](packages/preset-react)           | React 프론트엔드용 컴포넌트·접근성·화면 테스트·브라우저 보안 규칙                      |
+| 패키지                                                        | 역할                                                                                   |
+| ------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| [`@agentsmd/cli`](packages/cli)                               | CLI(`agentsmd` 명령). 명령 분기, 출력, 종료 코드, Git 훅 연결                          |
+| [`@agentsmd/core`](packages/core)                             | 문서 지도 파서, 검사 규칙, 프리셋 설치, 고른 프리셋에 맞춘 AGENTS.md 생성. 언어와 무관 |
+| [`@agentsmd/preset-git`](packages/preset-git)                 | 언어·호스팅과 무관한 Git 작업 규칙, 커밋 훅, PR 규칙 검사 스크립트                     |
+| [`@agentsmd/preset-github`](packages/preset-github)           | GitHub 이슈·PR 템플릿, 저장소 설정·CI 연결 안내                                        |
+| [`@agentsmd/preset-project`](packages/preset-project)         | 사람이 채우는 프로젝트 방향 문서. 언어 프리셋이 함께 설치                              |
+| [`@agentsmd/preset-java`](packages/preset-java)               | Java·Gradle용 코드 규칙, Spotless(palantir-java-format)·Gradle 검증 명령               |
+| [`@agentsmd/preset-spring-java`](packages/preset-spring-java) | Java로 쓰는 Spring Boot 서버용 구조·JPA·트랜잭션·API·테스트 규칙                       |
+| [`@agentsmd/preset-typescript`](packages/preset-typescript)   | TypeScript 프로젝트용 타입·구조·테스트·보안 규칙, 린트·CI 명령                         |
+| [`@agentsmd/preset-react`](packages/preset-react)             | React 프론트엔드용 컴포넌트·접근성·화면 테스트·브라우저 보안 규칙                      |
 
 ## 설치
 
@@ -107,13 +124,13 @@ pnpm add -D @agentsmd/cli
 - run: pnpm exec agentsmd check
 ```
 
-GitHub Actions에서는 설치 없이 이 저장소의 Action을 한 줄로 씁니다. 검사 대상 경로는 `with:`로 바꿀 수 있고, 입력 이름은 `agentsmd check`의 옵션과 같습니다. → [`packages/preset-github/files/docs/github.md`](packages/preset-github/files/docs/github.md)
+GitHub Actions에서는 설치 없이 이 저장소의 Action을 한 줄로 씁니다. 검사 대상 경로는 `with:`로 바꿀 수 있고, 입력 이름은 `agentsmd check`의 옵션과 같습니다. → [`packages/preset-github/files/docs/github/usage.md`](packages/preset-github/files/docs/github/usage.md)
 
 ```yaml
 - uses: xoruddl/agentsmd-kit@v0
 ```
 
-Action이 쓰는 이미지 `ghcr.io/xoruddl/agentsmd`는 GitLab CI·Jenkins 등 Docker가 되는 CI에서 그대로 씁니다. Node가 없어도 됩니다. → [`packages/preset-git/files/docs/git-conventions.md`](packages/preset-git/files/docs/git-conventions.md)
+Action이 쓰는 이미지 `ghcr.io/xoruddl/agentsmd`는 GitLab CI·Jenkins 등 Docker가 되는 CI에서 그대로 씁니다. Node가 없어도 됩니다. → [`packages/preset-git/files/docs/git/git-conventions.md`](packages/preset-git/files/docs/git/git-conventions.md)
 
 ```sh
 docker run --rm -v "$PWD:/repo" ghcr.io/xoruddl/agentsmd:0 check

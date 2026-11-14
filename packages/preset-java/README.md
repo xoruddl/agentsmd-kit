@@ -4,7 +4,7 @@
 
 ```bash
 npx @agentsmd/cli init --preset git,java   # Git 작업 규칙과 함께
-npx @agentsmd/cli init --preset java       # Java 규칙만
+npx @agentsmd/cli init --preset java       # Git 규칙 없이 (프로젝트 방향 문서는 함께 설치된다)
 ```
 
 - Java 코드 규칙 문서: 코드 스타일, 클린 코드 원칙과 예시, Java 체크리스트, 테스트(JUnit 5·AssertJ·Mockito), 로깅·보안·의존성

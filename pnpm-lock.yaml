@@ -44,12 +44,15 @@ importers:
       '@agentsmd/preset-java':
         specifier: workspace:*
         version: link:../preset-java
+      '@agentsmd/preset-project':
+        specifier: workspace:*
+        version: link:../preset-project
       '@agentsmd/preset-react':
         specifier: workspace:*
         version: link:../preset-react
-      '@agentsmd/preset-spring':
+      '@agentsmd/preset-spring-java':
         specifier: workspace:*
-        version: link:../preset-spring
+        version: link:../preset-spring-java
       '@agentsmd/preset-typescript':
         specifier: workspace:*
         version: link:../preset-typescript
@@ -74,13 +77,19 @@ importers:
         specifier: workspace:*
         version: link:../core
 
+  packages/preset-project:
+    dependencies:
+      '@agentsmd/core':
+        specifier: workspace:*
+        version: link:../core
+
   packages/preset-react:
     dependencies:
       '@agentsmd/core':
         specifier: workspace:*
         version: link:../core
 
-  packages/preset-spring:
+  packages/preset-spring-java:
     dependencies:
       '@agentsmd/core':
         specifier: workspace:*

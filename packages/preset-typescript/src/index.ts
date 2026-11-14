@@ -7,6 +7,7 @@ import type { Preset } from "@agentsmd/core";
  * 타입 규칙과 필수 컴파일러 옵션, 폴더·모듈, 테스트, 환경변수·보안, 린트·CI 명령 문서를 담는다.
  * React 화면 규칙은 넣지 않는다. 필요하면 React 프리셋을 함께 고른다.
  * Git 훅·GitHub 설정은 넣지 않는다. 필요하면 Git 프리셋을 함께 고른다.
+ * 프로젝트 목표와 범위를 적는 방향 문서는 언어와 무관해 project 프리셋에 맡기고, `requires`로 적어 `init`이 함께 설치하게 한다.
  *
  * tsconfig나 린트 설정 파일은 설치하지 않는다. 빌드 도구마다 설정이 달라 덮어쓰면 프로젝트가 깨지므로,
  * 필수 옵션을 문서로 안내하고 사람이 적용한다.
@@ -15,16 +16,19 @@ export const typescriptPreset = {
   name: "typescript",
   description: "TypeScript 프로젝트용 타입·구조·테스트·보안 규칙, 린트·CI 명령",
   filesDir: fileURLToPath(new URL("../files", import.meta.url)),
+  requires: ["project"],
   docs: [
     {
-      path: "docs/project-direction.md",
-      when: "모든 작업 시작 전 (필수). 범위 밖 작업이면 먼저 질문",
+      path: "docs/typescript/rules.md",
+      when: "코드 작성·리뷰 (항상). 컴파일러 옵션, 타입 규칙",
     },
-    { path: "docs/typescript.md", when: "코드 작성·리뷰 (항상). 컴파일러 옵션, 타입 규칙" },
-    { path: "docs/structure.md", when: "파일·폴더를 만들 때. 기능 단위 폴더, 모듈 경계" },
-    { path: "docs/testing.md", when: "테스트를 쓸 때" },
-    { path: "docs/env-and-security.md", when: "환경변수·외부 입력·의존성을 다룰 때" },
-    { path: "docs/lint-and-ci.md", when: "스크립트·린트·포맷·CI 설정" },
+    {
+      path: "docs/typescript/structure.md",
+      when: "파일·폴더를 만들 때. 기능 단위 폴더, 모듈 경계",
+    },
+    { path: "docs/typescript/testing.md", when: "테스트를 쓸 때" },
+    { path: "docs/typescript/env-and-security.md", when: "환경변수·외부 입력·의존성을 다룰 때" },
+    { path: "docs/typescript/lint-and-ci.md", when: "스크립트·린트·포맷·CI 설정" },
   ],
   rules: [
     "`any`, `as` 단언, `!` 로 타입 오류를 덮지 않는다.",
@@ -35,9 +39,16 @@ export const typescriptPreset = {
   ],
   verify: "pnpm lint && pnpm format:check && pnpm typecheck && pnpm test && pnpm build",
   nextSteps: [
-    "docs/project-direction.md 에 프로젝트 목표와 범위를 채우세요.",
-    "tsconfig 에 docs/typescript.md 의 필수 컴파일러 옵션을 켜세요.",
-    "package.json 에 lint, format, format:check, typecheck, test, build 스크립트를 두세요. → docs/lint-and-ci.md",
+    "tsconfig 에 docs/typescript/rules.md 의 필수 컴파일러 옵션을 켜세요.",
+    "package.json 에 lint, format, format:check, typecheck, test, build 스크립트를 두세요. → docs/typescript/lint-and-ci.md",
     ".nvmrc 의 Node 버전을 프로젝트에 맞게 고치세요.",
+  ],
+  // 0.6 이하는 문서를 docs/ 한 층에 설치했다. lint-and-ci.md는 java 프리셋도 같은 이름으로 설치했다.
+  moved: [
+    { from: "docs/typescript.md", to: "docs/typescript/rules.md" },
+    { from: "docs/structure.md", to: "docs/typescript/structure.md" },
+    { from: "docs/testing.md", to: "docs/typescript/testing.md" },
+    { from: "docs/env-and-security.md", to: "docs/typescript/env-and-security.md" },
+    { from: "docs/lint-and-ci.md", to: "docs/typescript/lint-and-ci.md" },
   ],
 } satisfies Preset;

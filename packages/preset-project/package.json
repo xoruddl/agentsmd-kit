@@ -1,0 +1,46 @@
+{
+  "name": "@agentsmd/preset-project",
+  "version": "0.7.0",
+  "description": "프로젝트 목표·범위·기술 스택을 적는 방향 문서 프리셋 (언어 프리셋이 함께 설치)",
+  "keywords": [
+    "agents.md",
+    "ai-agent",
+    "project-direction",
+    "scope"
+  ],
+  "homepage": "https://github.com/xoruddl/agentsmd-kit#readme",
+  "bugs": "https://github.com/xoruddl/agentsmd-kit/issues",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xoruddl/agentsmd-kit.git",
+    "directory": "packages/preset-project"
+  },
+  "license": "MIT",
+  "author": "이태경 (https://github.com/xoruddl)",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "files"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "prepack": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\" && pnpm run build",
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@agentsmd/core": "workspace:*"
+  }
+}

@@ -20,8 +20,9 @@ body:
         - cli (명령·출력)
         - preset-git
         - preset-github
+        - preset-project
         - preset-java
-        - preset-spring
+        - preset-spring-java
         - preset-typescript
         - preset-react
         - 문서·CI

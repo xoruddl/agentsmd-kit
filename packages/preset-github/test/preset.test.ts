@@ -19,8 +19,14 @@ afterEach(async () => {
 });
 
 describe("githubPreset", () => {
-  it("GitHub 프리셋만 설치해도 agentsmd check 규칙을 모두 통과한다", async () => {
+  // init은 git 프리셋을 함께 설치하지만, 이 프리셋의 문서 링크는 이 프리셋 안에서 닫혀 있어야 한다.
+  it("이 프리셋의 파일만으로도 agentsmd check 규칙을 모두 통과한다", async () => {
     await expect(checkRepository({ root: repo })).resolves.toEqual([]);
+  });
+
+  // PR 템플릿과 사용법 문서가 Git 작업 규칙 문서를 가리킨다. git 프리셋이 필요하다고 적어 init이 함께 설치하게 한다.
+  it("git 프리셋을 필요로 한다", () => {
+    expect(githubPreset.requires).toEqual(["git"]);
   });
 
   it("이슈·PR 템플릿을 설치한다", async () => {
@@ -47,9 +53,9 @@ describe("githubPreset", () => {
   // 워크플로를 설치하지 않는 대신, GitHub Actions에서 문서 지도를 검사하는 방법을 문서로 안내한다.
   it("설치 후 안내에서 문서 지도 검사 Action을 알린다", async () => {
     const step = githubPreset.nextSteps.find((line) => line.includes("agentsmd-kit"));
-    expect(step).toContain("docs/github.md");
+    expect(step).toContain("docs/github/usage.md");
     // 메이저 태그로 안내해야 마이너를 올려도 설치된 문서가 낡지 않는다. `@v0.5`처럼 뒤가 붙으면 통과하지 않게 줄 끝까지 맞춘다.
-    await expect(readFile(join(repo, "docs/github.md"), "utf8")).resolves.toMatch(
+    await expect(readFile(join(repo, "docs/github/usage.md"), "utf8")).resolves.toMatch(
       /uses: xoruddl\/agentsmd-kit@v\d+$/m,
     );
   });

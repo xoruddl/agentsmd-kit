@@ -9,14 +9,14 @@ export const CHECK_USAGE = `사용법: agentsmd check [옵션]
 AGENTS.md 문서 지도가 저장소와 맞는지 검사합니다.
 
 검사 규칙:
-  broken-link     지도의 링크가 없는 파일·디렉터리를 가리킴
+  broken-link     지도나 문서 디렉터리 문서의 링크가 없는 파일·디렉터리를 가리킴
   unlisted-doc    문서 디렉터리에 있지만 지도에서 안내하지 않는 문서
   claude-import   CLAUDE.md가 @AGENTS.md로 지도를 불러오지 않음
 
 옵션:
   --root <경로>     검사할 저장소 루트 (기본값: 현재 디렉터리)
   --agents <경로>   문서 지도 파일, 루트 기준 (기본값: AGENTS.md)
-  --docs <경로>     지도에 모두 있어야 하는 문서 디렉터리, 루트 기준 (기본값: docs)
+  --docs <경로>     문서 디렉터리. 안의 문서는 지도에 모두 있어야 하고 링크도 검사함, 루트 기준 (기본값: docs)
   --claude <경로>   Claude Code 지침 파일, 루트 기준 (기본값: CLAUDE.md)
   -h, --help        이 도움말
 

@@ -29,11 +29,9 @@ describe("reactPreset", () => {
     await expect(access(join(repo, ".nvmrc"))).rejects.toThrow();
   });
 
-  // react만 설치하면 AGENTS.md에 검증 절이 없으므로, 설치 후 안내에서 typescript 프리셋을 알린다.
-  it("설치 후 안내에서 typescript 프리셋을 함께 설치하라고 알린다", () => {
-    expect(reactPreset.nextSteps).toContainEqual(
-      expect.stringContaining("agentsmd init --preset typescript"),
-    );
+  // react만 설치하면 AGENTS.md에 검증 절이 없으므로, typescript 프리셋이 필요하다고 적어 init이 함께 설치하게 한다.
+  it("typescript 프리셋을 필요로 한다", () => {
+    expect(reactPreset.requires).toEqual(["typescript"]);
   });
 
   it("Git 훅과 GitHub 설정은 설치하지 않는다", async () => {

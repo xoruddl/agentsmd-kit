@@ -1,6 +1,6 @@
 {
   "name": "@agentsmd/preset-java",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "Java·Gradle 프로젝트용 AI 작업 지침 프리셋 (코드 규칙 문서, Spotless·Gradle 검증 명령)",
   "keywords": [
     "agents.md",
