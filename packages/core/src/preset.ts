@@ -9,6 +9,11 @@
 export interface Preset {
   /** `--preset` 옵션에 쓰는 이름. 예: `java` */
   readonly name: string;
+  /**
+   * 이전 버전에서 쓰던 이름. 사용자가 옛 이름을 적으면 `init`이 새 이름을 알려 준다. 옛 이름으로 설치하지는 않는다.
+   * 적어 두지 않으면 이름을 바꾼 뒤 옛 이름은 오타와 구분되지 않는 "알 수 없는 프리셋"이 된다.
+   */
+  readonly formerNames?: readonly string[];
   /** 도움말에 보여 줄 한 줄 설명. */
   readonly description: string;
   /** 설치할 파일들이 있는 디렉터리의 절대 경로. */

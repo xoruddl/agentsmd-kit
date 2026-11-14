@@ -12,6 +12,8 @@ import type { Preset } from "@agentsmd/core";
  */
 export const springJavaPreset = {
   name: "spring-java",
+  // 0.6 이하의 이름. `--preset spring`을 적은 사용자에게 새 이름을 알린다.
+  formerNames: ["spring"],
   description: "Java로 쓰는 Spring Boot 서버용 구조·JPA·트랜잭션·API·테스트 규칙",
   filesDir: fileURLToPath(new URL("../files", import.meta.url)),
   requires: ["java"],
