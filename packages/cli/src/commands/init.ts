@@ -165,6 +165,21 @@ async function installAll(
   return { written, skipped, merged: entry.merged, unplaced: entry.unplaced, added: addedResults };
 }
 
+function formatHooks(hooks: HooksResult, hooksPath: string): string[] {
+  switch (hooks.status) {
+    case "configured":
+      return [`Git 훅을 연결했습니다: core.hooksPath=${hooksPath}`];
+    case "not-a-repo":
+      return ["Git 저장소가 아니어서 훅을 연결하지 않았습니다. git init 후 다시 실행하세요."];
+    case "kept":
+      // 바꾸지 않은 이유와 직접 바꾸는 방법을 함께 알린다. --force로도 바꾸지 않으므로 명령을 그대로 적는다.
+      return [
+        `core.hooksPath가 이미 ${hooks.current} 로 설정돼 있어 바꾸지 않았습니다.`,
+        `${hooksPath} 의 훅을 쓰려면 기존 훅에서 불러오거나 git config core.hooksPath ${hooksPath} 를 실행하세요.`,
+      ];
+  }
+}
+
 function formatReport(
   presets: readonly Preset[],
   result: InitResult,
@@ -212,10 +227,8 @@ function formatReport(
     }),
   );
 
-  if (hooks === "configured") {
-    lines.push(`Git 훅을 연결했습니다: core.hooksPath=${hooksPath ?? ""}`);
-  } else if (hooks === "not-a-repo") {
-    lines.push("Git 저장소가 아니어서 훅을 연결하지 않았습니다. git init 후 다시 실행하세요.");
+  if (hooks !== undefined && hooksPath !== undefined) {
+    lines.push(...formatHooks(hooks, hooksPath));
   }
 
   const steps = [
