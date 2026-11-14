@@ -88,21 +88,25 @@ async function configure(dir: string, hooksPath: string): Promise<HooksResult> {
  * `--type=path`로 읽어 `~/hooks` 같은 값을 Git과 같은 방식으로 편다.
  */
 async function readHooksPath(dir: string): Promise<CurrentHooksPath | undefined> {
-  const get = ["--type=path", "--get", "core.hooksPath"];
   try {
-    // 출력은 "<scope>\t<값>" 한 줄이다.
-    const line = await readConfig(dir, ["--show-scope", ...get]);
-    const tab = line?.indexOf("\t") ?? -1;
-    return line === undefined || tab < 0
-      ? undefined
-      : toCurrent(line.slice(tab + 1), line.slice(0, tab));
+    const line = await readConfig(dir, ["--show-scope", "--type=path", "--get", "core.hooksPath"]);
+    if (line === undefined) {
+      return undefined;
+    }
+    // 출력은 "<scope>\t<값>" 한 줄이다. 그 형식이 아니면 값을 읽지 못한 것이다. "없음"으로 보면 기존 값을 덮어쓴다.
+    const tab = line.indexOf("\t");
+    if (tab < 0) {
+      throw new Error(`git config --show-scope 의 출력을 읽지 못했습니다: ${line}`);
+    }
+    return toCurrent(line.slice(tab + 1), line.slice(0, tab));
   } catch (error) {
     // --show-scope는 Git 2.26부터 있다. 그보다 오래된 Git에서는 적힌 곳을 빼고 값만 읽는다.
     if (exitCode(error) !== USAGE_ERROR) {
       throw error;
     }
   }
-  const value = await readConfig(dir, get);
+  // --type=path도 Git 2.18부터 있으므로, 오래된 Git이 아는 --path로 읽는다.
+  const value = await readConfig(dir, ["--path", "--get", "core.hooksPath"]);
   return value === undefined ? undefined : toCurrent(value, "");
 }
 
@@ -174,9 +178,13 @@ function stderrOf(error: unknown): string {
     : "";
 }
 
-/** 사용자에게 보일 실패 이유 한 줄. Git이 낸 문구가 있으면 그것을 쓴다. */
+/**
+ * 사용자에게 보일 실패 이유 한 줄. Git이 낸 문구가 있으면 그것을 쓴다.
+ * Git은 `warning:`이나 `hint:` 줄을 먼저 낼 수 있으므로, 실패의 원인인 `fatal:`·`error:` 줄을 먼저 고른다.
+ */
 function describe(error: unknown): string {
   const stderr = stderrOf(error).trim();
   const message = stderr === "" && error instanceof Error ? error.message : stderr;
-  return message.split(/\r?\n/)[0] ?? "";
+  const lines = message.split(/\r?\n/);
+  return lines.find((line) => /^(fatal|error):/.test(line)) ?? lines[0] ?? "";
 }

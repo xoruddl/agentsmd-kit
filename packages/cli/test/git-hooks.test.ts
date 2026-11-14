@@ -10,6 +10,31 @@ const git = promisify(execFile);
 const CONFIGURED = { status: "configured", path: ".githooks" };
 let dir: string;
 
+/**
+ * 진짜 git 앞에 가짜 git을 끼운다. `arm`은 인자 하나에 맞춰 실행할 `case` 가지다.
+ * 맞는 인자가 없으면 진짜 git으로 넘긴다. 오래된 Git이나 예상 밖의 출력을 흉내 낼 때 쓴다.
+ */
+async function useFakeGit(arm: string): Promise<void> {
+  const path = process.env.PATH ?? "";
+  const bin = join(dir, "fake-git");
+  await mkdir(bin);
+  await writeFile(
+    join(bin, "git"),
+    [
+      "#!/bin/sh",
+      'for arg in "$@"; do',
+      '  case "$arg" in',
+      `    ${arm}`,
+      "  esac",
+      "done",
+      `PATH='${path}' exec git "$@"`,
+      "",
+    ].join("\n"),
+    { mode: 0o755 },
+  );
+  vi.stubEnv("PATH", `${bin}:${path}`);
+}
+
 function detailOf(result: HooksResult): string {
   return result.status === "failed" ? result.detail : "";
 }
@@ -164,25 +189,11 @@ describe("configureHooksPath", () => {
     expect(detailOf(result)).toContain("work tree");
   });
 
-  // --show-scope는 Git 2.26부터 있다. 그보다 오래된 Git에서도 연결과 기존 값 유지는 동작해야 한다.
-  describe("--show-scope를 모르는 Git에서", () => {
+  // --show-scope는 Git 2.26, --type=path는 Git 2.18부터 있다. 그보다 오래된 Git에서도 연결과 기존 값 유지는 동작해야 한다.
+  describe("--show-scope와 --type=path를 모르는 Git에서", () => {
     beforeEach(async () => {
-      const bin = join(dir, "old-git");
-      await mkdir(bin);
-      await writeFile(
-        join(bin, "git"),
-        [
-          "#!/bin/sh",
-          'for arg in "$@"; do',
-          '  if [ "$arg" = "--show-scope" ]; then exit 129; fi',
-          "done",
-          `PATH='${process.env.PATH ?? ""}' exec git "$@"`,
-          "",
-        ].join("\n"),
-        { mode: 0o755 },
-      );
-      vi.stubEnv("PATH", `${bin}:${process.env.PATH ?? ""}`);
       await git("git", ["-C", dir, "init", "-q"]);
+      await useFakeGit('--show-scope | --type=path) echo "usage: git config" >&2; exit 129 ;;');
     });
 
     it("값이 없으면 연결한다", async () => {
@@ -198,6 +209,31 @@ describe("configureHooksPath", () => {
         current: ".husky",
         scope: "",
       });
+    });
+  });
+
+  // 종료 코드가 0이어도 값을 읽어 내지 못했으면 "없음"이 아니다.
+  it("--show-scope의 출력이 예상한 형식이 아니면 덮어쓰지 않고 실패 이유를 돌려준다", async () => {
+    await git("git", ["-C", dir, "init", "-q"]);
+    await useFakeGit("--show-scope) echo .husky; exit 0 ;;");
+
+    const result = await configureHooksPath(dir, ".githooks");
+
+    expect(result.status).toBe("failed");
+    expect(detailOf(result)).toContain(".husky");
+    await expect(git("git", ["-C", dir, "config", "--local", "core.hooksPath"])).rejects.toThrow();
+  });
+
+  // Git은 경고를 먼저 낼 수 있다. 첫 줄만 보이면 원인을 알 수 없다.
+  it("Git이 경고를 먼저 내도 실패의 원인인 fatal 줄을 돌려준다", async () => {
+    await git("git", ["-C", dir, "init", "-q"]);
+    await useFakeGit(
+      '--get) echo "warning: 무관한 경고" >&2; echo "fatal: 진짜 원인" >&2; exit 128 ;;',
+    );
+
+    await expect(configureHooksPath(dir, ".githooks")).resolves.toEqual({
+      status: "failed",
+      detail: "fatal: 진짜 원인",
     });
   });
 
