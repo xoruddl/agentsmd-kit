@@ -184,6 +184,12 @@ function formatHooks(hooks: HooksResult): string[] {
         `core.hooksPath가 ${HOOKS_SCOPE_LABELS[hooks.scope] ?? ""}이미 ${hooks.current} 로 설정돼 있어 바꾸지 않았습니다.`,
         `${hooks.path} 의 훅을 쓰려면 기존 훅에서 불러오거나 git config core.hooksPath ${hooks.path} 를 실행하세요.`,
       ];
+    case "failed":
+      // 파일 설치는 끝났으므로 설치 보고는 그대로 내고, 훅만 연결하지 못했다고 알린다.
+      return [
+        `Git 훅을 연결하지 못했습니다: ${hooks.detail}`,
+        "훅 파일은 설치했습니다. 원인을 고친 뒤 같은 명령을 다시 실행하세요.",
+      ];
   }
 }
 

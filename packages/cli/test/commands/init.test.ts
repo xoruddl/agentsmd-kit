@@ -297,6 +297,20 @@ describe("runInit", () => {
     expect(out).toContain("Git 훅을 연결했습니다: core.hooksPath=packages/a/.githooks");
   });
 
+  // 파일 설치는 이미 끝났다. 훅 연결에서 죽으면 무엇이 설치됐는지 알 수 없다.
+  it("기존 core.hooksPath를 읽지 못해도 설치 결과를 알리고 훅만 연결하지 못했다고 알린다", async () => {
+    await git("git", ["-C", root, "init", "-q"]);
+    await git("git", ["-C", root, "config", "core.hooksPath", "~agentsmd-no-such-user/hooks"]);
+
+    await expect(runInit(["--preset", "git"], io())).resolves.toBe(0);
+
+    expect(out).toMatch(/^git 프리셋: 파일 \d+개를 설치했습니다\./);
+    expect(out).toContain("Git 훅을 연결하지 못했습니다: ");
+    expect(out).toContain("훅 파일은 설치했습니다. 원인을 고친 뒤 같은 명령을 다시 실행하세요.");
+    const { stdout } = await git("git", ["-C", root, "config", "core.hooksPath"]);
+    expect(stdout.trim()).toBe("~agentsmd-no-such-user/hooks");
+  });
+
   // --force는 이 도구가 설치한 파일을 다시 쓰라는 뜻이다. 다른 도구의 훅을 끄는 것까지 포함하지 않는다.
   it("--force여도 이미 다른 값인 core.hooksPath는 바꾸지 않는다", async () => {
     await git("git", ["-C", root, "init", "-q"]);

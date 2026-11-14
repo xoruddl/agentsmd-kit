@@ -4,11 +4,15 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { promisify } from "node:util";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { configureHooksPath } from "../src/git-hooks.js";
+import { configureHooksPath, type HooksResult } from "../src/git-hooks.js";
 
 const git = promisify(execFile);
 const CONFIGURED = { status: "configured", path: ".githooks" };
 let dir: string;
+
+function detailOf(result: HooksResult): string {
+  return result.status === "failed" ? result.detail : "";
+}
 
 beforeEach(async () => {
   dir = await mkdtemp(join(tmpdir(), "agentsmd-hooks-"));
@@ -138,14 +142,63 @@ describe("configureHooksPath", () => {
   });
 
   // 읽지 못한 값을 "없음"으로 보면 기존 훅 설정을 덮어쓴다.
-  it("기존 값을 읽지 못하면 덮어쓰지 않고 실패한다", async () => {
+  it("기존 값을 읽지 못하면 덮어쓰지 않고 실패 이유를 돌려준다", async () => {
     await git("git", ["-C", dir, "init", "-q"]);
     await git("git", ["-C", dir, "config", "core.hooksPath", "~agentsmd-no-such-user/hooks"]);
 
-    await expect(configureHooksPath(dir, ".githooks")).rejects.toThrow();
+    const result = await configureHooksPath(dir, ".githooks");
 
+    expect(result.status).toBe("failed");
+    expect(detailOf(result)).toContain("~agentsmd-no-such-user/hooks");
     const { stdout } = await git("git", ["-C", dir, "config", "core.hooksPath"]);
     expect(stdout.trim()).toBe("~agentsmd-no-such-user/hooks");
+  });
+
+  // 저장소인데 최상위를 알아내지 못한 것을 "저장소 아님"으로 보면 "git init 후 다시 실행하세요"라고 틀리게 안내한다.
+  it("저장소 안이지만 작업 트리를 알아내지 못하면 저장소 아님으로 보지 않는다", async () => {
+    await git("git", ["-C", dir, "init", "-q"]);
+
+    const result = await configureHooksPath(join(dir, ".git"), ".githooks");
+
+    expect(result.status).toBe("failed");
+    expect(detailOf(result)).toContain("work tree");
+  });
+
+  // --show-scope는 Git 2.26부터 있다. 그보다 오래된 Git에서도 연결과 기존 값 유지는 동작해야 한다.
+  describe("--show-scope를 모르는 Git에서", () => {
+    beforeEach(async () => {
+      const bin = join(dir, "old-git");
+      await mkdir(bin);
+      await writeFile(
+        join(bin, "git"),
+        [
+          "#!/bin/sh",
+          'for arg in "$@"; do',
+          '  if [ "$arg" = "--show-scope" ]; then exit 129; fi',
+          "done",
+          `PATH='${process.env.PATH ?? ""}' exec git "$@"`,
+          "",
+        ].join("\n"),
+        { mode: 0o755 },
+      );
+      vi.stubEnv("PATH", `${bin}:${process.env.PATH ?? ""}`);
+      await git("git", ["-C", dir, "init", "-q"]);
+    });
+
+    it("값이 없으면 연결한다", async () => {
+      await expect(configureHooksPath(dir, ".githooks")).resolves.toEqual(CONFIGURED);
+    });
+
+    it("다른 값이면 적힌 곳 없이 그 값을 돌려준다", async () => {
+      await git("git", ["-C", dir, "config", "core.hooksPath", ".husky"]);
+
+      await expect(configureHooksPath(dir, ".githooks")).resolves.toEqual({
+        status: "kept",
+        path: ".githooks",
+        current: ".husky",
+        scope: "",
+      });
+    });
   });
 
   it("값이 비어 있으면 설정이 없는 것으로 보고 연결한다", async () => {
