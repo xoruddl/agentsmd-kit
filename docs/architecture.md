@@ -9,7 +9,7 @@ agentsmd (cli) ──▶ @agentsmd/core ◀── 모든 프리셋 (Preset 타�
       ├──▶ @agentsmd/preset-github
       ├──▶ @agentsmd/preset-project
       ├──▶ @agentsmd/preset-java
-      ├──▶ @agentsmd/preset-spring
+      ├──▶ @agentsmd/preset-spring-java
       ├──▶ @agentsmd/preset-typescript
       └──▶ @agentsmd/preset-react
 ```
@@ -22,7 +22,7 @@ agentsmd (cli) ──▶ @agentsmd/core ◀── 모든 프리셋 (Preset 타�
 | `packages/preset-github`       | 이슈·PR 템플릿, GitHub 설정·CI 연결 안내                    | 언어, CI 서비스                       |
 | `packages/preset-project`      | 사람이 채우는 프로젝트 방향 문서 (목표·범위·기술 스택)      | 언어, Git·GitHub                      |
 | `packages/preset-<언어>`       | 언어 규칙 문서, 검증·CI 명령 문서                           | 설치 방법, Git·GitHub                 |
-| `packages/preset-<프레임워크>` | 프레임워크 규칙 문서 (예: `react`, `spring`)                | 언어 공통 규칙, 검증 명령, Git·GitHub |
+| `packages/preset-<프레임워크>` | 프레임워크 규칙 문서 (예: `react`, `spring-java`)           | 언어 공통 규칙, 검증 명령, Git·GitHub |
 
 `core`는 다른 패키지에 의존하지 않는다. 프리셋은 `core`의 `Preset` 타입만 쓰고, 프리셋 패키지끼리는 서로 의존하지 않는다.
 
@@ -44,11 +44,13 @@ check.ts ── 파일 읽기 ──▶ parse-doc-map.ts ──▶ DocMap
 
 ## 프리셋: 따로 고르고, 공통 파일은 조합에 맞게 만든다
 
-Git 규칙, 호스팅(GitHub), 언어 규칙, 프레임워크 규칙은 따로 나눈 프리셋이다. 사용자가 `--preset git,github,typescript,react`나 `--preset git,github,java,spring`처럼 함께 고르면 모두 설치된다.
+Git 규칙, 호스팅(GitHub), 언어 규칙, 프레임워크 규칙은 따로 나눈 프리셋이다. 사용자가 `--preset git,github,typescript,react`나 `--preset git,github,java,spring-java`처럼 함께 고르면 모두 설치된다.
 호스팅 프리셋은 Git 프리셋을, 프레임워크 프리셋은 언어 프리셋을 필요로 한다. 필요한 프리셋은 고르지 않아도 함께 설치된다(아래 `requires`).
 
 - 언어 프리셋은 그 언어를 쓰는 모든 프로젝트에 맞는 규칙만 둔다. 특정 프레임워크에만 맞는 규칙은 프레임워크 프리셋으로 나눈다.
 - 프레임워크 프리셋은 검증 명령과 런타임 버전 파일을 두지 않고 언어 프리셋에 맡긴다.
+- 프레임워크를 여러 언어로 쓸 수 있고 문서가 한 언어의 문법을 전제하면 이름에 언어를 적는다. `spring-java`의 예제와 규칙은 `record`, `private final`, Lombok을 쓰므로 Kotlin 프로젝트에 맞지 않는다.
+  Kotlin은 아직 지원하지 않는다. `react`는 `typescript` 없이 쓰는 경우를 다루지 않으므로 언어를 적지 않는다.
 
 - 프리셋은 AGENTS.md를 파일로 갖지 않는다. 대신 `docs`(문서와 읽는 시점), `rules`(핵심 규칙), `verify`(검증 명령)를 정의한다.
   `mergeAgentsMd`가 기존 AGENTS.md에 정의 가운데 빠진 항목만 넣는다. 지도를 파일로 두면 함께 설치할 때 한쪽이 건너뛰어져 다른 프리셋 문서가 지도에서 빠지기 때문이다.
@@ -60,7 +62,7 @@ Git 규칙, 호스팅(GitHub), 언어 규칙, 프레임워크 규칙은 따로 �
 - 프리셋은 Git, 호스팅, 언어 가운데 한 축만 맡는다. Git 훅(`.githooks/`)은 Git 프리셋만, `.github/`는 GitHub 프리셋만 둔다.
   GitHub를 쓰지 않는 저장소에 Git 규칙만, Git 규칙을 원하지 않는 저장소에 언어 규칙만 설치할 수 있게 하기 위해서다.
 - 다른 프리셋이 있어야 뜻이 통하는 프리셋은 `requires`에 그 이름을 적는다. `github`은 `git`을(PR 템플릿과 문서가 Git 작업 규칙 문서를 가리킨다),
-  `spring`은 `java`를, `react`는 `typescript`를(검증 명령을 언어 프리셋에 맡긴다) 필요로 한다.
+  `spring-java`는 `java`를, `react`는 `typescript`를(검증 명령을 언어 프리셋에 맡긴다) 필요로 한다.
   언어 프리셋(`java`, `typescript`)은 `project`를 필요로 한다. 프로젝트 방향 문서는 언어와 무관해, 언어 프리셋마다 두면
   두 언어를 함께 쓰는 저장소에 같은 문서가 두 벌 생긴다.
   `cli`의 `resolvePresets`가 빠진 프리셋을 그것을 필요로 하는 프리셋 앞에 더하고, `init`이 더했다고 알린다.
