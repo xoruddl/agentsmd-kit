@@ -46,7 +46,7 @@ describe("resolvePresets", () => {
     );
   });
 
-  // spring만 고르면 검증 명령이 없고, github만 고르면 PR 템플릿이 없는 문서를 가리킨다.
+  // spring-java만 고르면 검증 명령이 없고, github만 고르면 PR 템플릿이 없는 문서를 가리킨다.
   it("필요한 프리셋을 고르지 않았으면 그 프리셋 앞에 더하고 무엇 때문에 더했는지 알린다", () => {
     expect(select("framework")).toEqual({
       names: ["lang", "framework"],

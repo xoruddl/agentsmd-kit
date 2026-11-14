@@ -91,7 +91,7 @@ describe("PRESETS", () => {
       ],
     ],
     [
-      "spring",
+      "spring-java",
       ["spring-architecture.md", "spring-data-jpa.md", "spring-api.md", "spring-testing.md"],
     ],
     [
@@ -108,7 +108,7 @@ describe("PRESETS", () => {
 
   it("옮긴 문서 검사는 모든 프리셋을 다룬다", () => {
     expect(PRESETS.map(({ name }) => name).sort()).toEqual(
-      ["git", "github", "project", "java", "spring", "typescript", "react"].sort(),
+      ["git", "github", "project", "java", "spring-java", "typescript", "react"].sort(),
     );
   });
 

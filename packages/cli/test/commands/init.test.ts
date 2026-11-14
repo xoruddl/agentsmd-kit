@@ -59,12 +59,14 @@ describe("runInit", () => {
     await expect(checkRepository({ root })).resolves.toEqual([]);
   });
 
-  it("java와 spring을 함께 고르면 두 프리셋의 문서와 Java 검증 명령을 설치한다", async () => {
-    await expect(runInit(["--preset", "java,spring", "--skip-hooks"], io())).resolves.toBe(0);
+  it("java와 spring-java를 함께 고르면 두 프리셋의 문서와 Java 검증 명령을 설치한다", async () => {
+    await expect(runInit(["--preset", "java,spring-java", "--skip-hooks"], io())).resolves.toBe(0);
 
     const agents = await readFile(join(root, "AGENTS.md"), "utf8");
     expect(agents).toContain("[docs/java/checklist.md](docs/java/checklist.md)");
-    expect(agents).toContain("[docs/spring/architecture.md](docs/spring/architecture.md)");
+    expect(agents).toContain(
+      "[docs/spring-java/architecture.md](docs/spring-java/architecture.md)",
+    );
     expect(agents).toContain("./gradlew spotlessCheck build");
     await expect(checkRepository({ root })).resolves.toEqual([]);
   });
@@ -146,7 +148,7 @@ describe("runInit", () => {
 
   // 프레임워크 프리셋은 검증 명령을 넣지 않는다. 언어 프리셋의 문서가 문서 지도에서 프레임워크 문서보다 위에 오게 먼저 설치한다.
   it.each([
-    ["spring", "java", "docs/java/code-style.md", "docs/spring/architecture.md"],
+    ["spring-java", "java", "docs/java/code-style.md", "docs/spring-java/architecture.md"],
     ["react", "typescript", "docs/typescript/rules.md", "docs/react/components.md"],
   ])("%s만 골라도 %s 프리셋을 먼저 설치한다", async (name, required, first, second) => {
     await expect(runInit(["--preset", name, "--skip-hooks"], io())).resolves.toBe(0);
@@ -159,16 +161,16 @@ describe("runInit", () => {
     await expect(checkRepository({ root })).resolves.toEqual([]);
   });
 
-  // `--preset spring`은 `--preset java,spring`과 같다. 이미 있는 java 문서는 그대로 두고, 그 사실을 정확히 알린다.
+  // `--preset spring-java`는 `--preset java,spring-java`와 같다. 이미 있는 java 문서는 그대로 두고, 그 사실을 정확히 알린다.
   it("필요한 프리셋이 이미 설치돼 있으면 다듬은 문서를 그대로 두고 새로 쓴 파일이 없다고 알린다", async () => {
     await runInit(["--preset", "java", "--skip-hooks"], io());
     await writeFile(join(root, "docs/java/testing.md"), "# 우리 팀 테스트 규칙\n");
     out = "";
 
-    await expect(runInit(["--preset", "spring", "--skip-hooks"], io())).resolves.toBe(0);
+    await expect(runInit(["--preset", "spring-java", "--skip-hooks"], io())).resolves.toBe(0);
 
-    expect(out).toMatch(/^project, java, spring 프리셋: 파일 \d+개를 설치했습니다\./);
-    expect(out).toContain("java (spring에 필요, 이미 있어 새로 쓴 파일 없음)");
+    expect(out).toMatch(/^project, java, spring-java 프리셋: 파일 \d+개를 설치했습니다\./);
+    expect(out).toContain("java (spring-java에 필요, 이미 있어 새로 쓴 파일 없음)");
     await expect(readFile(join(root, "docs/java/testing.md"), "utf8")).resolves.toBe(
       "# 우리 팀 테스트 규칙\n",
     );
@@ -186,9 +188,9 @@ describe("runInit", () => {
     await rm(join(root, "docs/java/testing.md"));
     out = "";
 
-    await runInit(["--preset", "spring", "--skip-hooks", "--force"], io());
+    await runInit(["--preset", "spring-java", "--skip-hooks", "--force"], io());
 
-    expect(out).toContain("java (spring에 필요)");
+    expect(out).toContain("java (spring-java에 필요)");
     await expect(readFile(join(root, "docs/java/testing.md"), "utf8")).resolves.not.toBe("");
     await expect(checkRepository({ root })).resolves.toEqual([]);
   });
@@ -197,7 +199,7 @@ describe("runInit", () => {
     await runInit(["--preset", "java", "--skip-hooks"], io());
     await rm(join(root, "AGENTS.md"));
 
-    await runInit(["--preset", "spring", "--skip-hooks"], io());
+    await runInit(["--preset", "spring-java", "--skip-hooks"], io());
 
     const agents = await readFile(join(root, "AGENTS.md"), "utf8");
     expect(agents).toContain("[docs/java/checklist.md](docs/java/checklist.md)");
@@ -273,9 +275,9 @@ describe("runInit", () => {
   });
 
   it("필요한 프리셋 가운데 직접 고르지 않은 것만 더했다고 알린다", async () => {
-    await runInit(["--preset", "spring,java", "--skip-hooks"], io());
+    await runInit(["--preset", "spring-java,java", "--skip-hooks"], io());
 
-    expect(out).toMatch(/^project, java, spring 프리셋:/);
+    expect(out).toMatch(/^project, java, spring-java 프리셋:/);
     expect(out).toContain("함께 설치했습니다: project (java에 필요)\n");
   });
 
@@ -333,7 +335,7 @@ describe("runInit", () => {
     expect(out).toContain("AGENTS.md에 이미 모든 항목이 있어 바꾸지 않았습니다.");
   });
 
-  it.each(["java", "spring", "typescript", "react"])(
+  it.each(["java", "spring-java", "typescript", "react"])(
     "%s 프리셋만 고르면 Git 훅을 만들거나 연결하지 않는다",
     async (name) => {
       await git("git", ["-C", root, "init", "-q"]);
@@ -476,7 +478,10 @@ describe("runInit", () => {
   });
 
   it("새로 설치하는 저장소에는 옛 위치 안내가 나오지 않는다", async () => {
-    await runInit(["--preset", "git,github,java,spring,typescript,react", "--skip-hooks"], io());
+    await runInit(
+      ["--preset", "git,github,java,spring-java,typescript,react", "--skip-hooks"],
+      io(),
+    );
     expect(out).not.toContain("옛 위치에");
   });
 
@@ -488,9 +493,11 @@ describe("runInit", () => {
     expect(err).toContain("알 수 없는 프리셋입니다: kotlin");
   });
 
+  // 가장 긴 이름 뒤에도 두 칸을 띄우고, 짧은 이름은 설명이 같은 열에서 시작하게 채운다.
   it("프리셋 목록에서 이름과 설명을 띄어 쓴다", async () => {
     await runInit(["--preset", "kotlin"], io());
-    expect(err).toMatch(/ {2}typescript {2}\S/);
+    expect(err).toMatch(/ {2}spring-java {2}\S/);
+    expect(err).toMatch(/ {2}typescript {3}\S/);
   });
 
   it("모르는 프리셋이 섞여 있으면 아무것도 설치하지 않는다", async () => {

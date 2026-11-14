@@ -44,7 +44,7 @@
     "@agentsmd/preset-java": "workspace:*",
     "@agentsmd/preset-project": "workspace:*",
     "@agentsmd/preset-react": "workspace:*",
-    "@agentsmd/preset-spring": "workspace:*",
+    "@agentsmd/preset-spring-java": "workspace:*",
     "@agentsmd/preset-typescript": "workspace:*"
   }
 }

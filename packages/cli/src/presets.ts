@@ -4,13 +4,14 @@ import { githubPreset } from "@agentsmd/preset-github";
 import { javaPreset } from "@agentsmd/preset-java";
 import { projectPreset } from "@agentsmd/preset-project";
 import { reactPreset } from "@agentsmd/preset-react";
-import { springPreset } from "@agentsmd/preset-spring";
+import { springJavaPreset } from "@agentsmd/preset-spring-java";
 import { typescriptPreset } from "@agentsmd/preset-typescript";
 
 /**
  * `init --preset`으로 고를 수 있는 프리셋. 새 프리셋 패키지를 만들면 여기에 추가한다.
  *
  * Git 작업 규칙, 호스팅(GitHub), 언어 규칙, 프레임워크(React·Spring) 규칙은 따로 고른다.
+ * 프레임워크 규칙이 한 언어의 문법을 전제하면 이름에 언어를 적는다 (`spring-java`).
  * 함께 쓰려면 `--preset git,github,typescript,react`처럼 쉼표로 잇는다.
  * 프로젝트 방향 문서(`project`)는 언어 프리셋이 필요로 하므로 보통 직접 고르지 않는다.
  */
@@ -19,7 +20,7 @@ export const PRESETS: readonly Preset[] = [
   githubPreset,
   projectPreset,
   javaPreset,
-  springPreset,
+  springJavaPreset,
   typescriptPreset,
   reactPreset,
 ];

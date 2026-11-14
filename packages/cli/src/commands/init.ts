@@ -21,7 +21,7 @@ const nameWidth = Math.max(...PRESETS.map((preset) => preset.name.length)) + 2;
 const presetList = PRESETS.map(
   (preset) => `  ${preset.name.padEnd(nameWidth)}${preset.description}`,
 ).join("\n");
-// `PRESETS`에 적힌 순서대로 "github → git, java → project, spring → java, ..."처럼 잇는다.
+// `PRESETS`에 적힌 순서대로 "github → git, java → project, spring-java → java, ..."처럼 잇는다.
 const requiresList = PRESETS.flatMap((preset) =>
   (preset.requires ?? []).map((required) => `${preset.name} → ${required}`),
 ).join(", ");
@@ -43,7 +43,7 @@ ${presetList}
   agentsmd init --preset git,typescript          Git 규칙과 TypeScript 규칙을 함께 설치
   agentsmd init --preset git,github,typescript   GitHub 템플릿까지 함께 설치
   agentsmd init --preset git,typescript,react    React 프론트엔드 규칙까지 함께 설치
-  agentsmd init --preset git,java,spring         Spring Boot 서버 규칙까지 함께 설치
+  agentsmd init --preset git,spring-java         Java·Spring Boot 서버 규칙까지 함께 설치
   agentsmd init --preset java                    Git 규칙 없이 Java 규칙과 프로젝트 방향 문서만 설치
 
 옵션:
