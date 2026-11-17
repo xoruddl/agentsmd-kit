@@ -89,6 +89,9 @@ ArchUnit 의존성은 [package-structure.md](package-structure.md) 의 스니펫
 
 - `allowStoreCreation` 은 평소에 `false` 로 둔다. 기준선 파일이 없을 때 새로 만들면 모든 위반이 조용히 통과하기 때문이다. `false` 이면 기준선이 없을 때 테스트가 실패한다.
 - 기준선(`archunit_store`)을 손으로 고치거나 지우지 않는다. 테스트가 실패해서 기준선을 지우거나 줄이고 싶어질 때는 위반 코드를 고친다.
-- `allowStoreCreation=false` 는 기준선 파일이 통째로 없을 때만 막는다. 기준선이 이미 있을 때 규칙을 새로 추가하거나 규칙 설명(`.because(...)` 문구 포함)을 바꾸면
-  ArchUnit 이 새 규칙으로 보고 그 시점의 위반을 모두 기준선에 기록한다. 그래서 규칙이나 설명을 바꾸는 변경은 `archunit_store` 의 diff 를 함께 리뷰한다.
+- `allowStoreCreation=false` 는 기준선 파일이 통째로 없을 때만 막는다. 기준선이 이미 있을 때 **규칙을 새로 추가하거나 규칙 설명(`.because(...)` 문구 포함)을 바꾸면**
+  ArchUnit 이 새 규칙으로 보고 그 시점의 위반을 모두 `archunit_store` 에 기록한다. 그래서 PR 에서는 `archunit_store` 의 diff 를 반드시 함께 리뷰한다.
+  규칙을 추가하거나 설명을 바꾼 PR 에서 기준선이 늘었다면 의도한 것인지 확인한다.
+- `freeze.store.default.allowStoreUpdate` 는 기본값(`true`)을 그대로 둔다. `false` 로 바꾸지 않는다. 위반을 고쳐도 기준선에서 줄지 않고 남아,
+  나중에 같은 위반을 다시 만들어도 기준선에 있는 것으로 보여 조용히 통과한다.
 - 규칙 설명은 실행마다 같아야 한다. 순서가 없는 `Set` 을 설명에 넣으면 실행할 때마다 새 규칙이 되어 위반이 조용히 기록된다.
