@@ -24,7 +24,9 @@ import java.util.Optional;
  * docs/spring-java/architecture.md 의 의존 방향과 클래스 위치, 기능 간 순환을 검사한다.
  *
  * <p>설치한 뒤 아래 두 상수를 프로젝트의 패키지로 바꾼다. 바꾸지 않으면 규칙에 걸리는 클래스가 없어 테스트가 실패한다.
- * (ArchUnit 기본값대로 대상이 없는 규칙은 실패한다. {@code allowEmptyShould} 는 규칙 4 의 위치 규칙에만 켠다.)
+ * ArchUnit 기본값은 검사할 클래스가 하나도 없으면 실패한다. 이 실패를 상수를 채웠는지 알리는 신호로 쓰므로,
+ * 규칙 1(domain 레이어)과 규칙 5(기능 slice)는 기본값을 그대로 둔다. 컨트롤러·global·external·엔티티·Repository 가
+ * 없는 프로젝트도 있으므로, 나머지 규칙은 {@code allowEmptyShould(true)} 로 대상이 없어도 통과하게 둔다.
  *
  * <p>레이어는 {@code FEATURES_PACKAGE.<기능>.<레이어>[.하위...]} 에서 {@code <레이어>} 자리의 이름으로 판단한다.
  * {@code ..domain..} 같은 단순 패턴은 쓰지 않는다. 기능 패키지 자체가 {@code domain} 아래에 있는 프로젝트에서도
@@ -65,7 +67,8 @@ class LayerArchitectureTest {
             .should()
             .dependOnClassesThat(inLayer("repository"))
             .because("controller → service → repository 방향을 지켜야 트랜잭션 경계가 service 에 모인다"
-                    + " → docs/spring-java/architecture.md"));
+                    + " → docs/spring-java/architecture.md")
+            .allowEmptyShould(true));
 
     // 3-1. global 은 기능에 의존하지 않는다. 기술 기반이 비즈니스 규칙을 알면 안 된다.
     @ArchTest
@@ -73,7 +76,8 @@ class LayerArchitectureTest {
             .that(inGlobalOutsideExternal())
             .should()
             .dependOnClassesThat(featureClasses())
-            .because("global 에는 기술 기반만 두므로 기능 → global 방향만 허용한다 → docs/spring-java/architecture.md"));
+            .because("global 에는 기술 기반만 두므로 기능 → global 방향만 허용한다 → docs/spring-java/architecture.md")
+            .allowEmptyShould(true));
 
     // 3-2. global/external 은 서비스가 정한 포트를 구현하므로 기능의 service·domain·exception 은 쓸 수 있다.
     // 프리셋 문서는 "포트와 포트가 쓰는 타입" 까지만 허용하지만, 이 규칙은 세 레이어 전체를 허용하는 것으로 근사한다.
@@ -83,11 +87,12 @@ class LayerArchitectureTest {
             .should()
             .dependOnClassesThat(featureClasses().and(not(inLayer(LAYERS_USABLE_BY_EXTERNAL))))
             .because("외부 연동 구현은 service 의 포트를 구현할 뿐 controller·repository 를 거치지 않는다"
-                    + " → docs/spring-java/architecture.md"));
+                    + " → docs/spring-java/architecture.md")
+            .allowEmptyShould(true));
 
     // 4. 클래스 위치. 어노테이션은 타입 이름이 정확히 같을 때만 본다. @RestControllerAdvice 는 @RestController 가 아니다.
     // 컨트롤러·엔티티·Repository 가 아예 없는 프로젝트도 있으므로 대상이 없어도 실패하지 않게 둔다(allowEmptyShould).
-    // 상수를 채우지 않은 것은 규칙 1(domain 레이어)과 5(기능 slice)가 대상이 없어 실패하는 것으로 알린다.
+    // 규칙 2·3 도 같은 이유로 allowEmptyShould 를 켠다. 상수를 채우지 않은 것은 규칙 1 과 5 만 대상이 없어 실패하는 것으로 알린다.
     @ArchTest
     static final ArchRule controller는_controller_레이어에_둔다 = FreezingArchRule.freeze(classes()
             .that(featureClasses())
