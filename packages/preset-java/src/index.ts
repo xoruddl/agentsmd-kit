@@ -4,7 +4,7 @@ import type { Preset } from "@agentsmd/core";
 /**
  * Java·Gradle 프로젝트용 프리셋.
  *
- * Java 코드 규칙 문서와 Spotless(palantir-java-format)·Gradle 검증 명령 문서를 담는다.
+ * Java 코드 규칙 문서와 Spotless(palantir-java-format)·Gradle 검증 명령 문서, 패키지 크기를 검사하는 ArchUnit 테스트 템플릿을 담는다.
  * Git 훅·GitHub 설정은 넣지 않는다. 필요하면 Git 프리셋을 함께 고른다.
  * 프로젝트 목표와 범위를 적는 방향 문서는 언어와 무관해 project 프리셋에 맡기고, `requires`로 적어 `init`이 함께 설치하게 한다.
  * `files/`는 빌드 결과(dist/)와 소스(src/) 어디서 실행해도 패키지 루트 기준으로 같은 위치다.
@@ -25,6 +25,10 @@ export const javaPreset = {
       when: "로그를 남길 때, 비밀값·외부 입력·의존성을 다룰 때",
     },
     { path: "docs/java/lint-and-ci.md", when: "린트·포맷·CI 설정" },
+    {
+      path: "docs/java/package-structure.md",
+      when: "클래스를 추가할 때, 패키지가 커져 PackageSizeTest 가 실패할 때",
+    },
   ],
   rules: [
     "주석에는 코드만 봐서는 알 수 없는 의도와 이유를 쓴다. 코드를 되풀이하지 않는다.",
@@ -36,6 +40,7 @@ export const javaPreset = {
   verify: "./gradlew spotlessCheck build",
   nextSteps: [
     "Gradle 프로젝트라면 docs/java/lint-and-ci.md 의 Spotless·toolchain 설정을 build.gradle.kts 에 추가하세요.",
+    "ArchUnit 테스트 의존성을 추가하세요 (이미 있으면 건너뜁니다) → docs/java/package-structure.md",
   ],
   // 0.6 이하는 문서를 docs/ 한 층에 설치했다. lint-and-ci.md는 typescript 프리셋도 같은 이름으로 설치했다.
   moved: [
