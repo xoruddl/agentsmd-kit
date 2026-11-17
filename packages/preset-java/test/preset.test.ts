@@ -30,6 +30,25 @@ describe("javaPreset", () => {
     expect(source).toContain("docs/java/package-structure.md");
   });
 
+  it("코드 작성 규칙 테스트 템플릿을 기준선 방식으로 설치한다", async () => {
+    const source = await readFile(join(target, "src/test/java/CodingRulesTest.java"), "utf8");
+    expect(source).toContain("FreezingArchRule");
+    expect(source).toContain("docs/java/");
+  });
+
+  it("기준선 자동 생성을 막는 archunit.properties 를 설치한다", async () => {
+    const properties = await readFile(
+      join(target, "src/test/resources/archunit.properties"),
+      "utf8",
+    );
+    expect(properties).toContain("freeze.store.default.path=src/test/resources/archunit_store");
+    expect(properties).toContain("freeze.store.default.allowStoreCreation=false");
+  });
+
+  it("기준선 만들기 안내를 nextSteps 에 둔다", () => {
+    expect(javaPreset.nextSteps.join("\n")).toContain("allowStoreCreation");
+  });
+
   it("패키지 구조 문서를 문서 지도에 올린다", () => {
     expect(javaPreset.docs.map((doc) => doc.path)).toContain("docs/java/package-structure.md");
   });

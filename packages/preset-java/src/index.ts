@@ -41,6 +41,7 @@ export const javaPreset = {
   nextSteps: [
     "Gradle 프로젝트라면 docs/java/lint-and-ci.md 의 Spotless·toolchain 설정을 build.gradle.kts 에 추가하세요.",
     "ArchUnit 테스트 의존성을 추가하세요 (이미 있으면 건너뜁니다) → docs/java/package-structure.md",
+    "처음 한 번만 src/test/resources/archunit.properties 의 allowStoreCreation 을 true 로 두고 ./gradlew test 로 기준선을 만든 뒤 false 로 되돌리세요. → docs/java/lint-and-ci.md",
   ],
   // 0.6 이하는 문서를 docs/ 한 층에 설치했다. lint-and-ci.md는 typescript 프리셋도 같은 이름으로 설치했다.
   moved: [

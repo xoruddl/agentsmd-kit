@@ -59,3 +59,34 @@ IDE 포맷터는 편의용이다. 최종 판정은 `spotlessCheck` 이다.
 - CI 의 JDK 는 toolchain 과 같은 21 을 쓴다.
 - `gradlew` 가 없는 저장소(지침만 있는 저장소)에서는 건너뛴다.
 - 버전을 올릴 때는 이 문서의 스니펫과 CI 설정을 같이 고친다.
+
+## 코드 규칙 테스트
+
+`src/test/java/CodingRulesTest.java` 는 바이트코드로 판단할 수 있는 코드 작성 규칙을 ArchUnit 으로 검사한다. `./gradlew build` 에 테스트로 포함된다.
+ArchUnit 의존성은 [package-structure.md](package-structure.md) 의 스니펫으로 추가한다. 컴파일된 main 클래스만 읽는다.
+
+| 규칙 | 근거 문서 |
+| --- | --- |
+| `System.out`·`System.err`·`printStackTrace` 를 쓰지 않는다 | [logging-and-security.md](logging-and-security.md) |
+| `java.util.logging` 타입의 필드를 쓰지 않는다 | [logging-and-security.md](logging-and-security.md) |
+| `Exception`·`RuntimeException`·`Throwable` 을 그대로 던지지 않는다 | [clean-code.md](clean-code.md) |
+| `java.time` 의 인자 없는 `now()` 를 부르지 않는다 (`now(Clock)` 은 허용) | [testing.md](testing.md) |
+| `Optional` 을 필드 타입과 파라미터 타입으로 쓰지 않는다 (반환 타입은 허용) | [clean-code.md](clean-code.md) |
+| `ObjectInputStream` 에 의존하지 않는다 | [logging-and-security.md](logging-and-security.md) |
+
+판단이 필요한 규칙(이름, 한 가지 일만 하는가, 로그 문구 등)은 검사하지 않고 문서와 리뷰에 맡긴다.
+
+### 기준선
+
+모든 규칙은 `FreezingArchRule` 로 감싸 있다. 이미 있는 위반은 기준선(`src/test/resources/archunit_store`)에 기록해 두고 **새 위반만** 실패시킨다.
+위반을 고치면 기준선에서 줄어든다. 기준선은 커밋해서 팀이 같은 기준으로 검사한다.
+
+처음 도입할 때 기준선을 만드는 절차:
+
+1. `src/test/resources/archunit.properties` 의 `freeze.store.default.allowStoreCreation` 을 `true` 로 바꾼다.
+2. `./gradlew test` 를 실행한다. 기준선 파일이 생기고 테스트가 통과한다.
+3. 값을 다시 `false` 로 되돌리고 `archunit_store` 와 함께 커밋한다.
+
+- `allowStoreCreation` 은 평소에 `false` 로 둔다. 기준선 파일이 없을 때 새로 만들면 모든 위반이 조용히 통과하기 때문이다. `false` 이면 기준선이 없을 때 테스트가 실패한다.
+- 기준선(`archunit_store`)을 손으로 고치거나 지우지 않는다. 테스트가 실패해서 기준선을 지우거나 줄이고 싶어질 때는 위반 코드를 고친다.
+- 새 규칙을 추가할 때만 `allowStoreCreation` 을 잠시 `true` 로 둔다.
