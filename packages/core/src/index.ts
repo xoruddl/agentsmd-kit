@@ -5,6 +5,8 @@ export type { CheckOptions } from "./check.js";
 export { DocMapNotFoundError } from "./errors.js";
 export { installEntryFiles } from "./install-entry-files.js";
 export type { EntryFilesResult } from "./install-entry-files.js";
+export { installVerifyConfig } from "./install-verify-config.js";
+export type { VerifyConfigResult } from "./install-verify-config.js";
 export { installPreset } from "./install.js";
 export type { InstallOptions, InstallResult } from "./install.js";
 export type { DocMapEntry, MovedDoc, Preset } from "./preset.js";

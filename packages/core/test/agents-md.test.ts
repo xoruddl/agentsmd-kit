@@ -27,6 +27,9 @@ const language = {
   verify: "pnpm lint && pnpm test",
 } satisfies Preset;
 
+const GUIDE =
+  "작업을 마치기 전에 `agentsmd verify` 를 실행하고 결과를 그대로 보고한다. 단계 목록은 `.agentsmd/verify.json`.";
+
 function linkedPaths(markdown: string): string[] {
   return parseDocMap("AGENTS.md", markdown).links.map((link) => link.target);
 }
@@ -61,7 +64,16 @@ describe("renderAgentsMd", () => {
 
   it("검증 명령이 있는 프리셋이 없으면 검증 절을 넣지 않는다", () => {
     expect(renderAgentsMd([git])).not.toContain("## 검증");
-    expect(renderAgentsMd([git, language])).toContain("```bash\npnpm lint && pnpm test\n```");
+  });
+
+  it("검증 절은 명령 목록 대신 agentsmd verify 안내 한 줄이고 코드 블록이 없다", () => {
+    const markdown = renderAgentsMd([git, language]);
+
+    expect(markdown).toContain(
+      "## 검증\n\n작업을 마치기 전에 `agentsmd verify` 를 실행하고 결과를 그대로 보고한다. 단계 목록은 `.agentsmd/verify.json`.\n",
+    );
+    expect(markdown).not.toContain("```");
+    expect(markdown).not.toContain("pnpm lint && pnpm test");
   });
 
   // 대상 저장소에서 format:check를 돌려도 AGENTS.md 때문에 실패하지 않아야 한다.
@@ -87,7 +99,7 @@ describe("mergeAgentsMd", () => {
     for (const markdown of [languageFirst, gitFirst]) {
       expect(linkedPaths(markdown).sort()).toEqual(linkedPaths(together).sort());
       expect(rulesOf(markdown)).toEqual(rulesOf(together));
-      expect(markdown).toContain("pnpm lint && pnpm test");
+      expect(markdown).toContain("`agentsmd verify`");
     }
   });
 
@@ -96,7 +108,7 @@ describe("mergeAgentsMd", () => {
     expect(added).toEqual({
       docs: ["docs/workflow.md", "docs/git-conventions.md"],
       rules: ["커밋 하나 = 책임 하나, 파일 5개 이하."],
-      verify: [],
+      verifyGuide: false,
     });
   });
 
@@ -104,7 +116,7 @@ describe("mergeAgentsMd", () => {
     const markdown = renderAgentsMd([git, language]);
     expect(mergeAgentsMd(markdown, [language, git])).toEqual({
       content: markdown,
-      added: { docs: [], rules: [], verify: [] },
+      added: { docs: [], rules: [], verifyGuide: false },
       unplaced: { docs: [], rules: [], verify: [] },
     });
   });
@@ -149,12 +161,53 @@ describe("mergeAgentsMd", () => {
     const result = mergeAgentsMd(existing, [language]);
 
     expect(result.content).toBe(existing);
-    expect(result.added).toEqual({ docs: [], rules: [], verify: [] });
+    expect(result.added).toEqual({ docs: [], rules: [], verifyGuide: false });
     expect(result.unplaced).toEqual({
       docs: language.docs,
       rules: language.rules,
-      verify: [language.verify],
+      verify: [GUIDE],
     });
+  });
+
+  it("검증 절이 이미 있으면 명령 블록이든 사람이 쓴 글이든 건드리지 않는다", () => {
+    const existing =
+      "# AGENTS.md\n\n## 문서 지도\n\n## 검증\n\n```bash\nmake test\n```\n\n## 지침 관리\n";
+
+    const result = mergeAgentsMd(existing, [language]);
+
+    expect(result.content).toContain("```bash\nmake test\n```");
+    expect(result.content).not.toContain("agentsmd verify");
+    expect(result.added.verifyGuide).toBe(false);
+    // 안내를 넣지 못했으므로 사람이 옮길 항목으로 돌려준다.
+    expect(result.unplaced.verify).toEqual([GUIDE]);
+  });
+
+  it("검증 절의 글에 agentsmd verify가 이미 있으면 안내를 넣지 못한 항목으로 돌려주지 않는다", () => {
+    const existing =
+      "# AGENTS.md\n\n## 문서 지도\n\n## 검증\n\n끝나기 전에 `agentsmd verify` 를 돌린다.\n";
+
+    expect(mergeAgentsMd(existing, [language]).unplaced.verify).toEqual([]);
+  });
+
+  it("문서 지도 절이 없어도 agentsmd verify가 이미 적혀 있으면 안내를 돌려주지 않는다", () => {
+    const existing = "# AGENTS.md\n\n## 규칙\n\n- 끝나면 agentsmd verify 를 실행한다.\n";
+
+    expect(mergeAgentsMd(existing, [language]).unplaced.verify).toEqual([]);
+  });
+
+  it("검증 명령이 있는 프리셋이 없으면 안내를 넣지 못한 항목에도 없다", () => {
+    const existing = "# AGENTS.md\n\n## 규칙\n\n- 팀 규칙\n";
+
+    expect(mergeAgentsMd(existing, [git]).unplaced.verify).toEqual([]);
+  });
+
+  it("검증 절이 없으면 안내 절을 만들어 넣고 알린다", () => {
+    const existing = "# AGENTS.md\n\n## 문서 지도\n\n## 지침 관리\n";
+
+    const result = mergeAgentsMd(existing, [language]);
+
+    expect(result.content).toContain("## 검증\n\n작업을 마치기 전에 `agentsmd verify` 를");
+    expect(result.added.verifyGuide).toBe(true);
   });
 
   it("문서 지도 절이 없어도 이미 있는 문서·규칙은 넣지 못한 항목에서 뺀다", () => {
