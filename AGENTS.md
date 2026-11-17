@@ -25,9 +25,4 @@ agentsmd-kit 저장소에서 코드를 작성·수정·리뷰하는 AI 에이전
 
 ## 검증
 
-작업을 마치기 전에 아래를 실행하고 결과를 그대로 보고한다. CI도 같은 순서로 검사한다.
-
-```bash
-pnpm build && pnpm format:check && pnpm lint && pnpm typecheck && pnpm test
-node packages/cli/dist/main.js check
-```
+작업을 마치기 전에 `pnpm verify` 를 실행하고 결과를 그대로 보고한다(빌드 후 `agentsmd verify` 로 `.agentsmd/verify.json` 의 단계를 실행한다). CI도 같은 순서로 검사한다.

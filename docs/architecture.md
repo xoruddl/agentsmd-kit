@@ -53,7 +53,7 @@ Git 규칙, 호스팅(GitHub), 언어 규칙, 프레임워크 규칙은 따로 �
   Kotlin은 아직 지원하지 않는다. `react`는 `typescript` 없이 쓰는 경우를 다루지 않으므로 언어를 적지 않는다.
 
 - 프리셋은 AGENTS.md를 파일로 갖지 않는다. 대신 `docs`(문서와 읽는 시점), `rules`(핵심 규칙), `verify`(검증 명령)를 정의한다.
-  `mergeAgentsMd`가 기존 AGENTS.md에 정의 가운데 빠진 항목만 넣는다. 지도를 파일로 두면 함께 설치할 때 한쪽이 건너뛰어져 다른 프리셋 문서가 지도에서 빠지기 때문이다.
+  `docs`와 `rules`는 `mergeAgentsMd`가 기존 AGENTS.md에 빠진 항목만 넣는다. `verify`는 AGENTS.md가 아니라 `installVerifyConfig`가 `.agentsmd/verify.json`의 단계로 합치고, AGENTS.md의 `## 검증` 절에는 `agentsmd verify` 안내 한 줄만 둔다. 지도를 파일로 두면 함께 설치할 때 한쪽이 건너뛰어져 다른 프리셋 문서가 지도에서 빠지기 때문이다.
   새로 만들 때(`renderAgentsMd`)도 빈 뼈대에 같은 함수로 합친다. 새로 만들 때와 나눠 설치할 때 결과 모양이 갈라지지 않게 하려는 것이다.
   기존 AGENTS.md에 `## 문서 지도` 절이 없으면 사람이 다른 형식으로 쓴 지침으로 보고 바꾸지 않는다. 넣지 못한 항목은 `unplaced`로 돌려주고 `init`이 출력한다.
   절 이름을 비슷한 말로 추측하지 않는 것은, 표의 열 순서까지 저장소마다 달라 엉뚱한 곳에 넣을 수 있기 때문이다.
