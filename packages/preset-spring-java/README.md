@@ -11,6 +11,7 @@ npx @agentsmd/cli init --preset spring-java       # Git 규칙 없이 Java·Spri
 - 0.6 이하에서는 이름이 `spring`(`@agentsmd/preset-spring`)이었습니다.
 - 구조·설정: 기능 단위 패키지, 레이어 의존 방향, 생성자 주입, DTO 경계, `@ConfigurationProperties`, JSpecify
 - 구조 검사: ArchUnit 테스트 `src/test/java/LayerArchitectureTest.java`(레이어 의존 방향, `global` 의존, 클래스 위치, 기능 간 순환). 설치 후 `FEATURES_PACKAGE`·`GLOBAL_PACKAGE` 를 프로젝트 패키지로 바꿔야 합니다. 기준선 설정(`archunit.properties`)은 Java 프리셋이 설치합니다.
+- 코드 규칙 검사: ArchUnit 테스트 `src/test/java/SpringCodingRulesTest.java`(필드 주입, `@Transactional` 위치, `@Enumerated`·`@ManyToOne`·`@OneToOne` 설정, 엔티티 setter, `ServiceImpl`). 루트 패키지를 적을 필요가 없고, 기존 위반은 Java 프리셋의 기준선에 둡니다.
 - JPA·트랜잭션: 엔티티 규칙, 지연 로딩과 N+1, `@Transactional`·`readOnly`, open-in-view, Flyway 마이그레이션
 - API: URL·상태 코드, Bean Validation, `ProblemDetail` 오류 응답, 페이징
 - 테스트: `@WebMvcTest`·`MockMvcTester`, `@DataJpaTest`, `@MockitoBean`, Testcontainers `@ServiceConnection`

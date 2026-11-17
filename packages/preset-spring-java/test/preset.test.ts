@@ -51,6 +51,13 @@ describe("springJavaPreset", () => {
     ).resolves.toBeUndefined();
   });
 
+  it("Spring 코드 규칙 테스트 템플릿을 기준선 방식으로 설치한다", async () => {
+    const source = await readFile(join(repo, "src/test/java/SpringCodingRulesTest.java"), "utf8");
+    expect(source).toContain("FreezingArchRule");
+    expect(source).toContain("NO_CLASSES_SHOULD_USE_FIELD_INJECTION");
+    expect(source).toContain("docs/spring-java/");
+  });
+
   // archunit.properties 는 java 프리셋이 설치한다. 두 프리셋이 같은 경로의 파일을 둘 수 없다.
   it("archunit.properties 는 설치하지 않는다", async () => {
     await expect(access(join(repo, "src/test/resources/archunit.properties"))).rejects.toThrow();
