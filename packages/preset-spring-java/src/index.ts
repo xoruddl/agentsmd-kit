@@ -39,8 +39,10 @@ export const springJavaPreset = {
     "필드 주입 대신 생성자 주입을 쓴다.",
     "엔티티를 API 요청·응답으로 쓰지 않는다. DTO(record)로 바꾼다.",
     "`@Transactional` 은 service 에 두고, 조회는 `readOnly = true`. 트랜잭션 안에서 외부 API 를 부르지 않는다.",
+    "ArchUnit 기준선(archunit_store), PackageSizeTest 의 큰 패키지 상한, 순환 허용 목록을 늘리지 않는다. 넘으면 패키지를 나누고, 역방향 의존은 도메인 이벤트로 끊는다.",
   ],
   nextSteps: [
+    "LayerArchitectureTest 의 FEATURES_PACKAGE·GLOBAL_PACKAGE 를 프로젝트 패키지로 바꾸세요.",
     "application.yml 에 docs/spring-java/data-jpa.md 의 open-in-view·batch fetch 설정을 넣으세요.",
   ],
   // 0.6 이하는 프리셋 이름이 `spring`이었고 문서를 docs/ 한 층에 설치했다.

@@ -45,6 +45,21 @@ describe("springJavaPreset", () => {
     }
   });
 
+  it("레이어 테스트 템플릿을 설치한다", async () => {
+    await expect(
+      access(join(repo, "src/test/java/LayerArchitectureTest.java")),
+    ).resolves.toBeUndefined();
+  });
+
+  // archunit.properties 는 java 프리셋이 설치한다. 두 프리셋이 같은 경로의 파일을 둘 수 없다.
+  it("archunit.properties 는 설치하지 않는다", async () => {
+    await expect(access(join(repo, "src/test/resources/archunit.properties"))).rejects.toThrow();
+  });
+
+  it("핵심 규칙에 기준선을 고치지 않는다는 규칙이 있다", () => {
+    expect(springJavaPreset.rules.some((rule) => rule.includes("archunit_store"))).toBe(true);
+  });
+
   it("Git 훅과 GitHub 설정은 설치하지 않는다", async () => {
     expect(springJavaPreset).not.toHaveProperty("hooksPath");
     await expect(access(join(repo, ".githooks"))).rejects.toThrow();
