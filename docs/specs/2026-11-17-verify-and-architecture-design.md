@@ -13,14 +13,15 @@ orbit-server의 `domain/monitoring/service`에는 파일이 28개 있다. 서비
 
 참고할 모습은 gdsc-server다. 파일이 434개이고 가장 큰 패키지가 21개다. 레이어 안이 커지면 `domain/event/`, `application/listener/`처럼 역할 단위 하위 패키지로 나눈다.
 
-검사는 새로 만들지 않고 검증된 도구(ArchUnit, Spring Modulith, ESLint 등)에 맡긴다.
+검사는 새로 만들지 않고 검증된 도구(ArchUnit, ESLint 등)에 맡긴다.
 agentsmd는 그 도구들을 **설치·연결·실행 입구**로 엮는다. AI, hook, CI가 같은 명령 하나로 같은 검증을 돌리게 하는 것이 목표다.
 
 ## 목표
 
 1. `agentsmd verify`: `.agentsmd/verify.json`에 적힌 단계를 순서대로 실행하는 단일 입구. 이름으로 일부 단계만 고를 수 있다.
 2. `java` 프리셋: 패키지 크기 신호를 주는 ArchUnit 테스트 템플릿과, 패키지가 커질 때 나누는 법을 담은 문서
-3. `spring-java` 프리셋: 레이어 의존·클래스 위치 규칙을 담은 ArchUnit 테스트 템플릿
+3. `spring-java` 프리셋: 레이어 의존·클래스 위치·기능 간 순환 규칙을 담은 ArchUnit 테스트 템플릿
+   3-1. 코드 작성 규칙 가운데 바이트코드로 판단할 수 있는 것을 ArchUnit 테스트 템플릿으로 검사한다. `java`는 `CodingRulesTest`, `spring-java`는 `SpringCodingRulesTest`.
 4. 이미 커진 코드베이스에도 넣을 수 있도록 ArchUnit `FreezingArchRule`로 기준선을 둔다.
 5. orbit-server에 설치해 실제로 동작하는지 확인한다(수용 기준).
 
@@ -29,7 +30,7 @@ agentsmd는 그 도구들을 **설치·연결·실행 입구**로 엮는다. AI,
 - 검사 엔진을 직접 만드는 일. 예전 설계(`agentsmd lint`)는 폐기했다.
 - 도구 출력을 읽어 한 형식으로 바꾸는 일(SARIF·JUnit XML 해석, 통합 기준선). 써 보고 부족하면 다음 단계에서 한다.
 - Claude Code hook, pre-commit 연결. 이번에는 `verify`를 hook이 부를 수 있는 형태로만 만든다.
-- Spring Modulith 도입. 문서에 "컨텍스트 경계 검사는 순환을 정리한 뒤 Modulith로" 안내만 둔다.
+- 모듈 경계 규칙. 다른 기능의 `repository`·엔티티를 쓰지 않는 규칙과 ID 참조는 검사하지도 안내하지도 않고, Spring Modulith도 쓰지 않는다(결정 7).
 - TypeScript·React 쪽 구조 검사
 - orbit-server의 코드 변경. `entity` → `domain` 이름 변경과 프리셋 적용은 orbit-server 저장소에서 따로 한다.
 
@@ -68,11 +69,11 @@ agentsmd가 어디까지 엮나:
 
 Java 구조 검사 도구:
 
-| 도구                         | 판단                                                                                                                                                                          |
-| ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **ArchUnit**                 | **선택.** 바이트코드를 분석해 정확하고, 레이어·위치·사용자 정의 규칙(패키지 크기)과 기준선(`FreezingArchRule`)이 모두 된다. 테스트 하나라 `./gradlew build`에 저절로 포함된다 |
-| Spring Modulith              | 컨텍스트 경계·순환 검사에 좋다. 하지만 기준선이 없고, orbit에는 `vehicle` ↔ `update`, `global` ↔ `domain` 순환이 있어 지금 켜면 바로 실패한다. 순환을 정리한 뒤의 단계로 둔다 |
-| Structural (Gradle 플러그인) | 설정 방식은 비슷하지만 위치·크기 규칙이 없고 사용자층이 작다                                                                                                                  |
+| 도구                         | 판단                                                                                                                                                                                                                                                                                                 |
+| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **ArchUnit**                 | **선택.** 바이트코드를 분석해 정확하고, 레이어·위치·사용자 정의 규칙(패키지 크기)과 기준선(`FreezingArchRule`)이 모두 된다. 테스트 하나라 `./gradlew build`에 저절로 포함된다                                                                                                                        |
+| Spring Modulith              | 모듈 경계·순환 검사, 이벤트 발행 기록, 모듈 테스트, 구조 문서 생성까지 된다. 하지만 `verify()`는 모듈의 하위 패키지를 내부로 보고 다른 모듈의 접근을 막는다. 모듈마다 공개 API를 설계하는 모듈러 모놀리스를 전제한다. 모듈 경계를 엄격히 지키는 것은 이 프리셋의 목표가 아니므로 쓰지 않는다(결정 7) |
+| Structural (Gradle 플러그인) | 설정 방식은 비슷하지만 위치·크기 규칙이 없고 사용자층이 작다                                                                                                                                                                                                                                         |
 
 ## 결정한 것
 
@@ -137,12 +138,12 @@ agentsmd verify --root ../other-repo
 
 ### 3. `spring-java` 프리셋: 레이어 의존·위치
 
-- 설치 파일: `src/test/java/ArchitectureLayerTest.java`. 프리셋 문서 `docs/spring-java/architecture.md`의 규칙을 그대로 옮긴다.
+- 설치 파일: `src/test/java/LayerArchitectureTest.java`. 프리셋 문서 `docs/spring-java/architecture.md`의 규칙 가운데 실무에서 보편적인 것만 옮긴다.
   - `domain`은 `controller`·`service`·`repository`를 모르고, Spring에 의존하지 않는다(JPA 매핑 어노테이션은 예외).
   - `controller → service → repository` 방향. `controller`가 `repository`를 직접 쓰지 않는다.
   - `global`은 기능 패키지에 의존하지 않는다. 다만 `global/external`은 서비스가 정한 포트를 구현하므로 기능의 `service`·`domain`·`exception`을 쓸 수 있다.
     프리셋 문서는 "포트와 포트가 쓰는 타입"까지 허용하지만, 규칙은 이 세 패키지 전체를 허용하는 것으로 근사한다.
-  - 다른 기능의 `repository`·`domain`을 직접 쓰지 않는다.
+  - 기능끼리 순환 의존이 없다(비순환 의존 원칙). 기능 하나를 slice 하나로 보고 `global`은 빼고 검사한다.
   - 위치: `@RestController`·`@Controller`는 `controller`에, `@Entity`·`@Embeddable`은 `domain`에 둔다. `Repository`·`CrudRepository`·`JpaRepository`를 상속한 인터페이스는 `repository`에 둔다.
   - 어노테이션은 정확한 타입으로 비교한다. `@RestControllerAdvice`는 `@RestController`가 아니다.
 - **레이어는 "기능 바로 아래 패키지 이름"으로 판단한다.** `..domain..` 같은 단순 패턴은 쓰지 않는다.
@@ -151,17 +152,52 @@ agentsmd verify --root ../other-repo
   기능 단위 하위 패키지(`service/stream/`)도 그 레이어에 속한다.
 - 규칙 템플릿은 orbit-server의 `ArchitectureTest`(#94, #99)를 일반화해서 만든다. 다음 판단을 이어받는다.
   - `global/external`은 허용 목록 방식으로 검사한다.
-  - 순환은 기준선에 넣지 않고, 알려진 역방향 의존만 클래스 단위로 허용한다.
+  - 순환은 기준선에 넣지 않고, 알려진 역방향 의존만 클래스 단위로 허용한다. 순환 위반 문장에는 경로상의 모든 의존이 들어가서, 순환에 걸친 클래스를 고칠 때마다 같은 순환이 새 위반으로 잡히기 때문이다.
+    허용 목록은 템플릿에서 비워 두고, 이유와 "도메인 이벤트로 끊으면 지운다"를 함께 적게 한다. 큰 패키지 목록처럼 늘리면 PR diff에 드러난다.
   - 기준선 자동 생성은 막는다.
+- **다른 기능의 `repository`·엔티티를 쓰지 않는 규칙은 두지 않는다.** 모듈 내부를 숨기는 모듈러 모놀리스 규칙이라 일반적인 JPA 프로젝트에 맞지 않는다.
+  참고 모습인 gdsc-server도 다른 기능 엔티티로 가는 `@ManyToOne`이 9개(연관관계 19개 중), 다른 기능 Repository 직접 사용이 25곳 정도다. `Member` 같은 공유 엔티티는 거의 모든 기능이 직접 쓴다.
+  검사하지 않을 뿐 아니라 프리셋 핵심 규칙과 `architecture.md`·`data-jpa.md`의 같은 규칙(ID 참조 포함)도 지운다. 문서에 권장으로 남기면 AI가 새 코드에만 적용해 기존 코드와 방식이 섞이기 때문이다.
+  기능 사이를 이벤트로 나누는 안내(`ApplicationEventPublisher`, `@TransactionalEventListener`)는 순환을 끊는 방법으로 남긴다.
 - 이 테스트의 기존 위반은 `FreezingArchRule`로 기준선에 둔다. 의존·위치 위반은 문장이 바뀌지 않아 이 방식이 맞는다.
   `archunit.properties`는 orbit과 같이 저장 위치를 `src/test/resources/archunit_store`로 고정하고 `freeze.store.default.allowStoreCreation=false`로 둔다.
   처음 도입할 때만 이 값을 잠시 켜서 기준선을 만들라고 `nextSteps`와 문서로 안내한다. AI가 기준선 폴더를 지워 모든 위반을 통과시키는 일을 막기 위해서다.
   이 파일은 `spring-java` 프리셋만 설치한다(두 프리셋이 같은 경로의 파일을 두지 않는다).
 - `docs/spring-java/architecture.md`와 `testing.md`의 "ArchUnit 테스트로 검사할 수 있다"는 문장을 "설치된 테스트가 검사한다"로 바꾸고, 테스트 파일과 패키지 구조 문서를 가리킨다.
 
+### 3-2. 코드 작성 규칙 테스트
+
+판단이 필요한 규칙(한 가지 일만 하는가, 이름, Tell Don't Ask, N+1, 트랜잭션 안 외부 호출, 로그 문구)은 검사하지 않고 문서와 리뷰에 맡긴다. 바이트코드로 판단할 수 있는 규칙만 검사한다. ArchUnit `GeneralCodingRules`에 있는 것은 그대로 쓴다.
+
+- `java` 프리셋 `CodingRulesTest` (근거: `docs/java/*.md`)
+  1. 표준 출력·`printStackTrace` 금지 — `GeneralCodingRules.NO_CLASSES_SHOULD_ACCESS_STANDARD_STREAMS`
+  2. `java.util.logging` 금지 — `NO_CLASSES_SHOULD_USE_JAVA_UTIL_LOGGING`
+  3. `Exception`·`RuntimeException`·`Throwable`을 그대로 던지지 않음 — `NO_CLASSES_SHOULD_THROW_GENERIC_EXCEPTIONS`
+  4. `java.time`의 인자 없는 `now()` 직접 호출 금지(`Clock`을 받는 오버로드는 허용)
+  5. `Optional`을 필드 타입·메서드 파라미터 타입으로 쓰지 않음
+  6. `java.io.ObjectInputStream`에 의존하지 않음
+- `spring-java` 프리셋 `SpringCodingRulesTest` (근거: `docs/spring-java/*.md`)
+  1. 필드 주입 금지 — `GeneralCodingRules.NO_CLASSES_SHOULD_USE_FIELD_INJECTION`
+  2. `@Transactional`(Spring·Jakarta 둘 다)을 `..controller..`·`..repository..` 패키지의 클래스·메서드에 두지 않음
+  3. `@Enumerated`는 `EnumType.STRING`만(값이 없으면 기본 `ORDINAL`이라 위반)
+  4. `@ManyToOne`·`@OneToOne`은 `fetch = FetchType.LAZY`
+  5. `@Entity` 클래스에 `setXxx` 공개 메서드를 두지 않음. Lombok `@Setter`·`@Data`는 바이트코드에 남지 않으므로 만들어진 메서드로 판단한다
+  6. 이름이 `ServiceImpl`로 끝나는 클래스를 두지 않음
+- 둘 다 테스트 클래스와 jar를 빼고 프로젝트 main 클래스만 읽는다(`PackageSizeTest`와 같은 import 옵션). 루트 패키지가 필요 없다.
+- 규칙마다 `FreezingArchRule.freeze`로 감싸 기존 위반은 기준선에 두고, `.because(...)`에 근거 문서 경로를 넣는다.
+- `archunit.properties`는 `java` 프리셋이 설치한다. `spring-java`는 `java`를 필요로 하므로 항상 함께 설치되고, 두 프리셋이 같은 경로의 파일을 둘 수 없기 때문이다(결정 9).
+- Lombok `@ToString`·`@EqualsAndHashCode`, 로그 문자열 연결, 민감 정보 로그는 바이트코드로 판단하기 어려워 문서 규칙으로 남긴다.
+
+### 3-1. 모듈 경계 규칙과 Spring Modulith를 두지 않는 이유
+
+- 모듈 경계를 얼마나 엄격히 할지는 팀이 고르는 아키텍처 선택이다. 이 프리셋의 목표(구조가 커질 때 다시 나누게 하기)에 필요하지 않다.
+- Modulith `verify()`는 모듈의 하위 패키지(`<기능>/service` 등)를 내부로 보고 다른 모듈의 접근을 막는다. 통과하려면 모듈마다 `@NamedInterface`나 공개 API 퍼사드를 설계해야 한다.
+- 레이어 우선 구조에서 기본 설정으로 돌리면 레이어가 모듈로 잡혀 위반이 쏟아진다. "기존 구조를 따르고 새로 만드는 부분만 맞춘다"는 프리셋 문서의 약속과 충돌한다.
+- 기능 간 순환은 모듈 경계와 상관없는 보편 원칙이라 ArchUnit 템플릿이 검사한다. Modulith 없이도 된다.
+
 ### 4. 기준선을 숨기지 못하게 하기
 
-- 프리셋 문서와 AGENTS.md 핵심 규칙에 둘을 적는다. "ArchUnit 기준선(`archunit_store`)을 직접 고치거나 지우지 않는다", "큰 패키지 목록의 상한을 올리지 않는다. 넘으면 패키지를 나눈다".
+- 프리셋 문서와 AGENTS.md 핵심 규칙에 셋을 적는다. "ArchUnit 기준선(`archunit_store`)을 직접 고치거나 지우지 않는다", "큰 패키지 목록의 상한을 올리지 않는다. 넘으면 패키지를 나눈다", "순환 허용 목록을 늘리지 않는다. 역방향 의존은 도메인 이벤트로 끊는다".
 - `git` 프리셋의 `.claude/settings.json` 권한 차단(`permissions.deny`)에 기준선 디렉터리 수정·삭제를 더할지는 구현 때 정한다.
   `git` 프리셋은 언어를 모르므로, 넣는다면 `java` 프리셋이 따로 설정을 설치해야 한다. 이번 단계에서는 문서 규칙까지만 한다.
 - CI에서 기준선이 늘었는지 비교하는 일은 다음 단계다.
@@ -200,4 +236,6 @@ agentsmd verify --root ../other-repo
 4. 크기 기준선은 `FreezingArchRule`이 아니라 큰 패키지 목록을 코드에 적는 방식이다.
 5. orbit에서는 레이어 규칙을 기존 `ArchitectureTest`에 더하고, 크기 테스트만 새 파일로 둔다.
 6. 기준선 자동 생성은 막는다(`allowStoreCreation=false`). orbit의 기존 판단을 따른다.
-7. Spring Modulith는 컨텍스트 간 순환(`vehicle` ↔ `update`, `global` ↔ `domain`)을 정리한 뒤의 단계로 둔다.
+7. 테스트 템플릿은 실무에서 보편적인 규칙(레이어 방향, `global` 의존, 클래스 위치, 기능 간 순환)만 검사한다. 다른 기능의 `repository`·엔티티 금지와 ID 참조는 모듈러 모놀리스 규칙이라 검사하지 않고 문서·핵심 규칙에서도 지운다. Spring Modulith는 쓰지 않는다.
+8. 기능 간 순환은 `FreezingArchRule`이 아니라 템플릿 코드의 허용 목록(`ignoreDependency`)으로 둔다. orbit `ArchitectureTest`의 기존 판단을 따른다.
+9. 코드 작성 규칙도 이번에 검사한다(3-2). `archunit.properties`는 `java` 프리셋이 설치하고, 기준선 만들기 안내(`nextSteps`)도 `java` 프리셋이 맡는다.
