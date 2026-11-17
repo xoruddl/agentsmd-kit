@@ -22,6 +22,9 @@ npx @agentsmd/cli init --preset git,github,typescript
 
 # 문서 지도가 저장소와 맞는지 검사한다 (문제가 있으면 종료 코드 1)
 npx @agentsmd/cli check
+
+# .agentsmd/verify.json 의 검증 단계(빌드·테스트 등)를 차례로 실행한다 (단계가 실패하면 종료 코드 1)
+npx @agentsmd/cli verify
 ```
 
 전역으로 설치하면 `agentsmd init`, `agentsmd check` 처럼 짧게 씁니다: `npm install -g @agentsmd/cli`
@@ -84,11 +87,11 @@ docs/requirements.md  [unlisted-doc]  문서 지도(AGENTS.md)에서 안내하�
 `파일:줄` 형식이라 편집기와 터미널에서 바로 그 위치로 이동할 수 있습니다.
 CI에 `agentsmd check` 한 단계를 넣으면 지도와 어긋난 변경은 머지 전에 실패합니다.
 
-| 문서                                         | 내용                                      |
-| -------------------------------------------- | ----------------------------------------- |
-| [docs/commands.md](docs/commands.md)         | `init`, `check`의 옵션과 종료 코드        |
-| [docs/rules.md](docs/rules.md)               | 검사 규칙별 의도, 예시, 고치는 방법       |
-| [docs/architecture.md](docs/architecture.md) | 패키지 구조와 규칙·프리셋을 추가하는 방법 |
+| 문서                                         | 내용                                         |
+| -------------------------------------------- | -------------------------------------------- |
+| [docs/commands.md](docs/commands.md)         | `init`, `check`, `verify`의 옵션과 종료 코드 |
+| [docs/rules.md](docs/rules.md)               | 검사 규칙별 의도, 예시, 고치는 방법          |
+| [docs/architecture.md](docs/architecture.md) | 패키지 구조와 규칙·프리셋을 추가하는 방법    |
 
 ## 실제 저장소에 적용한 결과
 
