@@ -38,7 +38,6 @@ export const springJavaPreset = {
   rules: [
     "필드 주입 대신 생성자 주입을 쓴다.",
     "엔티티를 API 요청·응답으로 쓰지 않는다. DTO(record)로 바꾼다.",
-    "다른 기능의 repository·엔티티를 직접 쓰지 않고 그 기능의 service 를 통한다.",
     "`@Transactional` 은 service 에 두고, 조회는 `readOnly = true`. 트랜잭션 안에서 외부 API 를 부르지 않는다.",
   ],
   nextSteps: [

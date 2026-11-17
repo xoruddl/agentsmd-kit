@@ -34,9 +34,7 @@ controller → service → repository
 
 - `domain` 은 다른 레이어를 모른다. Spring 에 의존하지 않는다. (JPA 매핑 어노테이션만 예외)
 - `global` 은 기능 패키지에 의존하지 않는다.
-- 다른 기능의 `repository`·엔티티를 직접 쓰지 않는다. 그 기능의 `service` 를 통한다.
-  즉시 결과가 필요 없으면 도메인 이벤트(`ApplicationEventPublisher`, `@TransactionalEventListener`)로 나눈다.
-- 다른 기능의 엔티티는 객체가 아니라 ID 로 참조한다.
+- 기능 사이에 즉시 결과가 필요 없는 일은 도메인 이벤트(`ApplicationEventPublisher`, `@TransactionalEventListener`)로 나눈다.
 - 의존 방향은 ArchUnit 테스트로 검사할 수 있다. → [testing.md](testing.md)
 
 ## 빈과 주입
