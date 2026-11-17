@@ -12,6 +12,7 @@ agentsmd-kit 저장소에서 코드를 작성·수정·리뷰하는 AI 에이전
 | [docs/rules.md](docs/rules.md)               | 검사 규칙을 추가·변경할 때. 동작을 바꾸면 이 문서도 함께 고친다        |
 | [docs/commands.md](docs/commands.md)         | 명령 옵션·종료 코드를 바꿀 때. 도움말 문자열과 함께 고친다             |
 | [docs/release.md](docs/release.md)           | 버전을 올려 npm·Docker 이미지·Action 태그를 내보낼 때                  |
+| [docs/specs/](docs/specs/)                   | 설계 문서가 있는 기능을 구현하거나 설계를 이어 다듬을 때               |
 
 ## 핵심 규칙
 
