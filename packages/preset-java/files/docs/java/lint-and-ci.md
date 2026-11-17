@@ -89,4 +89,6 @@ ArchUnit 의존성은 [package-structure.md](package-structure.md) 의 스니펫
 
 - `allowStoreCreation` 은 평소에 `false` 로 둔다. 기준선 파일이 없을 때 새로 만들면 모든 위반이 조용히 통과하기 때문이다. `false` 이면 기준선이 없을 때 테스트가 실패한다.
 - 기준선(`archunit_store`)을 손으로 고치거나 지우지 않는다. 테스트가 실패해서 기준선을 지우거나 줄이고 싶어질 때는 위반 코드를 고친다.
-- 새 규칙을 추가할 때만 `allowStoreCreation` 을 잠시 `true` 로 둔다.
+- `allowStoreCreation=false` 는 기준선 파일이 통째로 없을 때만 막는다. 기준선이 이미 있을 때 규칙을 새로 추가하거나 규칙 설명(`.because(...)` 문구 포함)을 바꾸면
+  ArchUnit 이 새 규칙으로 보고 그 시점의 위반을 모두 기준선에 기록한다. 그래서 규칙이나 설명을 바꾸는 변경은 `archunit_store` 의 diff 를 함께 리뷰한다.
+- 규칙 설명은 실행마다 같아야 한다. 순서가 없는 `Set` 을 설명에 넣으면 실행할 때마다 새 규칙이 되어 위반이 조용히 기록된다.
