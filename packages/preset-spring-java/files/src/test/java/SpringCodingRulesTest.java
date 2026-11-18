@@ -54,6 +54,9 @@ class SpringCodingRulesTest {
             GeneralCodingRules.NO_CLASSES_SHOULD_USE_FIELD_INJECTION.because(
                     "생성자로 주입해야 의존을 숨기지 않고 테스트에서 직접 만들 수 있다 → docs/spring-java/architecture.md"));
 
+    // 레이어를 패키지 경로 어디에든 controller·repository 가 있는지로 판단한다. LayerArchitectureTest 는
+    // FEATURES_PACKAGE.<기능>.<레이어> 자리로 판단하므로 기준이 다르다. 이 파일은 패키지 상수 없이 설치만으로 동작하게
+    // 하려고 단순 패턴을 쓴다. 기능 이름이 controller·repository 인 구조처럼 둘이 어긋나면 LayerArchitectureTest 를 기준으로 본다.
     @ArchTest
     static final ArchRule controller와_repository에_Transactional을_두지_않는다 = FreezingArchRule.freeze(classes()
             .that()
