@@ -28,7 +28,7 @@ export const springJavaPreset = {
     },
     {
       path: "docs/spring-java/api.md",
-      when: "컨트롤러·API 를 만들 때. URL, 상태 코드, 요청 검증, 오류 응답, 페이징",
+      when: "컨트롤러·API 를 만들 때. 공통 응답 형식, URL, 상태 코드, 요청 검증, 오류 응답, 페이징",
     },
     {
       path: "docs/spring-java/testing.md",
@@ -38,6 +38,7 @@ export const springJavaPreset = {
   rules: [
     "필드 주입 대신 생성자 주입을 쓴다.",
     "엔티티를 API 요청·응답으로 쓰지 않는다. DTO(record)로 바꾼다.",
+    "API 응답은 성공·실패 모두 공통 응답 `ApiResponse`(success·code·message·data)로 내리고, HTTP 상태 코드는 결과에 맞게 정확히 내린다.",
     "`@Transactional` 은 service 에 두고, 조회는 `readOnly = true`. 트랜잭션 안에서 외부 API 를 부르지 않는다.",
     "ArchUnit 기준선(archunit_store), PackageSizeTest 의 큰 패키지 상한, 순환 허용 목록을 늘리지 않는다. 넘으면 패키지를 나누고, 역방향 의존은 도메인 이벤트로 끊는다.",
   ],

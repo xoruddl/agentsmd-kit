@@ -18,6 +18,8 @@ com.example.app/
     exception/      이 기능의 예외
   member/
   global/           설정, 전역 예외 처리, 보안 같은 기술 기반
+    response/       공통 응답 ApiResponse, 결과 코드 인터페이스
+    exception/      BusinessException, 공통 오류 코드, 전역 예외 처리
 ```
 
 - 필요 없는 하위 패키지는 만들지 않는다. (API 가 없는 기능에는 `controller/` 를 두지 않는다)
@@ -52,6 +54,7 @@ controller → service → repository
 
 - 컨트롤러는 엔티티를 요청으로 받거나 응답으로 돌려주지 않는다. 지연 로딩 예외, 순환 참조, 내부 필드 노출이 생긴다.
 - 요청·응답 DTO 는 `record` 로 만든다.
+- 응답 DTO 는 컨트롤러에서 공통 응답 `ApiResponse` 의 `data` 에 담는다. 응답 DTO 가 `ApiResponse` 를 상속하거나 `success`·`code` 필드를 직접 갖지 않는다. → [api.md](api.md)
 - 엔티티 → 응답 변환은 DTO 의 정적 팩토리(`OrderResponse.from(order)`)에 둔다. 엔티티가 DTO 를 모르게 한다.
 
 ```java
