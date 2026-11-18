@@ -43,7 +43,8 @@ class PackageSizeTest {
         CONTROLLER("controller"),
         SERVICE("service"),
         REPOSITORY("repository"),
-        ENTITY("entity"),
+        // 패키지 이름 entity 와 헷갈리지 않게, 이 역할로 세는 어노테이션을 그대로 적는다.
+        ENTITY("@Entity·@Embeddable"),
         RECORD("record"),
         OTHER("기타");
 

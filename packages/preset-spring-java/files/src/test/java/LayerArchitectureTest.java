@@ -135,6 +135,8 @@ class LayerArchitectureTest {
             .should()
             .beFreeOfCycles()
             // global 로 들어가고 나가는 의존은 순환으로 보지 않는다. global 이 기능을 알면 규칙 3 이 잡는다.
+            // GLOBAL_PACKAGE 가 FEATURES_PACKAGE 바로 아래에 있는 기본 구조(com.example.app.global)에서는 global 도
+            // slice 하나로 잡히므로 이 두 줄이 필요하다. global 이 FEATURES_PACKAGE 밖에 있으면 효과는 없지만 해가 되지도 않으니 그대로 둔다.
             .ignoreDependency(resideInAPackage(GLOBAL_PACKAGE + ".."), DescribedPredicate.alwaysTrue())
             .ignoreDependency(DescribedPredicate.alwaysTrue(), resideInAPackage(GLOBAL_PACKAGE + ".."))
             .because("기능끼리 서로를 알면 한쪽 변경이 다른 쪽으로 번진다. 역방향이 필요하면 도메인 이벤트로 끊는다"

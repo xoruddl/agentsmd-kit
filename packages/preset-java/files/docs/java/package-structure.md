@@ -50,7 +50,7 @@ JUnit 5 를 쓰도록 `tasks.test { useJUnitPlatform() }` (Kotlin) 또는 `test 
 | 2 | controller | `@RestController`, `@Controller` |
 | 3 | service | `@Service`, `@Component` |
 | 4 | repository | `@Repository`, 또는 `org.springframework.data.repository.Repository` 를 상속 |
-| 5 | entity | `@Entity`, `@Embeddable` |
+| 5 | @Entity·@Embeddable | `@Entity`, `@Embeddable`. 패키지 이름이 아니라 JPA 매핑 클래스를 가리키므로 어노테이션으로 표시한다 |
 | 6 | record | `record` |
 | 7 | 기타 | 위에 해당하지 않는 것 |
 

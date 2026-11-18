@@ -8,6 +8,7 @@ import com.tngtech.archunit.core.domain.JavaEnumConstant;
 import com.tngtech.archunit.core.domain.JavaField;
 import com.tngtech.archunit.core.domain.JavaMethod;
 import com.tngtech.archunit.core.domain.JavaModifier;
+import com.tngtech.archunit.core.domain.properties.HasAnnotations;
 import com.tngtech.archunit.core.importer.ImportOption;
 import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
@@ -39,6 +40,7 @@ import java.util.Optional;
 class SpringCodingRulesTest {
 
     private static final String ENTITY = "jakarta.persistence.Entity";
+    private static final String EMBEDDABLE = "jakarta.persistence.Embeddable";
     private static final String ENUMERATED = "jakarta.persistence.Enumerated";
     private static final String MANY_TO_ONE = "jakarta.persistence.ManyToOne";
     private static final String ONE_TO_ONE = "jakarta.persistence.OneToOne";
@@ -52,6 +54,10 @@ class SpringCodingRulesTest {
             GeneralCodingRules.NO_CLASSES_SHOULD_USE_FIELD_INJECTION.because(
                     "생성자로 주입해야 의존을 숨기지 않고 테스트에서 직접 만들 수 있다 → docs/spring-java/architecture.md"));
 
+    // 레이어를 패키지 경로 어디에든 controller·repository 가 있는지로 판단한다. LayerArchitectureTest 는
+    // FEATURES_PACKAGE.<기능>.<레이어> 자리로 판단하므로 기준이 다르다. 이 파일은 패키지 상수 없이 설치만으로 동작하게
+    // 하려고 단순 패턴을 쓴다. 두 테스트는 따로 실행되므로 판단이 어긋나도 이 규칙은 그대로 실패한다.
+    // 기능 이름에 controller·repository 가 들어간 구조(예: app.repository.service)라면 아래 패키지 패턴을 프로젝트에 맞게 고친다.
     @ArchTest
     static final ArchRule controller와_repository에_Transactional을_두지_않는다 = FreezingArchRule.freeze(classes()
             .that()
@@ -83,11 +89,14 @@ class SpringCodingRulesTest {
             .allowEmptyShould(true));
 
     @ArchTest
-    static final ArchRule 엔티티에_공개_setter를_두지_않는다 = FreezingArchRule.freeze(classes()
+    static final ArchRule 엔티티와_값_객체에_공개_setter를_두지_않는다 = FreezingArchRule.freeze(classes()
             .that()
             .areAnnotatedWith(ENTITY)
+            .or()
+            .areAnnotatedWith(EMBEDDABLE)
             .should(notHavePublicSetters())
-            .because("setter 로 상태를 바꾸면 불변식을 지킬 수 없다. 의도가 드러나는 메서드로 바꾼다 → docs/spring-java/data-jpa.md")
+            .because("setter 로 상태를 바꾸면 불변식을 지킬 수 없다. 엔티티는 의도가 드러나는 메서드로 바꾸고,"
+                    + " 값 객체(@Embeddable)는 바꾸지 않고 새로 만든다 → docs/spring-java/data-jpa.md")
             .allowEmptyShould(true));
 
     @ArchTest
@@ -101,20 +110,22 @@ class SpringCodingRulesTest {
         return new ArchCondition<>("@Transactional 을 클래스나 메서드에 두지 않는다") {
             @Override
             public void check(JavaClass javaClass, ConditionEvents events) {
-                for (String annotation : TRANSACTIONAL_ANNOTATIONS) {
-                    if (javaClass.isAnnotatedWith(annotation)) {
+                if (isTransactional(javaClass)) {
+                    events.add(SimpleConditionEvent.violated(
+                            javaClass, javaClass.getDescription() + " 에 @Transactional 이 있다"));
+                }
+                for (JavaMethod method : javaClass.getMethods()) {
+                    if (isTransactional(method)) {
                         events.add(SimpleConditionEvent.violated(
-                                javaClass, javaClass.getDescription() + " 에 @Transactional 이 있다"));
-                    }
-                    for (JavaMethod method : javaClass.getMethods()) {
-                        if (method.isAnnotatedWith(annotation)) {
-                            events.add(SimpleConditionEvent.violated(
-                                    method, method.getDescription() + " 에 @Transactional 이 있다"));
-                        }
+                                method, method.getDescription() + " 에 @Transactional 이 있다"));
                     }
                 }
             }
         };
+    }
+
+    private static boolean isTransactional(HasAnnotations<?> element) {
+        return TRANSACTIONAL_ANNOTATIONS.stream().anyMatch(element::isAnnotatedWith);
     }
 
     /** 어노테이션 속성이 주어진 enum 상수가 아니면 위반이다. 속성을 적지 않았으면(기본값이 쓰이면) 위반이다. */
@@ -161,7 +172,7 @@ class SpringCodingRulesTest {
                 for (JavaMethod method : javaClass.getMethods()) {
                     if (isPublicSetter(method)) {
                         events.add(SimpleConditionEvent.violated(
-                                method, method.getDescription() + " 는 엔티티의 public setter 이다"));
+                                method, method.getDescription() + " 는 엔티티·값 객체의 public setter 이다"));
                     }
                 }
             }
