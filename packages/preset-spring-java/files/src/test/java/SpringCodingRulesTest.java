@@ -56,7 +56,8 @@ class SpringCodingRulesTest {
 
     // 레이어를 패키지 경로 어디에든 controller·repository 가 있는지로 판단한다. LayerArchitectureTest 는
     // FEATURES_PACKAGE.<기능>.<레이어> 자리로 판단하므로 기준이 다르다. 이 파일은 패키지 상수 없이 설치만으로 동작하게
-    // 하려고 단순 패턴을 쓴다. 기능 이름이 controller·repository 인 구조처럼 둘이 어긋나면 LayerArchitectureTest 를 기준으로 본다.
+    // 하려고 단순 패턴을 쓴다. 두 테스트는 따로 실행되므로 판단이 어긋나도 이 규칙은 그대로 실패한다.
+    // 기능 이름에 controller·repository 가 들어간 구조(예: app.repository.service)라면 아래 패키지 패턴을 프로젝트에 맞게 고친다.
     @ArchTest
     static final ArchRule controller와_repository에_Transactional을_두지_않는다 = FreezingArchRule.freeze(classes()
             .that()
