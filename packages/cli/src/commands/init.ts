@@ -9,6 +9,8 @@ import {
   type MovedDoc,
   type Preset,
   type UnplacedItems,
+  type VerifyConfigResult,
+  VERIFY_CONFIG,
 } from "@agentsmd/core";
 import { configureHooksPath, type HooksResult } from "../git-hooks.js";
 import { makeHooksExecutable } from "../hook-permissions.js";
@@ -35,6 +37,8 @@ Git 훅은 git 프리셋에, GitHub 템플릿은 github 프리셋에 들어 있�
 함께 설치하는 프리셋에 Git 훅이 있으면 그 훅도 설치하고 연결합니다.
 여러 프리셋을 고르면 문서 지도(AGENTS.md)를 설치한 순서대로 합칩니다.
 AGENTS.md가 이미 있으면 빠진 문서·규칙만 더하고, 다른 파일은 이미 있으면 건너뜁니다.
+프리셋의 검증 명령은 .agentsmd/verify.json 에 단계로 합칩니다 (agentsmd verify 가 실행).
+verify.json 이 없고 AGENTS.md '## 검증' 코드 블록에 명령이 있으면 그 명령을 처음 한 번 옮겨 옵니다.
 AGENTS.md에 '## 문서 지도' 절이 없으면 바꾸지 않고 직접 옮길 항목을 알려 줍니다.
 
 프리셋:
@@ -163,7 +167,14 @@ async function installAll(
   const entry = await installEntryFiles(presets, root, { force });
   written.push(...entry.written);
   skipped.push(...entry.skipped);
-  return { written, skipped, merged: entry.merged, unplaced: entry.unplaced, added: addedResults };
+  return {
+    written,
+    skipped,
+    merged: entry.merged,
+    unplaced: entry.unplaced,
+    verify: entry.verify,
+    added: addedResults,
+  };
 }
 
 /** 저장소 밖에서 온 값이면 어디에 적힌 값인지 알린다. 저장소 설정으로 덮으면 그 저장소에서만 전역 훅이 꺼진다. */
@@ -210,10 +221,21 @@ function formatReport(
     lines.push(`고르지 않았지만 필요한 프리셋을 함께 설치했습니다: ${reasons.join(", ")}`);
   }
   const unplaced = result.unplaced === undefined ? [] : formatUnplaced(result.unplaced);
-  if (result.merged !== undefined && unplaced.length === 0) {
+  // 검증 안내만 넣지 못한 경우에는 문서·규칙을 합쳤으므로, 합친 결과도 함께 알린다.
+  const mapMissing =
+    result.unplaced !== undefined &&
+    (result.unplaced.docs.length > 0 || result.unplaced.rules.length > 0);
+  if (result.merged !== undefined && !mapMissing) {
     lines.push(formatMerged(result.merged));
   }
   lines.push(...unplaced);
+  lines.push(
+    ...formatVerify(result.verify, {
+      // 합친 결과가 없으면 AGENTS.md가 없었거나 --force라서 새로 쓴 것이다.
+      rewritten: result.merged === undefined,
+      guided: presets.some((preset) => preset.verify !== undefined),
+    }),
+  );
 
   if (result.skipped.length > 0) {
     lines.push(
@@ -296,7 +318,7 @@ function formatUnplaced(unplaced: UnplacedItems): string[] {
   const groups = [
     ["문서", unplaced.docs.map((doc) => `[${doc.path}](${doc.path}) | ${doc.when}`)],
     ["규칙", unplaced.rules],
-    ["검증 명령", unplaced.verify],
+    ["검증 안내", unplaced.verify],
   ] as const;
   const body = groups
     .filter(([, items]) => items.length > 0)
@@ -304,10 +326,49 @@ function formatUnplaced(unplaced: UnplacedItems): string[] {
   if (body.length === 0) {
     return [];
   }
+  // 문서·규칙이 있으면 문서 지도 절이 없어서이고, 검증 안내만 있으면 검증 절이 이미 있어서다.
+  const mapMissing = unplaced.docs.length > 0 || unplaced.rules.length > 0;
   return [
-    "AGENTS.md에 '## 문서 지도' 절이 없어 아래 항목을 넣지 않았습니다.",
-    "같은 역할을 하는 기존 절에 직접 옮기세요. 옮기기 전에는 agentsmd check 가 지도에 없는 문서를 알립니다.",
+    mapMissing
+      ? "AGENTS.md에 '## 문서 지도' 절이 없어 아래 항목을 넣지 않았습니다."
+      : "AGENTS.md의 '## 검증' 절에 안내가 없어 아래 항목을 넣지 않았습니다.",
+    mapMissing
+      ? "같은 역할을 하는 기존 절에 직접 옮기세요. 옮기기 전에는 agentsmd check 가 지도에 없는 문서를 알립니다."
+      : "검증 단계는 .agentsmd/verify.json 에 있으니, 아래 안내를 '## 검증' 절에 직접 넣으세요.",
     ...body,
+  ];
+}
+
+/**
+ * `.agentsmd/verify.json`에서 일어난 일을 알린다. 없으면 빈 배열.
+ * 옮겨 온 명령은 AGENTS.md를 새로 쓰지 않았다면 블록이 그대로 남아 있으므로, 안내 한 줄로 바꿔도 된다고 알린다.
+ */
+function formatVerify(
+  verify: VerifyConfigResult,
+  state: { readonly rewritten: boolean; readonly guided: boolean },
+): string[] {
+  const names = (steps: VerifyConfigResult["added"]): string =>
+    steps.map((step) => step.name).join(", ");
+  return [
+    ...(verify.invalid === undefined
+      ? []
+      : [
+          `${VERIFY_CONFIG}의 형식이 틀려 검증 단계를 넣지 않았습니다: ${verify.invalid}`,
+          "파일을 고친 뒤 같은 명령을 다시 실행하세요.",
+        ]),
+    ...(verify.migrated.length === 0
+      ? []
+      : [
+          `AGENTS.md 검증 블록의 명령 ${String(verify.migrated.length)}개를 ${VERIFY_CONFIG}으로 옮겼습니다: ${names(verify.migrated)}`,
+          state.rewritten
+            ? `AGENTS.md는 ${state.guided ? "검증 안내 한 줄이 든 " : ""}새 내용으로 다시 썼습니다.`
+            : "AGENTS.md 검증 블록은 안내 한 줄로 바꿔도 됩니다. 지우지는 않았습니다.",
+        ]),
+    ...(verify.added.length === 0
+      ? []
+      : [
+          `검증 단계 ${String(verify.added.length)}개를 ${VERIFY_CONFIG}에 넣었습니다: ${names(verify.added)}`,
+        ]),
   ];
 }
 
@@ -316,7 +377,7 @@ function formatMerged(added: AgentsMdAdditions): string {
   const parts = [
     [added.docs.length, "문서"],
     [added.rules.length, "규칙"],
-    [added.verify.length, "검증 명령"],
+    [added.verifyGuide ? 1 : 0, "검증 안내 한 줄"],
   ] as const;
   const counts = parts
     .filter(([count]) => count > 0)

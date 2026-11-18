@@ -34,10 +34,12 @@ controller → service → repository
 
 - `domain` 은 다른 레이어를 모른다. Spring 에 의존하지 않는다. (JPA 매핑 어노테이션만 예외)
 - `global` 은 기능 패키지에 의존하지 않는다.
-- 다른 기능의 `repository`·엔티티를 직접 쓰지 않는다. 그 기능의 `service` 를 통한다.
-  즉시 결과가 필요 없으면 도메인 이벤트(`ApplicationEventPublisher`, `@TransactionalEventListener`)로 나눈다.
-- 다른 기능의 엔티티는 객체가 아니라 ID 로 참조한다.
-- 의존 방향은 ArchUnit 테스트로 검사할 수 있다. → [testing.md](testing.md)
+- 기능 사이에 즉시 결과가 필요 없는 일은 도메인 이벤트(`ApplicationEventPublisher`, `@TransactionalEventListener`)로 나눈다.
+- 기능끼리 순환하지 않는다. 역방향이 필요하면 도메인 이벤트로 끊는다.
+- 의존 방향, 클래스 위치, 기능 간 순환은 설치된 `src/test/java/LayerArchitectureTest.java` 가 검사한다. 패키지 크기는 Java 프리셋의 `PackageSizeTest` 가 검사한다.
+  설치한 뒤 `LayerArchitectureTest` 의 `FEATURES_PACKAGE`, `GLOBAL_PACKAGE` 를 프로젝트 패키지로 바꾼다. → [testing.md](testing.md)
+- 순환 허용 목록(`LayerArchitectureTest` 의 `ignoreDependency`), 큰 패키지 상한(`PackageSizeTest` 의 `KNOWN_LARGE_PACKAGES`), ArchUnit 기준선(`archunit_store`)은 늘리거나 고치지 않는다.
+  넘으면 패키지를 나누고, 역방향 의존은 도메인 이벤트로 끊는다.
 
 ## 빈과 주입
 

@@ -53,7 +53,7 @@ Git 규칙, 호스팅(GitHub), 언어 규칙, 프레임워크 규칙은 따로 �
   Kotlin은 아직 지원하지 않는다. `react`는 `typescript` 없이 쓰는 경우를 다루지 않으므로 언어를 적지 않는다.
 
 - 프리셋은 AGENTS.md를 파일로 갖지 않는다. 대신 `docs`(문서와 읽는 시점), `rules`(핵심 규칙), `verify`(검증 명령)를 정의한다.
-  `mergeAgentsMd`가 기존 AGENTS.md에 정의 가운데 빠진 항목만 넣는다. 지도를 파일로 두면 함께 설치할 때 한쪽이 건너뛰어져 다른 프리셋 문서가 지도에서 빠지기 때문이다.
+  `docs`와 `rules`는 `mergeAgentsMd`가 기존 AGENTS.md에 빠진 항목만 넣는다. `verify`는 AGENTS.md가 아니라 `installVerifyConfig`가 `.agentsmd/verify.json`의 단계로 합치고, AGENTS.md의 `## 검증` 절에는 `agentsmd verify` 안내 한 줄만 둔다. 지도를 파일로 두면 함께 설치할 때 한쪽이 건너뛰어져 다른 프리셋 문서가 지도에서 빠지기 때문이다.
   새로 만들 때(`renderAgentsMd`)도 빈 뼈대에 같은 함수로 합친다. 새로 만들 때와 나눠 설치할 때 결과 모양이 갈라지지 않게 하려는 것이다.
   기존 AGENTS.md에 `## 문서 지도` 절이 없으면 사람이 다른 형식으로 쓴 지침으로 보고 바꾸지 않는다. 넣지 못한 항목은 `unplaced`로 돌려주고 `init`이 출력한다.
   절 이름을 비슷한 말로 추측하지 않는 것은, 표의 열 순서까지 저장소마다 달라 엉뚱한 곳에 넣을 수 있기 때문이다.
@@ -81,6 +81,7 @@ Git 규칙, 호스팅(GitHub), 언어 규칙, 프레임워크 규칙은 따로 �
 ## cli: 명령은 Io를 통해서만 바깥과 말한다
 
 - 명령은 `process`를 직접 쓰지 않고 `Io`(`cwd`, `stdout`, `stderr`)를 받는다. 테스트는 출력을 모아 확인한다.
+- `runner.ts`(검증 단계 실행기)는 자식 프로세스 출력을 그대로 물려받아야 해서 `Io`를 거치지 않는 예외다. 명령은 `Runner`를 주입받아 테스트에서 가짜로 바꾼다.
 - `main.ts`는 `process`와 `run`을 잇는 몇 줄뿐이다.
 - `node:util`의 `parseArgs`를 쓰고 외부 의존성을 두지 않는다. 파싱 오류는 `run`이 종료 코드 2로 바꾼다.
 
@@ -94,7 +95,9 @@ Git 규칙, 호스팅(GitHub), 언어 규칙, 프레임워크 규칙은 따로 �
 ## 언어 프리셋 추가하기
 
 1. `packages/preset-<이름>/files/`에 설치될 경로 그대로 파일을 둔다. Prettier는 이 디렉터리를 건드리지 않는다.
-   - 언어 규칙 문서(`docs/<이름>/`)만 둔다. `AGENTS.md`, `CLAUDE.md`, `.githooks/`, `.github/`는 두지 않는다.
+   - 언어 규칙 문서(`docs/<이름>/`)와, 그 문서의 규칙을 검사하는 테스트 템플릿(`src/test/...`)을 둔다. `AGENTS.md`, `CLAUDE.md`, `.githooks/`, `.github/`는 두지 않는다.
+   - 테스트 템플릿은 이 저장소에 해당 언어 빌드가 없어 여기서 컴파일되지 않는다. 설치 후 실제 프로젝트에서 컴파일·실행해 확인한다.
+     이 저장소의 프리셋 테스트는 `check` 통과와 파일 설치 여부만 본다.
 2. `src/index.ts`에서 `Preset` 객체를 내보낸다. `docs`, `rules`, `verify`를 채우고, 수작업이 남으면 `nextSteps`를 채운다.
    `docs/<이름>/` 아래 문서는 모두 `docs`에 올린다. 빠지면 `check`가 지도에 없는 문서로 잡는다.
    - `rules`는 AGENTS.md의 핵심 규칙이 된다. 문서는 에이전트가 필요할 때만 열지만 AGENTS.md는 항상 읽히므로,

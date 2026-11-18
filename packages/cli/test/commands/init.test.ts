@@ -72,8 +72,98 @@ describe("runInit", () => {
     expect(agents).toContain(
       "[docs/spring-java/architecture.md](docs/spring-java/architecture.md)",
     );
-    expect(agents).toContain("./gradlew spotlessCheck build");
+    // 검증 명령은 AGENTS.md가 아니라 verify.json에 들어가고, AGENTS.md에는 안내 한 줄만 남는다.
+    expect(agents).toContain("`agentsmd verify`");
+    expect(agents).not.toContain("./gradlew spotlessCheck build");
+    await expect(readFile(join(root, ".agentsmd/verify.json"), "utf8")).resolves.toContain(
+      "./gradlew spotlessCheck build",
+    );
+    expect(out).toContain("검증 단계 1개를 .agentsmd/verify.json에 넣었습니다: java");
     await expect(checkRepository({ root })).resolves.toEqual([]);
+  });
+
+  it("옛 AGENTS.md의 검증 블록은 verify.json으로 옮기고 안내 한 줄로 바꿔도 된다고 알린다", async () => {
+    await writeFile(
+      join(root, "AGENTS.md"),
+      "# AGENTS.md\n\n## 문서 지도\n\n## 검증\n\n```bash\nmake test\n```\n",
+    );
+
+    await expect(runInit(["--preset", "java", "--skip-hooks"], io())).resolves.toBe(0);
+
+    const config: unknown = JSON.parse(await readFile(join(root, ".agentsmd/verify.json"), "utf8"));
+    expect(config).toEqual({
+      steps: [
+        { name: "step-1", run: "make test" },
+        { name: "java", run: "./gradlew spotlessCheck build" },
+      ],
+    });
+    expect(out).toContain(
+      "AGENTS.md 검증 블록의 명령 1개를 .agentsmd/verify.json으로 옮겼습니다: step-1",
+    );
+    expect(out).toContain("AGENTS.md 검증 블록은 안내 한 줄로 바꿔도 됩니다");
+    await expect(readFile(join(root, "AGENTS.md"), "utf8")).resolves.toContain("make test");
+  });
+
+  it("검증 절이 안내 없이 사람이 쓴 글이면 바꾸지 않고 안내 줄을 직접 넣도록 알린다", async () => {
+    const existing =
+      "# AGENTS.md\n\n## 문서 지도\n\n## 검증\n\n끝나기 전에 CI 와 같은 명령을 돌린다.\n";
+    await writeFile(join(root, "AGENTS.md"), existing);
+
+    await expect(runInit(["--preset", "java", "--skip-hooks"], io())).resolves.toBe(0);
+
+    expect(out).toContain("'## 검증' 절에 안내가 없어 아래 항목을 넣지 않았습니다.");
+    expect(out).toContain("    작업을 마치기 전에 `agentsmd verify` 를 실행하고");
+    // 문서 지도 절은 있어서 문서는 합쳤다. 그 사실도 함께 알린다.
+    expect(out).toContain("기존 AGENTS.md에 문서");
+    const agents = await readFile(join(root, "AGENTS.md"), "utf8");
+    expect(agents).toContain("끝나기 전에 CI 와 같은 명령을 돌린다.");
+    expect(agents).not.toContain("agentsmd verify");
+  });
+
+  it("검증 절에 이미 agentsmd verify가 있으면 안내 줄을 알리지 않는다", async () => {
+    await runInit(["--preset", "java", "--skip-hooks"], io());
+    out = "";
+
+    await runInit(["--preset", "java", "--skip-hooks"], io());
+
+    expect(out).not.toContain("안내가 없어");
+  });
+
+  // --force는 AGENTS.md를 새로 쓴다. 블록을 남겨 뒀다고 알리면 거짓이다.
+  it("--force로 AGENTS.md를 새로 쓰면 블록을 옮기고 안내 한 줄로 다시 썼다고 알린다", async () => {
+    await writeFile(
+      join(root, "AGENTS.md"),
+      "# AGENTS.md\n\n## 문서 지도\n\n## 검증\n\n```bash\nmake test\n```\n",
+    );
+
+    await expect(runInit(["--preset", "java", "--skip-hooks", "--force"], io())).resolves.toBe(0);
+
+    expect(out).toContain("명령 1개를 .agentsmd/verify.json으로 옮겼습니다: step-1");
+    expect(out).toContain("AGENTS.md는 검증 안내 한 줄이 든 새 내용으로 다시 썼습니다.");
+    expect(out).not.toContain("지우지는 않았습니다");
+    const agents = await readFile(join(root, "AGENTS.md"), "utf8");
+    expect(agents).toContain("`agentsmd verify`");
+    expect(agents).not.toContain("make test");
+  });
+
+  it("형식이 틀린 verify.json은 고치지 않고 이유를 알린다", async () => {
+    await mkdir(join(root, ".agentsmd"));
+    await writeFile(join(root, ".agentsmd/verify.json"), "{ 깨짐");
+
+    await expect(runInit(["--preset", "java", "--skip-hooks"], io())).resolves.toBe(0);
+
+    await expect(readFile(join(root, ".agentsmd/verify.json"), "utf8")).resolves.toBe("{ 깨짐");
+    expect(out).toContain("검증 단계를 넣지 않았습니다");
+    expect(out).toContain("JSON으로 읽을 수 없습니다");
+  });
+
+  it("검증 단계가 이미 있으면 넣었다고 알리지 않는다", async () => {
+    await runInit(["--preset", "java", "--skip-hooks"], io());
+    out = "";
+
+    await runInit(["--preset", "java", "--skip-hooks"], io());
+
+    expect(out).not.toContain("검증 단계");
   });
 
   it("언어 프리셋만 고르면 Git 규칙은 설치하지 않는다", async () => {
@@ -208,7 +298,7 @@ describe("runInit", () => {
 
     const agents = await readFile(join(root, "AGENTS.md"), "utf8");
     expect(agents).toContain("[docs/java/checklist.md](docs/java/checklist.md)");
-    expect(agents).toContain("./gradlew spotlessCheck build");
+    expect(agents).toContain("`agentsmd verify`");
     await expect(checkRepository({ root })).resolves.toEqual([]);
   });
 
@@ -394,7 +484,11 @@ describe("runInit", () => {
     expect(out).not.toContain("AGENTS.md에 이미 모든 항목이 있어");
     expect(out).toContain("AGENTS.md에 '## 문서 지도' 절이 없어 아래 항목을 넣지 않았습니다.");
     expect(out).toMatch(/ {4}\[docs\/java\/checklist\.md\]\(docs\/java\/checklist\.md\) \| \S/);
-    expect(out).toContain("    ./gradlew spotlessCheck build");
+    // 검증 명령은 AGENTS.md 절과 무관하게 verify.json에 들어가므로 직접 옮길 항목이 아니다.
+    expect(out).not.toContain("    ./gradlew spotlessCheck build");
+    // 검증 안내 줄은 넣지 못했으므로 직접 옮길 항목으로 알린다.
+    expect(out).toContain("    작업을 마치기 전에 `agentsmd verify` 를 실행하고");
+    expect(out).toContain("검증 단계 1개를 .agentsmd/verify.json에 넣었습니다: java");
     // 옮기기 전에는 설치한 문서가 지도에 없으므로 check가 잡아낸다.
     await expect(checkRepository({ root })).resolves.not.toEqual([]);
   });

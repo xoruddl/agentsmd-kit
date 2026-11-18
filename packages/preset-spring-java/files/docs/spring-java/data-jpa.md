@@ -41,7 +41,6 @@ public class Order {
 
 - 모든 연관관계를 지연 로딩(`fetch = FetchType.LAZY`)으로 둔다. `@ManyToOne`, `@OneToOne` 은 기본값이 즉시 로딩이라 직접 적는다.
 - 양방향 연관관계는 반대쪽에서 탐색할 이유가 있을 때만 만든다.
-- 다른 기능(Aggregate)의 엔티티는 연관관계 대신 ID 로 참조한다.
 - `cascade`, `orphanRemoval` 은 같은 Aggregate 안의 부모·자식 사이에만 쓴다.
 
 ## N+1 과 조회

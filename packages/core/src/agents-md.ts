@@ -29,22 +29,26 @@ const VERIFY = "검증";
 const SECTION_ORDER = [DOCS, RULES, VERIFY, "지침 관리"];
 
 const RULES_INTRO = "문서를 다 읽지 못했더라도 아래는 반드시 지킨다.";
-const VERIFY_INTRO = "작업을 마치기 전에 실행하고 결과를 그대로 보고한다. 실패를 숨기지 않는다.";
+/** 검증 절에는 명령 목록 대신 이 한 줄만 둔다. 단계 목록은 `.agentsmd/verify.json`이 갖는다. */
+const VERIFY_COMMAND = "agentsmd verify";
+const VERIFY_GUIDE =
+  "작업을 마치기 전에 `agentsmd verify` 를 실행하고 결과를 그대로 보고한다. 단계 목록은 `.agentsmd/verify.json`.";
 const LIST_ITEM = /^(\d+)\.\s+(.*)$|^[-*]\s+(.*)$/;
-const FENCE = /^\s{0,3}(`{3,}|~{3,})/;
 
 /** 합치면서 새로 넣은 항목. */
 export interface AgentsMdAdditions {
   /** 문서 지도에 넣은 문서 경로. */
   readonly docs: readonly string[];
   readonly rules: readonly string[];
-  readonly verify: readonly string[];
+  /** `## 검증` 절이 없어 안내 한 줄을 넣었는가. */
+  readonly verifyGuide: boolean;
 }
 
 /** 넣을 절을 찾지 못해 AGENTS.md에 넣지 않은 항목. 사람이 기존 절에 옮겨야 한다. */
 export interface UnplacedItems {
   readonly docs: readonly DocMapEntry[];
   readonly rules: readonly string[];
+  /** 안내 한 줄을 넣지 못했고 AGENTS.md가 `agentsmd verify`를 따로 알리지도 않을 때, 사람이 옮길 안내 줄. */
   readonly verify: readonly string[];
 }
 
@@ -54,37 +58,39 @@ export interface MergedAgentsMd {
   readonly unplaced: UnplacedItems;
 }
 
-/** 고른 프리셋들의 문서·규칙·검증 명령으로 새 AGENTS.md를 만든다. */
+/** 고른 프리셋들의 문서·규칙으로 새 AGENTS.md를 만든다. 검증 명령이 있으면 검증 절에 안내 한 줄을 둔다. */
 export function renderAgentsMd(presets: readonly Preset[]): string {
   return merge(SKELETON, presets).content;
 }
 
 /**
- * 이미 있는 AGENTS.md에 프리셋의 문서·규칙·검증 명령 가운데 빠진 것만 넣는다.
+ * 이미 있는 AGENTS.md에 프리셋의 문서·규칙 가운데 빠진 것만 넣는다.
  *
  * 프리셋을 나눠 설치해도 지도에서 문서가 빠지지 않게 하려는 것이다. 설치 순서와 상관없이 같은 항목이 모이고,
  * 같은 프리셋을 다시 합치면 아무것도 바뀌지 않는다. 사람이 고쳐 둔 줄은 지우거나 바꾸지 않는다.
  *
  * - 문서: 이미 링크된 문서는 건너뛰고, `## 문서 지도` 표 끝에 행을 더한다. 표 정렬은 다시 맞춘다.
  * - 규칙: 같은 문장이 없으면 `## 핵심 규칙` 목록 끝에 이어 붙인다.
- * - 검증: 같은 명령 줄이 없으면 `## 검증` 코드 블록에 더한다.
+ * - 검증: 프리셋에 검증 명령이 있는데 `## 검증` 절이 없으면 `agentsmd verify` 안내 한 줄만 둔 절을 만든다.
+ *   명령은 AGENTS.md가 아니라 `.agentsmd/verify.json`에 두므로, 절이 이미 있으면 사람이 쓴 것으로 보고 건드리지 않는다.
  *
  * `## 문서 지도` 절이 있으면 빠진 절·표·목록을 새로 만든다.
  * 없으면 사람이 다른 이름(예: `## 작업 전 읽을 문서`)으로 쓴 지침으로 보고 아무것도 넣지 않는다.
  * 같은 역할의 절을 하나 더 만들면 지침이 두 벌이 되기 때문이다. 넣지 못한 항목은 `unplaced`로 돌려준다.
+ * 검증 안내 줄도 같다. 절이 이미 있어 넣지 못했고 글 어디에도 `agentsmd verify`가 없으면 `unplaced.verify`로 돌려준다.
  */
 export function mergeAgentsMd(existing: string, presets: readonly Preset[]): MergedAgentsMd {
   if (findSection(existing.split(/\r?\n/), DOCS) === undefined) {
     return {
       content: existing,
-      added: { docs: [], rules: [], verify: [] },
+      added: { docs: [], rules: [], verifyGuide: false },
       unplaced: unplacedItems(existing, presets),
     };
   }
   return merge(existing, presets);
 }
 
-/** 문서 지도 절이 없는 AGENTS.md에 없는 항목. 규칙·명령은 파일 어디에든 같은 문장이 있으면 이미 있는 것으로 본다. */
+/** 문서 지도 절이 없는 AGENTS.md에 없는 항목. 규칙은 파일 어디에든 같은 문장이 있으면 이미 있는 것으로 본다. */
 function unplacedItems(existing: string, presets: readonly Preset[]): UnplacedItems {
   const absent = (item: string): boolean => !existing.includes(item.trim());
   return {
@@ -93,11 +99,14 @@ function unplacedItems(existing: string, presets: readonly Preset[]): UnplacedIt
       [],
       presets.flatMap((preset) => preset.rules ?? []),
     ).filter(absent),
-    verify: missingItems(
-      [],
-      presets.flatMap((preset) => (preset.verify === undefined ? [] : [preset.verify])),
-    ).filter(absent),
+    verify: unplacedVerifyGuide(existing, presets),
   };
+}
+
+/** 검증 안내를 넣지 못한 채 끝났을 때, 사람이 넣어야 할 안내 줄. 프리셋에 검증 명령이 없거나 이미 안내가 있으면 없다. */
+function unplacedVerifyGuide(content: string, presets: readonly Preset[]): string[] {
+  const needed = presets.some((preset) => preset.verify !== undefined);
+  return needed && !content.includes(VERIFY_COMMAND) ? [VERIFY_GUIDE] : [];
 }
 
 function merge(existing: string, presets: readonly Preset[]): MergedAgentsMd {
@@ -112,17 +121,19 @@ function merge(existing: string, presets: readonly Preset[]): MergedAgentsMd {
   );
   lines = addRules(lines, rules);
 
-  const verify = missingItems(
-    codeBlockLines(lines),
-    presets.flatMap((preset) => (preset.verify === undefined ? [] : [preset.verify])),
-  );
-  lines = addVerify(lines, verify);
+  const verifyGuide =
+    presets.some((preset) => preset.verify !== undefined) &&
+    findSection(lines, VERIFY) === undefined;
+  if (verifyGuide) {
+    lines = insertSection(lines, VERIFY, [VERIFY_GUIDE], later(VERIFY));
+  }
 
   const content = `${lines.join("\n").replace(/\s+$/, "")}\n`;
   return {
     content,
-    added: { docs: docs.map((doc) => doc.path), rules, verify },
-    unplaced: { docs: [], rules: [], verify: [] },
+    added: { docs: docs.map((doc) => doc.path), rules, verifyGuide },
+    // 안내 절을 방금 만들었으면 글에 이미 들어 있으므로 비게 된다.
+    unplaced: { docs: [], rules: [], verify: unplacedVerifyGuide(content, presets) },
   };
 }
 
@@ -187,28 +198,6 @@ function addRules(lines: string[], rules: readonly string[]): string[] {
   return splice(lines, at, 0, items);
 }
 
-function addVerify(lines: string[], commands: readonly string[]): string[] {
-  if (commands.length === 0) {
-    return lines;
-  }
-  const block = ["```bash", ...commands, "```"];
-  const section = findSection(lines, VERIFY);
-  if (section === undefined) {
-    return insertSection(lines, VERIFY, [VERIFY_INTRO, "", ...block], later(VERIFY));
-  }
-
-  const open = findIndexIn(lines, section.start + 1, section.end, (line) => FENCE.test(line));
-  const close =
-    open === undefined
-      ? undefined
-      : findIndexIn(lines, open + 1, section.end, (line) => FENCE.test(line));
-  if (close === undefined) {
-    const at = lastContentLine(lines, section) + 1;
-    return splice(lines, at, 0, ["", ...block]);
-  }
-  return splice(lines, close, 0, [...commands]);
-}
-
 function docsTable(rows: readonly (readonly string[])[]): string[] {
   return formatTable(["문서", "읽는 시점"], rows).split("\n");
 }
@@ -227,22 +216,6 @@ function listItems(lines: readonly string[]): string[] {
     const match = LIST_ITEM.exec(line);
     const text = match?.[2] ?? match?.[3];
     return text === undefined ? [] : [text.trim()];
-  });
-}
-
-/** `## 검증` 절의 코드 블록 안 줄. */
-function codeBlockLines(lines: readonly string[]): string[] {
-  const section = findSection(lines, VERIFY);
-  if (section === undefined) {
-    return [];
-  }
-  let inFence = false;
-  return lines.slice(section.start + 1, section.end).flatMap((line) => {
-    if (FENCE.test(line)) {
-      inFence = !inFence;
-      return [];
-    }
-    return inFence ? [line.trim()] : [];
   });
 }
 
