@@ -16,6 +16,7 @@ import com.tngtech.archunit.lang.ConditionEvents;
 import com.tngtech.archunit.lang.SimpleConditionEvent;
 import com.tngtech.archunit.library.GeneralCodingRules;
 import com.tngtech.archunit.library.freeze.FreezingArchRule;
+import java.time.Clock;
 import java.util.Optional;
 import java.util.Set;
 
@@ -31,14 +32,11 @@ import java.util.Set;
 @AnalyzeClasses(importOptions = {ImportOption.DoNotIncludeTests.class, ImportOption.DoNotIncludeArchives.class})
 class CodingRulesTest {
 
-    /** 인자 없는 now() 가 시스템 시계를 직접 읽는 java.time 타입들. */
-    private static final Set<String> TIME_TYPES_WITH_NOW = Set.of(
-            "java.time.LocalDate",
-            "java.time.LocalDateTime",
-            "java.time.LocalTime",
-            "java.time.Instant",
-            "java.time.ZonedDateTime",
-            "java.time.OffsetDateTime");
+    /**
+     * now() 를 가진 타입이 있는 패키지. LocalDate·Instant 뿐 아니라 YearMonth·Year·MonthDay·OffsetTime 과
+     * java.time.chrono 의 날짜 타입도 모두 now() 를 가지므로 타입이 아니라 패키지로 고른다.
+     */
+    private static final Set<String> TIME_PACKAGES = Set.of("java.time", "java.time.chrono");
 
     @ArchTest
     static final ArchRule 표준_출력과_printStackTrace를_쓰지_않는다 = FreezingArchRule.freeze(
@@ -58,7 +56,7 @@ class CodingRulesTest {
     @ArchTest
     static final ArchRule 시계를_받지_않는_now를_부르지_않는다 = FreezingArchRule.freeze(noClasses()
             .should()
-            .callMethodWhere(zeroArgumentNowOfJavaTime())
+            .callMethodWhere(nowWithoutClockOfJavaTime())
             .because("현재 시각은 Clock 을 주입받아 now(Clock) 으로 얻는다. 테스트에서 시각을 고정할 수 없다 → docs/java/testing.md"));
 
     @ArchTest
@@ -73,14 +71,18 @@ class CodingRulesTest {
             .haveFullyQualifiedName("java.io.ObjectInputStream")
             .because("신뢰할 수 없는 데이터를 Java 직렬화로 읽으면 원격 코드 실행으로 이어질 수 있다 → docs/java/logging-and-security.md"));
 
-    /** java.time 타입의 인자 없는 now() 호출만 고른다. now(Clock)·now(ZoneId) 는 걸리지 않는다. */
-    private static DescribedPredicate<JavaMethodCall> zeroArgumentNowOfJavaTime() {
-        return new DescribedPredicate<>("java.time 의 인자 없는 now() 를 호출한다") {
+    /**
+     * java.time 타입의 now 호출 가운데 Clock 을 받지 않는 것을 고른다. now() 뿐 아니라 now(ZoneId) 도 시스템 시계를 읽으므로 걸린다.
+     * now(Clock) 만 통과한다.
+     */
+    private static DescribedPredicate<JavaMethodCall> nowWithoutClockOfJavaTime() {
+        return new DescribedPredicate<>("java.time 의 Clock 을 받지 않는 now 를 호출한다") {
             @Override
             public boolean test(JavaMethodCall call) {
                 return call.getName().equals("now")
-                        && call.getTarget().getRawParameterTypes().isEmpty()
-                        && TIME_TYPES_WITH_NOW.contains(call.getTargetOwner().getName());
+                        && TIME_PACKAGES.contains(call.getTargetOwner().getPackageName())
+                        && call.getTarget().getRawParameterTypes().stream()
+                                .noneMatch(type -> type.isEquivalentTo(Clock.class));
             }
         };
     }

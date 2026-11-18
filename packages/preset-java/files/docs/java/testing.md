@@ -19,7 +19,7 @@
 - 테스트 이름은 `@DisplayName` 에 한국어로, 사용하는 쪽 입장의 동작을 쓴다.
 - 단언은 AssertJ(`assertThat`, `assertThatThrownBy`)로 쓴다.
 - 경계값과 여러 입력은 `@ParameterizedTest` 로 묶는다.
-- 현재 시각은 `Clock` 을 주입받아 쓰고 테스트에서 `Clock.fixed` 로 고정한다. 코드에서 `LocalDateTime.now()` 를 직접 부르지 않는다.
+- 현재 시각은 `Clock` 을 주입받아 쓰고 테스트에서 `Clock.fixed` 로 고정한다. 코드에서 `LocalDateTime.now()`·`YearMonth.now(zone)` 처럼 `Clock` 을 받지 않는 `now` 를 부르지 않는다.
 - 비동기 결과를 `Thread.sleep` 으로 기다리지 않는다. 필요하면 Awaitility 로 조건을 기다린다.
 - 테스트끼리 상태를 공유하거나 실행 순서에 기대지 않는다.
 - 버그 수정은 그 버그를 재현하는 테스트부터 쓴다.
