@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import type { Io } from "../src/io.js";
 import { run } from "../src/run.js";
+import { VERIFY_USAGE } from "../src/commands/verify.js";
 
 let root: string;
 let out: string;
@@ -48,5 +49,10 @@ describe("run", () => {
   it("모르는 옵션은 예외 대신 사용법 오류(2)로 알린다", async () => {
     await expect(run(["check", "--unknown"], io())).resolves.toBe(2);
     expect(err).toContain("agentsmd check --help");
+  });
+
+  it("verify --help가 0을 돌려주고 VERIFY_USAGE를 출력한다", async () => {
+    await expect(run(["verify", "--help"], io())).resolves.toBe(0);
+    expect(out).toBe(VERIFY_USAGE);
   });
 });

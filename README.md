@@ -22,6 +22,9 @@ npx @agentsmd/cli init --preset git,github,typescript
 
 # 문서 지도가 저장소와 맞는지 검사한다 (문제가 있으면 종료 코드 1)
 npx @agentsmd/cli check
+
+# .agentsmd/verify.json 의 검증 단계(빌드·테스트 등)를 차례로 실행한다 (단계가 실패하면 종료 코드 1)
+npx @agentsmd/cli verify
 ```
 
 전역으로 설치하면 `agentsmd init`, `agentsmd check` 처럼 짧게 씁니다: `npm install -g @agentsmd/cli`
@@ -65,10 +68,10 @@ docs/
 
 어느 조합이든 아래는 같습니다.
 
-- `AGENTS.md`(문서 지도·핵심 규칙·검증 명령)와 이를 불러오는 `CLAUDE.md`를 고른 프리셋에 맞춰 만듭니다.
+- `AGENTS.md`(문서 지도·핵심 규칙·검증 안내)와 이를 불러오는 `CLAUDE.md`를 고른 프리셋에 맞춰 만들고, 프리셋의 검증 명령은 `.agentsmd/verify.json`에 단계로 넣습니다.
 - 이미 있는 파일은 덮어쓰지 않습니다. `AGENTS.md`가 있으면 빠진 문서·규칙만 더하므로, 프리셋을 나중에 추가해도 됩니다.
 - 다른 프리셋이 있어야 하는 프리셋은 그 프리셋을 함께 설치합니다. `github`은 `git`을, `spring-java`는 `java`를, `react`는 `typescript`를, 언어 프리셋은 `project`를 먼저 설치하고 출력으로 알립니다. `--force`는 직접 고른 프리셋의 파일만 덮어씁니다.
-- CI 설정 파일은 설치하지 않습니다. GitHub Actions, GitLab CI, Jenkins 등 쓰는 CI에서 문서에 적힌 검증 명령과 `.githooks/check-pr`를 부르면 됩니다.
+- CI 설정 파일은 설치하지 않습니다. GitHub Actions, GitLab CI, Jenkins 등 쓰는 CI에서 `agentsmd verify`와 `.githooks/check-pr`를 부르면 됩니다.
 
 프리셋별 파일 목록은 [docs/commands.md](docs/commands.md)와 각 패키지 README에 있습니다.
 
@@ -84,11 +87,11 @@ docs/requirements.md  [unlisted-doc]  문서 지도(AGENTS.md)에서 안내하�
 `파일:줄` 형식이라 편집기와 터미널에서 바로 그 위치로 이동할 수 있습니다.
 CI에 `agentsmd check` 한 단계를 넣으면 지도와 어긋난 변경은 머지 전에 실패합니다.
 
-| 문서                                         | 내용                                      |
-| -------------------------------------------- | ----------------------------------------- |
-| [docs/commands.md](docs/commands.md)         | `init`, `check`의 옵션과 종료 코드        |
-| [docs/rules.md](docs/rules.md)               | 검사 규칙별 의도, 예시, 고치는 방법       |
-| [docs/architecture.md](docs/architecture.md) | 패키지 구조와 규칙·프리셋을 추가하는 방법 |
+| 문서                                         | 내용                                         |
+| -------------------------------------------- | -------------------------------------------- |
+| [docs/commands.md](docs/commands.md)         | `init`, `check`, `verify`의 옵션과 종료 코드 |
+| [docs/rules.md](docs/rules.md)               | 검사 규칙별 의도, 예시, 고치는 방법          |
+| [docs/architecture.md](docs/architecture.md) | 패키지 구조와 규칙·프리셋을 추가하는 방법    |
 
 ## 실제 저장소에 적용한 결과
 

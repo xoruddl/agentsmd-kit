@@ -1,0 +1,12 @@
+{
+  "steps": [
+    {
+      "name": "ci",
+      "run": "pnpm build && pnpm format:check && pnpm lint && pnpm typecheck && pnpm test"
+    },
+    {
+      "name": "check",
+      "run": "node packages/cli/dist/main.js check"
+    }
+  ]
+}
