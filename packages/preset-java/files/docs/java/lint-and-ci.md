@@ -70,7 +70,7 @@ ArchUnit 의존성은 [package-structure.md](package-structure.md) 의 스니펫
 | `System.out`·`System.err`·`printStackTrace` 를 쓰지 않는다 | [logging-and-security.md](logging-and-security.md) |
 | `java.util.logging` 타입의 필드를 쓰지 않는다 | [logging-and-security.md](logging-and-security.md) |
 | `Exception`·`RuntimeException`·`Throwable` 을 그대로 던지지 않는다 | [clean-code.md](clean-code.md) |
-| `java.time`·`java.time.chrono` 타입의 `now()`·`now(ZoneId)` 를 부르지 않는다 (`now(Clock)` 만 허용) | [testing.md](testing.md) |
+| `java.time`·`java.time.chrono` 타입의 `now()`·`now(ZoneId)`, `Chronology` 의 `dateNow()`·`dateNow(ZoneId)` 를 부르지 않는다 (`Clock` 을 받는 것만 허용) | [testing.md](testing.md) |
 | `Optional` 을 필드 타입과 파라미터 타입으로 쓰지 않는다 (반환 타입은 허용) | [clean-code.md](clean-code.md) |
 | `ObjectInputStream` 에 의존하지 않는다 | [logging-and-security.md](logging-and-security.md) |
 

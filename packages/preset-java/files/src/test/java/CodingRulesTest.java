@@ -38,6 +38,9 @@ class CodingRulesTest {
      */
     private static final Set<String> TIME_PACKAGES = Set.of("java.time", "java.time.chrono");
 
+    /** 현재 시각을 읽는 메서드 이름. dateNow 는 java.time.chrono.Chronology 의 것이다. */
+    private static final Set<String> NOW_METHOD_NAMES = Set.of("now", "dateNow");
+
     @ArchTest
     static final ArchRule 표준_출력과_printStackTrace를_쓰지_않는다 = FreezingArchRule.freeze(
             GeneralCodingRules.NO_CLASSES_SHOULD_ACCESS_STANDARD_STREAMS.because(
@@ -72,14 +75,14 @@ class CodingRulesTest {
             .because("신뢰할 수 없는 데이터를 Java 직렬화로 읽으면 원격 코드 실행으로 이어질 수 있다 → docs/java/logging-and-security.md"));
 
     /**
-     * java.time 타입의 now 호출 가운데 Clock 을 받지 않는 것을 고른다. now() 뿐 아니라 now(ZoneId) 도 시스템 시계를 읽으므로 걸린다.
-     * now(Clock) 만 통과한다.
+     * java.time 타입의 now·dateNow 호출 가운데 Clock 을 받지 않는 것을 고른다. now() 뿐 아니라 now(ZoneId) 도 시스템 시계를 읽으므로 걸린다.
+     * now(Clock)·dateNow(Clock) 만 통과한다.
      */
     private static DescribedPredicate<JavaMethodCall> nowWithoutClockOfJavaTime() {
-        return new DescribedPredicate<>("java.time 의 Clock 을 받지 않는 now 를 호출한다") {
+        return new DescribedPredicate<>("java.time 의 Clock 을 받지 않는 now·dateNow 를 호출한다") {
             @Override
             public boolean test(JavaMethodCall call) {
-                return call.getName().equals("now")
+                return NOW_METHOD_NAMES.contains(call.getName())
                         && TIME_PACKAGES.contains(call.getTargetOwner().getPackageName())
                         && call.getTarget().getRawParameterTypes().stream()
                                 .noneMatch(type -> type.isEquivalentTo(Clock.class));
