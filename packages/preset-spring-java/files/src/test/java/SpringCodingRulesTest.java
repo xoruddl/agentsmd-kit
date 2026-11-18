@@ -39,6 +39,7 @@ import java.util.Optional;
 class SpringCodingRulesTest {
 
     private static final String ENTITY = "jakarta.persistence.Entity";
+    private static final String EMBEDDABLE = "jakarta.persistence.Embeddable";
     private static final String ENUMERATED = "jakarta.persistence.Enumerated";
     private static final String MANY_TO_ONE = "jakarta.persistence.ManyToOne";
     private static final String ONE_TO_ONE = "jakarta.persistence.OneToOne";
@@ -83,11 +84,14 @@ class SpringCodingRulesTest {
             .allowEmptyShould(true));
 
     @ArchTest
-    static final ArchRule 엔티티에_공개_setter를_두지_않는다 = FreezingArchRule.freeze(classes()
+    static final ArchRule 엔티티와_값_객체에_공개_setter를_두지_않는다 = FreezingArchRule.freeze(classes()
             .that()
             .areAnnotatedWith(ENTITY)
+            .or()
+            .areAnnotatedWith(EMBEDDABLE)
             .should(notHavePublicSetters())
-            .because("setter 로 상태를 바꾸면 불변식을 지킬 수 없다. 의도가 드러나는 메서드로 바꾼다 → docs/spring-java/data-jpa.md")
+            .because("setter 로 상태를 바꾸면 불변식을 지킬 수 없다. 엔티티는 의도가 드러나는 메서드로 바꾸고,"
+                    + " 값 객체(@Embeddable)는 바꾸지 않고 새로 만든다 → docs/spring-java/data-jpa.md")
             .allowEmptyShould(true));
 
     @ArchTest
@@ -161,7 +165,7 @@ class SpringCodingRulesTest {
                 for (JavaMethod method : javaClass.getMethods()) {
                     if (isPublicSetter(method)) {
                         events.add(SimpleConditionEvent.violated(
-                                method, method.getDescription() + " 는 엔티티의 public setter 이다"));
+                                method, method.getDescription() + " 는 엔티티·값 객체의 public setter 이다"));
                     }
                 }
             }
