@@ -93,23 +93,34 @@ class CodingRulesTest {
             @Override
             public void check(JavaClass javaClass, ConditionEvents events) {
                 for (JavaField field : javaClass.getFields()) {
-                    if (!field.getModifiers().contains(JavaModifier.SYNTHETIC)
-                            && field.getRawType().isEquivalentTo(Optional.class)) {
-                        events.add(SimpleConditionEvent.violated(field, field.getDescription() + " 의 타입이 Optional 이다"));
-                    }
+                    checkOptionalField(field, events);
                 }
                 for (JavaCodeUnit codeUnit : javaClass.getCodeUnits()) {
-                    if (codeUnit.getModifiers().contains(JavaModifier.SYNTHETIC)) {
-                        continue;
-                    }
-                    for (JavaClass parameterType : codeUnit.getRawParameterTypes()) {
-                        if (parameterType.isEquivalentTo(Optional.class)) {
-                            events.add(SimpleConditionEvent.violated(
-                                    codeUnit, codeUnit.getDescription() + " 의 파라미터 타입이 Optional 이다"));
-                        }
-                    }
+                    checkOptionalParameters(codeUnit, events);
                 }
             }
         };
+    }
+
+    private static void checkOptionalField(JavaField field, ConditionEvents events) {
+        if (field.getModifiers().contains(JavaModifier.SYNTHETIC)) {
+            return;
+        }
+        if (field.getRawType().isEquivalentTo(Optional.class)) {
+            events.add(SimpleConditionEvent.violated(field, field.getDescription() + " 의 타입이 Optional 이다"));
+        }
+    }
+
+    /** Optional 파라미터 하나마다 위반 하나를 남긴다. */
+    private static void checkOptionalParameters(JavaCodeUnit codeUnit, ConditionEvents events) {
+        if (codeUnit.getModifiers().contains(JavaModifier.SYNTHETIC)) {
+            return;
+        }
+        for (JavaClass parameterType : codeUnit.getRawParameterTypes()) {
+            if (parameterType.isEquivalentTo(Optional.class)) {
+                events.add(SimpleConditionEvent.violated(
+                        codeUnit, codeUnit.getDescription() + " 의 파라미터 타입이 Optional 이다"));
+            }
+        }
     }
 }
