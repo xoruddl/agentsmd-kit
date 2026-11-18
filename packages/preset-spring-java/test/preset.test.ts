@@ -45,6 +45,17 @@ describe("springJavaPreset", () => {
     }
   });
 
+  // 성공·실패를 같은 모양으로 내린다. ProblemDetail 안내가 남으면 오류 응답 형식이 두 가지가 된다.
+  it("API 응답은 공통 응답 형식만 안내한다", async () => {
+    expect(springJavaPreset.rules.some((rule) => rule.includes("ApiResponse"))).toBe(true);
+    const api = await readFile(join(repo, "docs/spring-java/api.md"), "utf8");
+    expect(api).toContain(
+      "record ApiResponse<T>(boolean success, String code, String message, T data)",
+    );
+    expect(api).not.toContain("ProblemDetail.forStatus");
+    expect(api).not.toContain("problemdetails.enabled: true");
+  });
+
   it("레이어 테스트 템플릿을 설치한다", async () => {
     await expect(
       access(join(repo, "src/test/java/LayerArchitectureTest.java")),
