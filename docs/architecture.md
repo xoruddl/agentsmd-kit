@@ -95,7 +95,9 @@ Git 규칙, 호스팅(GitHub), 언어 규칙, 프레임워크 규칙은 따로 �
 ## 언어 프리셋 추가하기
 
 1. `packages/preset-<이름>/files/`에 설치될 경로 그대로 파일을 둔다. Prettier는 이 디렉터리를 건드리지 않는다.
-   - 언어 규칙 문서(`docs/<이름>/`)만 둔다. `AGENTS.md`, `CLAUDE.md`, `.githooks/`, `.github/`는 두지 않는다.
+   - 언어 규칙 문서(`docs/<이름>/`)와, 그 문서의 규칙을 검사하는 테스트 템플릿(`src/test/...`)을 둔다. `AGENTS.md`, `CLAUDE.md`, `.githooks/`, `.github/`는 두지 않는다.
+   - 테스트 템플릿은 이 저장소에 해당 언어 빌드가 없어 여기서 컴파일되지 않는다. 설치 후 실제 프로젝트에서 컴파일·실행해 확인한다.
+     이 저장소의 프리셋 테스트는 `check` 통과와 파일 설치 여부만 본다.
 2. `src/index.ts`에서 `Preset` 객체를 내보낸다. `docs`, `rules`, `verify`를 채우고, 수작업이 남으면 `nextSteps`를 채운다.
    `docs/<이름>/` 아래 문서는 모두 `docs`에 올린다. 빠지면 `check`가 지도에 없는 문서로 잡는다.
    - `rules`는 AGENTS.md의 핵심 규칙이 된다. 문서는 에이전트가 필요할 때만 열지만 AGENTS.md는 항상 읽히므로,

@@ -37,16 +37,20 @@
 
 ## 작업 목록 (커밋 단위)
 
-| #   | 작업                                                                                    | 패키지             | 파일 수 |
-| --- | --------------------------------------------------------------------------------------- | ------------------ | ------- |
-| 1   | (완료) `## 검증` 블록에서 명령 목록 읽기 — 옮겨 오기용                                  | core               | 3       |
-| 2   | `verify.json` 해석·합치기                                                               | core               | 3       |
-| 3   | 셸 명령 실행기(`Runner`)                                                                | cli                | 2       |
-| 4   | `agentsmd verify` 명령(`--only` 포함)과 문서                                            | cli, docs          | 6       |
-| 5   | 프리셋 검증 명령을 `verify.json`으로, AGENTS.md는 안내 한 줄, 옮겨 오기, 이 저장소 전환 | core, cli, 루트    | 10 이하 |
-| 6   | `java` 프리셋: 패키지 크기 테스트 템플릿과 문서                                         | preset-java, docs  | 6       |
-| 7   | `spring-java` 프리셋: 레이어·위치 테스트 템플릿과 문서                                  | preset-spring-java | 7       |
+| #   | 작업                                                                                           | 패키지             | 파일 수    |
+| --- | ---------------------------------------------------------------------------------------------- | ------------------ | ---------- |
+| 1   | (완료) `## 검증` 블록에서 명령 목록 읽기 — 옮겨 오기용                                         | core               | 3          |
+| 2   | (완료) `verify.json` 해석·합치기                                                               | core               | 3          |
+| 3   | (완료) 셸 명령 실행기(`Runner`)                                                                | cli                | 2          |
+| 4   | (완료) `agentsmd verify` 명령(`--only` 포함)과 문서                                            | cli, docs          | 6          |
+| 5   | (완료) 프리셋 검증 명령을 `verify.json`으로, AGENTS.md는 안내 한 줄, 옮겨 오기, 이 저장소 전환 | core, cli, 루트    | 15 (2커밋) |
+| 6   | `java` 프리셋: 패키지 크기 테스트 템플릿과 문서                                                | preset-java, docs  | 6          |
+| 7   | `java` 프리셋: 코드 작성 규칙 테스트 템플릿과 `archunit.properties`                            | preset-java        | 6          |
+| 8   | `spring-java` 프리셋: 모듈 경계 규칙 삭제                                                      | preset-spring-java | 4          |
+| 9   | `spring-java` 프리셋: 레이어·위치·순환 테스트 템플릿과 문서                                    | preset-spring-java | 6          |
+| 10  | `spring-java` 프리셋: Spring 코드 작성 규칙 테스트 템플릿                                      | preset-spring-java | 4          |
 
+작업 1~5는 #81, 작업 6~10은 #82에서 한다.
 orbit-server 적용(`entity` → `domain`, 템플릿 반영)은 orbit-server 저장소에서 별도 계획으로 한다.
 
 ---
@@ -479,28 +483,27 @@ it("패키지 구조 문서를 문서 지도에 올린다", () => {
 
 ---
 
-### Task 7 (작업 7): `spring-java` 프리셋 — 레이어·위치 테스트 템플릿과 문서
+### Task 7 (작업 7): `java` 프리셋 — 코드 작성 규칙 테스트 템플릿과 `archunit.properties`
+
+설계 3-2, 결정 9.
 
 **파일:**
 
-- 만듦: `packages/preset-spring-java/files/src/test/java/LayerArchitectureTest.java`
-- 만듦: `packages/preset-spring-java/files/src/test/resources/archunit.properties`
-- 고침: `packages/preset-spring-java/src/index.ts` (`rules`에 한 줄, `nextSteps`에 두 줄)
-- 고침: `packages/preset-spring-java/files/docs/spring-java/architecture.md`, `.../testing.md` ("검사할 수 있다" → 설치된 테스트가 검사)
-- 테스트: `packages/preset-spring-java/test/preset.test.ts`
-- 문서: `packages/preset-spring-java/README.md`
+- 만듦: `packages/preset-java/files/src/test/java/CodingRulesTest.java`
+- 만듦: `packages/preset-java/files/src/test/resources/archunit.properties` (내용은 전역 제약의 두 값과 아래 주석)
+- 고침: `packages/preset-java/src/index.ts` (`nextSteps`에 기준선 만들기 안내 한 줄. `rules`는 5개라 더하지 않는다)
+- 고침: `packages/preset-java/files/docs/java/lint-and-ci.md` (`## 코드 규칙 테스트` 절: 검사하는 규칙 6개와 근거 문서, 기준선 만들기 절차, 기준선을 손으로 고치지 않는다는 규칙)
+- 테스트: `packages/preset-java/test/preset.test.ts`
+- 문서: `packages/preset-java/README.md` (설치 파일 목록)
 
-**템플릿이 지켜야 할 것 (설계에서 정한 값):**
+**템플릿이 지켜야 할 것:**
 
-- 상수 `FEATURES_PACKAGE = "com.example.app"`, `GLOBAL_PACKAGE = "com.example.app.global"`. 설치 후 채우도록 `nextSteps`로 안내한다(orbit은 `com.orbit.server.domain`, `com.orbit.server.global`).
-- 레이어는 `FEATURES_PACKAGE.<기능>.<레이어>[.하위...]`에서 `<레이어>` 자리 이름으로 판단한다. 그래서 `domain.vehicle.domain`도, `service.stream` 같은 하위 패키지도 맞게 잡힌다.
-- 규칙(모두 `FreezingArchRule.freeze`로 감싼다):
-  1. `domain` 레이어는 `controller`·`service`·`repository` 레이어와 `org.springframework..`에 의존하지 않는다.
-  2. `controller` 레이어는 `repository` 레이어에 의존하지 않는다.
-  3. `GLOBAL_PACKAGE..`는 기능 패키지에 의존하지 않는다. 단 `GLOBAL_PACKAGE.external..`은 기능의 `service`·`domain`·`exception` 레이어를 쓸 수 있다.
-  4. 한 기능의 클래스는 다른 기능의 `repository`·`domain` 레이어에 의존하지 않는다.
-  5. 위치: `@RestController`·`@Controller` → `controller`, `@Entity`·`@Embeddable` → `domain`, `org.springframework.data.repository.Repository`를 상속한 인터페이스 → `repository`. 어노테이션은 타입 이름으로 정확히 비교한다(`@RestControllerAdvice` 제외).
-- `archunit.properties` 내용(orbit과 같은 주석 포함):
+- 기본 패키지의 `CodingRulesTest`. `@AnalyzeClasses(importOptions = { DoNotIncludeTests, DoNotIncludeArchives })`로 프로젝트 main 클래스만 읽는다(`PackageSizeTest`와 같은 방식, 작업 6에서 확인된 방식을 따른다).
+- 규칙 6개(설계 3-2의 `java` 목록)를 각각 `@ArchTest static final ArchRule`로 두고 모두 `FreezingArchRule.freeze(...)`로 감싼다. `GeneralCodingRules`에 있는 세 규칙은 그대로 쓴다.
+- `now()` 규칙: `java.time`의 `LocalDate`·`LocalDateTime`·`LocalTime`·`Instant`·`ZonedDateTime`·`OffsetDateTime`의 **인자 없는** `now()` 호출만 금지한다. `now(Clock)`은 허용.
+- `Optional` 규칙: 필드 타입이 `java.util.Optional`인 필드, 파라미터 타입이 `Optional`인 메서드·생성자를 금지한다. 반환 타입은 허용.
+- 모든 규칙에 `.because("... → docs/java/<근거 문서>.md")`를 붙인다.
+- `archunit.properties`:
 
 ```properties
 # FreezingArchRule 이 기존 위반을 기록하는 위치. 커밋해서 팀이 같은 기준으로 검사한다
@@ -509,23 +512,90 @@ freeze.store.default.path=src/test/resources/archunit_store
 freeze.store.default.allowStoreCreation=false
 ```
 
-- `rules`에 더할 한 줄(spring-java는 지금 4개): `"ArchUnit 기준선(archunit_store)과 PackageSizeTest 의 큰 패키지 상한을 고치지 않는다. 넘으면 패키지를 나눈다."`
-- `nextSteps`: `LayerArchitectureTest` 의 FEATURES_PACKAGE·GLOBAL_PACKAGE 를 프로젝트 패키지로 바꾸세요.`, `처음 한 번만 archunit.properties 의 allowStoreCreation 을 true 로 두고 테스트를 돌려 기준선을 만든 뒤 false 로 되돌리세요.`
+- `nextSteps`: `처음 한 번만 src/test/resources/archunit.properties 의 allowStoreCreation 을 true 로 두고 ./gradlew test 로 기준선을 만든 뒤 false 로 되돌리세요. → docs/java/lint-and-ci.md`
+
+- [ ] **1단계: orbit 사본에서 확인** — 작업 6의 `/tmp/orbit-verify`에 `CodingRulesTest`를 복사하고, 사본의 `archunit.properties`만 `allowStoreCreation=true`로 바꿔 `./gradlew test --tests CodingRulesTest`. 기대: 첫 실행에서 기준선이 생기고 통과, 두 번째 실행도 통과. 사본의 main 클래스 하나에 `System.out.println`을 넣으면 실패. 기준선에 들어간 위반 목록을 보고서에 적는다(오탐이면 규칙을 고친다).
+- [ ] **2단계: 프리셋 테스트 작성(실패 확인)** — `CodingRulesTest.java`와 `archunit.properties`가 설치되고, properties에 `allowStoreCreation=false`가 있고, 템플릿에 `FreezingArchRule`과 `docs/java/` 근거 경로가 있는지 확인. 실행: `pnpm --filter @agentsmd/preset-java test`, 기대: FAIL
+- [ ] **3단계: 템플릿·properties·`index.ts`·문서·README 작성 후 통과 확인** — `pnpm --filter @agentsmd/preset-java test && pnpm --filter @agentsmd/cli test -- presets`, 기대: PASS(같은 경로 금지 테스트 포함)
+- [ ] **4단계: 전체 검증, 리뷰, 스테이징** — 위 6개 파일만 `git add`
+
+---
+
+### Task 8 (작업 8): `spring-java` 프리셋 — 모듈 경계 규칙 삭제
+
+설계 결정 7. 다른 기능의 `repository`·엔티티 금지와 ID 참조는 모듈러 모놀리스 규칙이라 지운다. 권장으로도 남기지 않는다(AI가 새 코드에만 적용해 방식이 섞인다). 작업 9의 테스트도 이 규칙을 검사하지 않는다.
+
+**파일:**
+
+- 고침: `packages/preset-spring-java/src/index.ts` (`rules`에서 `"다른 기능의 repository·엔티티를 직접 쓰지 않고 그 기능의 service 를 통한다."` 삭제. 4개 → 3개)
+- 고침: `packages/preset-spring-java/files/docs/spring-java/architecture.md`
+  - 의존 방향 절의 "다른 기능의 `repository`·엔티티를 직접 쓰지 않는다. 그 기능의 `service` 를 통한다.", "다른 기능의 엔티티는 객체가 아니라 ID 로 참조한다." 두 항목을 지운다.
+  - 이벤트 안내(`ApplicationEventPublisher`, `@TransactionalEventListener`)는 독립 항목으로 남긴다. 작업 9의 순환 규칙에서 "역방향 의존은 도메인 이벤트로 끊는다"가 이 항목을 가리킨다.
+- 고침: `packages/preset-spring-java/files/docs/spring-java/data-jpa.md` ("다른 기능(Aggregate)의 엔티티는 연관관계 대신 ID 로 참조한다." 삭제)
+- 테스트: `packages/preset-spring-java/test/preset.test.ts`
+
+이미 설치된 저장소의 AGENTS.md는 `init`이 규칙을 지우지 않으므로 그대로 남는다. 사람이 지우면 된다.
+
+- [ ] **1단계: 실패하는 테스트 작성**
+
+```ts
+it("모듈 경계 규칙을 두지 않는다", async () => {
+  expect(springJavaPreset.rules.some((rule) => rule.includes("다른 기능의 repository"))).toBe(
+    false,
+  );
+  for (const doc of ["architecture.md", "data-jpa.md"]) {
+    const text = await readFile(join(repo, "docs/spring-java", doc), "utf8");
+    expect(text).not.toContain("ID 로 참조");
+  }
+});
+```
+
+실행: `pnpm --filter @agentsmd/preset-spring-java test`, 기대: FAIL
+
+- [ ] **2단계: `index.ts`·`architecture.md`·`data-jpa.md` 수정 후 통과 확인** — 위 명령과 `pnpm --filter @agentsmd/cli test -- presets`, 기대: PASS
+- [ ] **3단계: 전체 검증, 리뷰, 스테이징** — 위 4개 파일만 `git add`
+
+---
+
+### Task 9 (작업 9): `spring-java` 프리셋 — 레이어·위치·순환 테스트 템플릿과 문서
+
+`archunit.properties`는 작업 7에서 `java` 프리셋이 설치한다. 이 작업은 설치하지 않는다(결정 9).
+
+**파일:**
+
+- 만듦: `packages/preset-spring-java/files/src/test/java/LayerArchitectureTest.java`
+- 고침: `packages/preset-spring-java/src/index.ts` (`rules`에 한 줄, `nextSteps`에 한 줄)
+- 고침: `packages/preset-spring-java/files/docs/spring-java/architecture.md`, `.../testing.md` ("검사할 수 있다" → 설치된 테스트가 검사)
+- 테스트: `packages/preset-spring-java/test/preset.test.ts`
+- 문서: `packages/preset-spring-java/README.md`
+
+**템플릿이 지켜야 할 것 (설계에서 정한 값):**
+
+- 상수 `FEATURES_PACKAGE = "com.example.app"`, `GLOBAL_PACKAGE = "com.example.app.global"`. 설치 후 채우도록 `nextSteps`로 안내한다(orbit은 `com.orbit.server.domain`, `com.orbit.server.global`).
+- 레이어는 `FEATURES_PACKAGE.<기능>.<레이어>[.하위...]`에서 `<레이어>` 자리 이름으로 판단한다. 그래서 `domain.vehicle.domain`도, `service.stream` 같은 하위 패키지도 맞게 잡힌다.
+- 규칙 1~4는 `FreezingArchRule.freeze`로 감싼다:
+  1. `domain` 레이어는 `controller`·`service`·`repository` 레이어와 `org.springframework..`에 의존하지 않는다.
+  2. `controller` 레이어는 `repository` 레이어에 의존하지 않는다.
+  3. `GLOBAL_PACKAGE..`는 기능 패키지에 의존하지 않는다. 단 `GLOBAL_PACKAGE.external..`은 기능의 `service`·`domain`·`exception` 레이어를 쓸 수 있다.
+  4. 위치: `@RestController`·`@Controller` → `controller`, `@Entity`·`@Embeddable` → `domain`, `org.springframework.data.repository.Repository`를 상속한 인터페이스 → `repository`. 어노테이션은 타입 이름으로 정확히 비교한다(`@RestControllerAdvice` 제외).
+- 규칙 5는 기준선 대신 코드의 허용 목록을 쓴다(설계 결정 8): 5. 기능끼리 순환 의존이 없다. `slices().matching(FEATURES_PACKAGE + ".(*)..").should().beFreeOfCycles()`. `GLOBAL_PACKAGE`로 들어가고 나가는 의존은 `ignoreDependency`로 빼고(규칙 3이 맡는다), 알려진 역방향 의존은 클래스 이름 문자열로 한 줄씩 `ignoreDependency`에 적는다. 템플릿의 목록은 비워 두고, 이유를 적고 "도메인 이벤트로 끊으면 지운다"는 주석 예시를 둔다.
+- 다른 기능의 `repository`·`domain` 사용은 검사하지 않는다(작업 8, 설계 결정 7).
+- `FEATURES_PACKAGE`를 바꾸지 않아 규칙에 걸리는 클래스가 없으면 ArchUnit 기본값대로 실패하게 둔다(`allowEmptyShould`를 켜지 않는다). 상수를 채우지 않은 것을 바로 알게 하려는 것이다.
+- `rules`에 더할 한 줄(spring-java는 작업 8 뒤 3개): `"ArchUnit 기준선(archunit_store), PackageSizeTest 의 큰 패키지 상한, 순환 허용 목록을 늘리지 않는다. 넘으면 패키지를 나누고, 역방향 의존은 도메인 이벤트로 끊는다."`
+- `nextSteps`: `LayerArchitectureTest 의 FEATURES_PACKAGE·GLOBAL_PACKAGE 를 프로젝트 패키지로 바꾸세요.` (기준선 만들기 안내는 작업 7의 `java` 프리셋이 한다)
 
 - [ ] **1단계: orbit 사본에서 템플릿 확인**
 
 작업 6의 `/tmp/orbit-verify`에 템플릿을 복사한다. 상수는 `com.orbit.server.domain`/`com.orbit.server.global`로 바꾸고, 사본은 아직 `entity`를 쓰므로 템플릿의 `domain` 레이어 이름을 임시로 `entity`로 바꾼다.
 그다음 `allowStoreCreation=true`(사본만)로 `./gradlew test --tests LayerArchitectureTest`를 실행한다.
-기대: 규칙 3·4는 orbit 기존 테스트와 같은 결과다. 기준선에 들어간 위반은 하나씩 확인해서, 템플릿 규칙의 오탐이면 고치고 실제 위반이면 목록으로 남겨 사용자에게 보고한다.
+기대: 규칙 3은 orbit 기존 `global/external` 규칙과, 규칙 5는 orbit `contextsAreFreeOfCycles`와 같은 결과다. 규칙 5는 허용 목록이 비어 있으면 `vehicle → update` 순환으로 실패하고, `VehicleRegistrationService → VehicleStateService`를 적으면 통과해야 한다.
+기준선에 들어간 위반은 하나씩 확인해서, 템플릿 규칙의 오탐이면 고치고 실제 위반이면 목록으로 남겨 사용자에게 보고한다.
 이어서 `@RestControllerAdvice` 클래스(`GlobalExceptionHandler`)가 위치 규칙에 걸리지 않는지 확인한다.
 
 - [ ] **2단계: 프리셋 테스트 작성(실패 확인)**
 
 ```ts
-it("레이어 테스트 템플릿과 archunit.properties를 설치한다", async () => {
-  const props = await readFile(join(repo, "src/test/resources/archunit.properties"), "utf8");
-  expect(props).toContain("freeze.store.default.allowStoreCreation=false");
-  expect(props).toContain("freeze.store.default.path=src/test/resources/archunit_store");
+it("레이어 테스트 템플릿을 설치한다", async () => {
   await expect(
     access(join(repo, "src/test/java/LayerArchitectureTest.java")),
   ).resolves.toBeUndefined();
@@ -537,12 +607,40 @@ it("핵심 규칙에 기준선을 고치지 않는다는 규칙이 있다", () =
 
 실행: `pnpm --filter @agentsmd/preset-spring-java test`, 기대: FAIL
 
-- [ ] **3단계: 템플릿·properties·`index.ts`·문서·README 작성 후 통과 확인**
+- [ ] **3단계: 템플릿·`index.ts`·문서·README 작성 후 통과 확인**
 
-`architecture.md`의 "의존 방향은 ArchUnit 테스트로 검사할 수 있다" 줄을 이렇게 바꾼다. "의존 방향과 클래스 위치는 설치된 `src/test/java/LayerArchitectureTest.java` 가 검사한다. 패키지 크기는 Java 프리셋의 `PackageSizeTest` 가 검사한다."
+`architecture.md`의 "의존 방향은 ArchUnit 테스트로 검사할 수 있다" 줄을 이렇게 바꾼다. "의존 방향, 클래스 위치, 기능 간 순환은 설치된 `src/test/java/LayerArchitectureTest.java` 가 검사한다. 패키지 크기는 Java 프리셋의 `PackageSizeTest` 가 검사한다."
+같은 절에 "기능끼리 순환하지 않는다. 역방향이 필요하면 도메인 이벤트로 끊는다"를 규칙으로 더한다.
 `testing.md`의 같은 줄도 맞춘다. 다른 프리셋 문서로는 링크하지 않는다(파일 경로만 적는다).
-`architecture.md`의 의존 방향 절 끝에 "기능 간 경계와 순환은 Spring Modulith(`ApplicationModules.verify()`)로도 검사할 수 있다. 다만 기준선 기능이 없으니 기존 순환을 정리한 뒤 도입한다"는 안내 한 줄을 더한다.
 실행: `pnpm --filter @agentsmd/preset-spring-java test && pnpm --filter @agentsmd/cli test -- presets`
 기대: PASS. 같은 경로 금지 테스트와 규칙 5개 이하 테스트도 통과해야 한다.
 
-- [ ] **4단계: 전체 검증, 리뷰, 스테이징** — 위 7개 파일만 `git add`
+- [ ] **4단계: 전체 검증, 리뷰, 스테이징** — 위 6개 파일만 `git add`
+
+---
+
+### Task 10 (작업 10): `spring-java` 프리셋 — Spring 코드 작성 규칙 테스트 템플릿
+
+설계 3-2. 기준선 설정(`archunit.properties`)은 작업 7의 것을 쓴다.
+
+**파일:**
+
+- 만듦: `packages/preset-spring-java/files/src/test/java/SpringCodingRulesTest.java`
+- 고침: `packages/preset-spring-java/files/docs/spring-java/testing.md` (설치된 테스트가 검사하는 Spring 코드 규칙 6개와 근거 문서 목록)
+- 테스트: `packages/preset-spring-java/test/preset.test.ts`
+- 문서: `packages/preset-spring-java/README.md`
+
+**템플릿이 지켜야 할 것:**
+
+- 기본 패키지, `CodingRulesTest`와 같은 import 옵션. 루트 패키지 상수가 필요 없다.
+- 규칙 6개(설계 3-2의 `spring-java` 목록)를 각각 `FreezingArchRule.freeze`로 감싸고 `.because("... → docs/spring-java/<근거>.md")`를 붙인다.
+  - `@Transactional`: `org.springframework.transaction.annotation.Transactional`과 `jakarta.transaction.Transactional` 둘 다. `..controller..`·`..repository..` 패키지의 클래스 자체와 그 메서드 모두 금지.
+  - `@Enumerated`: 필드의 어노테이션 값이 `EnumType.STRING`이 아니면(값 없음 포함) 위반.
+  - `@ManyToOne`·`@OneToOne`: `fetch` 값이 `FetchType.LAZY`가 아니면(값 없음 포함) 위반.
+  - 엔티티 setter: `@Entity` 클래스의 `public` 메서드 중 이름이 `set` + 대문자로 시작하고 파라미터가 1개인 것.
+  - 어노테이션은 정확한 타입 이름으로 비교한다(JPA는 `jakarta.persistence.*`).
+
+- [ ] **1단계: orbit 사본에서 확인** — `/tmp/orbit-verify`에 복사하고 `allowStoreCreation=true`(사본만)로 `./gradlew test --tests SpringCodingRulesTest`. 기대: 첫 실행에서 기준선 생성 후 통과, 두 번째도 통과. 사본 엔티티 하나에 `@Enumerated` 기본값 필드를 더하면 실패. 기준선 위반 목록은 보고서에 적는다(오탐이면 규칙을 고친다).
+- [ ] **2단계: 프리셋 테스트 작성(실패 확인)** — `SpringCodingRulesTest.java`가 설치되고 `FreezingArchRule`과 `NO_CLASSES_SHOULD_USE_FIELD_INJECTION`, `docs/spring-java/` 근거 경로가 있는지 확인. 실행: `pnpm --filter @agentsmd/preset-spring-java test`, 기대: FAIL
+- [ ] **3단계: 템플릿·문서·README 작성 후 통과 확인** — `pnpm --filter @agentsmd/preset-spring-java test && pnpm --filter @agentsmd/cli test -- presets`, 기대: PASS
+- [ ] **4단계: 전체 검증, 리뷰, 스테이징** — 위 4개 파일만 `git add`
