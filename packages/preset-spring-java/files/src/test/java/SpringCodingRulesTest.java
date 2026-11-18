@@ -8,6 +8,7 @@ import com.tngtech.archunit.core.domain.JavaEnumConstant;
 import com.tngtech.archunit.core.domain.JavaField;
 import com.tngtech.archunit.core.domain.JavaMethod;
 import com.tngtech.archunit.core.domain.JavaModifier;
+import com.tngtech.archunit.core.domain.properties.HasAnnotations;
 import com.tngtech.archunit.core.importer.ImportOption;
 import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
@@ -105,20 +106,22 @@ class SpringCodingRulesTest {
         return new ArchCondition<>("@Transactional 을 클래스나 메서드에 두지 않는다") {
             @Override
             public void check(JavaClass javaClass, ConditionEvents events) {
-                for (String annotation : TRANSACTIONAL_ANNOTATIONS) {
-                    if (javaClass.isAnnotatedWith(annotation)) {
+                if (isTransactional(javaClass)) {
+                    events.add(SimpleConditionEvent.violated(
+                            javaClass, javaClass.getDescription() + " 에 @Transactional 이 있다"));
+                }
+                for (JavaMethod method : javaClass.getMethods()) {
+                    if (isTransactional(method)) {
                         events.add(SimpleConditionEvent.violated(
-                                javaClass, javaClass.getDescription() + " 에 @Transactional 이 있다"));
-                    }
-                    for (JavaMethod method : javaClass.getMethods()) {
-                        if (method.isAnnotatedWith(annotation)) {
-                            events.add(SimpleConditionEvent.violated(
-                                    method, method.getDescription() + " 에 @Transactional 이 있다"));
-                        }
+                                method, method.getDescription() + " 에 @Transactional 이 있다"));
                     }
                 }
             }
         };
+    }
+
+    private static boolean isTransactional(HasAnnotations<?> element) {
+        return TRANSACTIONAL_ANNOTATIONS.stream().anyMatch(element::isAnnotatedWith);
     }
 
     /** 어노테이션 속성이 주어진 enum 상수가 아니면 위반이다. 속성을 적지 않았으면(기본값이 쓰이면) 위반이다. */
