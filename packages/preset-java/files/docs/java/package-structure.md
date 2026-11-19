@@ -42,6 +42,8 @@ JUnit 5 를 쓰도록 `tasks.test { useJUnitPlatform() }` (Kotlin) 또는 `test 
 ## 패키지가 커졌을 때 나누는 순서
 
 크기 초과 메시지의 역할 분포(`config 3, service 7, record 13, 기타 6`)를 보고 위에서부터 판단한다.
+역할 분포는 역할이 얼마나 섞였는지 보는 신호일 뿐이다. `record`·`기타`·`@Entity·@Embeddable` 같은 분류 이름을 패키지 이름으로 쓰지 않는다.
+하위 패키지 이름은 클래스들의 목적(`event`, `listener`, `policy`)으로 짓고, `util`·`common`·`etc` 처럼 목적이 없는 이름은 쓰지 않는다.
 
 1. **역할이 섞여 있으면 역할 단위 하위 패키지로 나눈다.** 예: `domain/event/`, `service/listener/`, `service/config/`.
    분포가 한 역할로 몰려 있지 않고 두 가지 이상이 섞여 있으면 이 단계다.
