@@ -31,8 +31,33 @@ com.example.app/
 - 레이어 안에서 역할이 다른 클래스는 파일 수가 적어도 역할 하위 패키지로 나눈다. 예: `domain/event/`, `service/listener/`
 - 레이어 안에 기능을 만들지 않는다. 레이어 안에서 새 도메인 명사가 보이면(`order/service/` 의 `Alert*`) 최상위 기능 패키지로 꺼낸다.
 - 기능 경계가 애매하면 사람에게 묻는다.
-- `global` 에는 비즈니스 규칙을 두지 않는다. 두 기능이 같은 개념을 쓴다고 `global` 로 올리지 않고, 기능 경계를 먼저 다시 본다.
+- `global` 에는 비즈니스 규칙을 두지 않는다. 두 기능이 같은 개념을 쓴다고 `global` 로 올리지 않고, 그 개념을 별도 기능으로 둔다.
 - 외부 시스템 연동(결제, 메일 등)은 서비스가 쓰는 인터페이스를 `service` 에 두고, 구현은 `global/external/<시스템>` 에 둔다.
+
+## 클래스를 추가할 때
+
+패키지는 커진 뒤에 나누지 않고, 클래스를 추가할 때마다 위치를 정해서 자라게 한다. 위에서부터 답한다.
+
+1. **어느 기능의 개념인가?** 기존 기능에 없는 도메인 명사면 새 기능 패키지를 만든다.
+   두 기능이 함께 쓰는 개념(`Money`, `Address` 같은 값 객체 포함)은 어느 한쪽에 두거나 복사하지 않고 별도 기능으로 둔다.
+2. **어느 레이어인가?** 아래 이름 규칙의 접미사로 정한다.
+3. **같은 목적의 클래스가 있는가?** 있으면 함께 두고, 없으면 레이어 안에 목적 이름의 하위 패키지를 만든다.
+   기존 클래스도 함께 옮겨야 하면 파일 이동만 하는 별도 커밋으로 옮긴다. → Java 프리셋 `docs/java/package-structure.md` 의 "재구성 작업 방식"
+4. **새 의존이 기존 기능 의존의 역방향인가?** 그러면 순환이다. 아래 "순환을 끊는 순서" 를 따른다.
+
+| 이름 | 위치 |
+| --- | --- |
+| `XxxController` | `controller/` |
+| `XxxRequest`, `XxxResponse`, `XxxSuccessCode` | `dto/` |
+| `XxxService` | `service/` |
+| `XxxListener`, `XxxScheduler` | `service/listener/`, `service/scheduler/` |
+| 기능 전용 `@Configuration`·`@ConfigurationProperties` (`XxxConfig`, `XxxProperties`) | `service/config/`. 여러 기능이 쓰는 기술 설정은 `global/config/` |
+| `XxxRepository` | `repository/` |
+| 엔티티, 값 객체, `XxxPolicy` | `domain/` |
+| 도메인 이벤트. 일어난 일을 과거형으로 짓는다 (`OrderPlaced`) | `domain/event/` |
+| `XxxException`, `XxxErrorCode` | `exception/` |
+
+이름 규칙에 없는 역할은 접미사를 정하고 같은 방식으로 하위 패키지를 만든다. 하위 패키지 이름은 목적(`event`, `listener`, `policy`)으로 짓고, `util`·`common`·`etc` 처럼 목적이 없는 이름은 쓰지 않는다.
 
 ## 의존 방향
 
