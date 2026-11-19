@@ -86,6 +86,16 @@ describe("springJavaPreset", () => {
     expect(springJavaPreset.rules.some((rule) => rule.includes("archunit_store"))).toBe(true);
   });
 
+  // 끊는 방법이 이벤트 하나뿐이면 즉시 결과가 필요한 순환을 피하려고 기능을 합치게 된다.
+  it("순환을 이벤트만이 아니라 의존 방향 정리와 개념 분리로도 끊게 안내한다", async () => {
+    const rule = springJavaPreset.rules.find((text) => text.includes("순환"));
+    expect(rule).toContain("의존 방향 정리");
+    expect(rule).toContain("별도 기능");
+    const architecture = await readFile(join(repo, "docs/spring-java/architecture.md"), "utf8");
+    expect(architecture).toContain("### 순환을 끊는 순서");
+    expect(architecture).not.toContain("역방향이 필요하면 도메인 이벤트로 끊는다");
+  });
+
   it("Git 훅과 GitHub 설정은 설치하지 않는다", async () => {
     expect(springJavaPreset).not.toHaveProperty("hooksPath");
     await expect(access(join(repo, ".githooks"))).rejects.toThrow();

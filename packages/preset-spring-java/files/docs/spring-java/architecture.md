@@ -70,11 +70,20 @@ controller → service → repository
 - `domain` 은 다른 레이어를 모른다. Spring 에 의존하지 않는다. (JPA 매핑 어노테이션만 예외)
 - `global` 은 기능 패키지에 의존하지 않는다.
 - 기능 사이에 즉시 결과가 필요 없는 일은 도메인 이벤트(`ApplicationEventPublisher`, `@TransactionalEventListener`)로 나눈다.
-- 기능끼리 순환하지 않는다. 역방향이 필요하면 도메인 이벤트로 끊는다.
+- 기능끼리 순환하지 않는다. 순환이 생기면 아래 순서로 끊는다. 순환을 피하려고 기능을 한 패키지로 합치지 않는다.
 - 의존 방향, 클래스 위치, 기능 간 순환은 설치된 `src/test/java/LayerArchitectureTest.java` 가 검사한다. 패키지 크기는 Java 프리셋의 `PackageSizeTest` 가 검사한다.
   설치한 뒤 `LayerArchitectureTest` 의 `FEATURES_PACKAGE`, `GLOBAL_PACKAGE` 를 프로젝트 패키지로 바꾼다. → [testing.md](testing.md)
 - 순환 허용 목록(`LayerArchitectureTest` 의 `ignoreDependency`), 큰 패키지 상한(`PackageSizeTest` 의 `KNOWN_LARGE_PACKAGES`), ArchUnit 기준선(`archunit_store`)은 늘리거나 고치지 않는다.
-  넘으면 패키지를 나누고, 역방향 의존은 도메인 이벤트로 끊는다.
+  넘으면 패키지를 나누고, 순환은 아래 순서로 끊는다.
+
+### 순환을 끊는 순서
+
+1. **의존 방향을 한쪽으로 정리한다.** 상위 개념이 하위 개념을 부르고 반대로는 부르지 않는다.
+   예: 주문은 상품·회원을 부르고, 상품·회원은 주문을 모른다. 하위 기능에 필요한 값은 상위 기능이 인자로 넘긴다.
+2. **두 기능이 함께 쓰는 개념을 별도 기능으로 꺼낸다.** 두 기능이 그 기능만 바라보게 해서 서로를 모르게 한다.
+3. **즉시 결과가 필요 없는 일만 도메인 이벤트로 끊는다.** 결과를 돌려받으려고 이벤트를 주고받지 않는다.
+
+어느 방법도 맞지 않으면 기능 경계가 잘못 나뉜 신호다. 혼자 정하지 않고 사람에게 묻는다.
 
 ## 빈과 주입
 
