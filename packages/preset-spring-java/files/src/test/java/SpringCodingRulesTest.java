@@ -142,6 +142,15 @@ class SpringCodingRulesTest {
             .haveSimpleNameEndingWith("ServiceImpl")
             .because("구현이 하나뿐인 서비스에 인터페이스와 Impl 을 나누지 않는다 → docs/spring-java/architecture.md"));
 
+    // 어노테이션도 의존으로 기록되므로 클래스·필드·메서드·파라미터 어디에 붙여도 잡힌다.
+    @ArchTest
+    static final ArchRule Spring_Nullable을_쓰지_않는다 = FreezingArchRule.freeze(noClasses()
+            .should()
+            .dependOnClassesThat()
+            .haveFullyQualifiedName("org.springframework.lang.Nullable")
+            .because("Spring 7 에서 deprecated 됐다. JSpecify 의 org.jspecify.annotations.Nullable 을 쓴다"
+                    + " → docs/spring-java/architecture.md"));
+
     /** 클래스 자체나 그 클래스가 선언한 메서드에 @Transactional 이 있으면 위반이다. */
     private static ArchCondition<JavaClass> notBeTransactionalNorHaveTransactionalMethods() {
         return new ArchCondition<>("@Transactional 을 클래스나 메서드에 두지 않는다") {

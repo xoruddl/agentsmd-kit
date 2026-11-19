@@ -42,6 +42,7 @@ Spring 컨텍스트를 띄우는 테스트는 느리다. 가능한 한 아래 �
 | `@Entity`·`@Embeddable` 클래스에 `setXxx` public 메서드를 두지 않는다. Lombok `@Setter`·`@Data` 는 만들어진 메서드로 판단한다 | [data-jpa.md](data-jpa.md) |
 | 컨트롤러(`@Controller`·`@RestController`)의 요청 매핑 메서드는 반환 타입(제네릭 인자 포함)과 파라미터에 `@Entity` 를 쓰지 않는다 | [architecture.md](architecture.md) |
 | 이름이 `ServiceImpl` 로 끝나는 클래스를 두지 않는다 | [architecture.md](architecture.md) |
+| Spring 의 `org.springframework.lang.Nullable` 을 쓰지 않는다. JSpecify 를 쓴다 | [architecture.md](architecture.md) |
 
 `@Transactional` 규칙은 패키지 경로에 `controller`·`repository` 가 있는지로 레이어를 판단한다. `LayerArchitectureTest` 는 `FEATURES_PACKAGE.<기능>.<레이어>` 자리로 판단하므로 기준이 다르다.
 이 파일은 패키지 상수를 채우지 않아도 동작하게 하려고 단순 패턴을 쓴다. 두 테스트는 따로 실행되므로 판단이 어긋나도 이 규칙은 그대로 실패한다.
