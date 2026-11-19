@@ -30,6 +30,12 @@ describe("javaPreset", () => {
     expect(source).toContain("docs/java/package-structure.md");
   });
 
+  // 역할 분포의 분류 이름(record, 기타)을 그대로 하위 패키지 이름으로 쓰지 않게 한다.
+  it("패키지 크기 초과 메시지가 하위 패키지를 목적으로 이름 짓게 안내한다", async () => {
+    const source = await readFile(join(target, "src/test/java/PackageSizeTest.java"), "utf8");
+    expect(source).toContain("하위 패키지 이름은 분류 이름이 아니라 목적으로 짓습니다");
+  });
+
   it("코드 작성 규칙 테스트 템플릿을 기준선 방식으로 설치한다", async () => {
     const source = await readFile(join(target, "src/test/java/CodingRulesTest.java"), "utf8");
     expect(source).toContain("FreezingArchRule");

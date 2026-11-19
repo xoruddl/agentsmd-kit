@@ -10,7 +10,7 @@ Spring Data JPA(Hibernate) 를 쓰는 프로젝트의 규칙이다.
 - getter 는 응답 변환 같은 읽기에만 쓴다. Lombok 을 쓰면 클래스에 `@Getter` 를 붙인다.
 - 엔티티에 `@Setter`, `@Data`, `@ToString`, `@EqualsAndHashCode` 를 쓰지 않는다. 지연 로딩 필드를 건드리거나 순환 참조로 터진다.
 - enum 컬럼은 `@Enumerated(EnumType.STRING)` 으로 저장한다. `ORDINAL` 은 상수 순서를 바꾸면 데이터가 틀어진다.
-- 값 객체는 `@Embeddable` 로 매핑한다.
+- 값 객체는 `@Embeddable` 로 매핑한다. 값 객체에도 setter 를 두지 않고, 값이 바뀌면 새 객체로 바꿔 넣는다.
 
 ```java
 @Entity
@@ -74,6 +74,7 @@ spring:
 - 트랜잭션 안에서 외부 API 호출·메시지 발행을 하지 않는다. DB 커넥션을 오래 잡고, 롤백돼도 외부 호출은 되돌릴 수 없다.
   커밋 뒤에 할 일은 `@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)` 로 처리한다.
 - 같은 클래스 안에서 `this.method()` 로 부르면 `@Transactional` 이 적용되지 않는다. (프록시를 거치지 않는다)
+- `private` 메서드에 `@Transactional`·`@Async` 를 두지 않는다. 프록시가 적용되지 않아 조용히 무시된다.
 - checked 예외는 기본으로 롤백하지 않는다. 기능 예외는 unchecked 로 만든다.
 
 ## open-in-view
