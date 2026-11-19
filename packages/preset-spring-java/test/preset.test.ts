@@ -69,6 +69,14 @@ describe("springJavaPreset", () => {
     expect(source).toContain("docs/spring-java/");
   });
 
+  // 핵심 규칙(엔티티를 API 요청·응답으로 쓰지 않는다)과 문서 규칙이 검사로 이어지는지 본다.
+  it("Spring 코드 규칙 테스트가 엔티티 노출·private 프록시 메서드·Spring Nullable 을 검사한다", async () => {
+    const source = await readFile(join(repo, "src/test/java/SpringCodingRulesTest.java"), "utf8");
+    expect(source).toContain("컨트롤러는_엔티티를_요청이나_응답으로_쓰지_않는다");
+    expect(source).toContain("private_메서드에_Transactional과_Async를_두지_않는다");
+    expect(source).toContain("Spring_Nullable을_쓰지_않는다");
+  });
+
   // archunit.properties 는 java 프리셋이 설치한다. 두 프리셋이 같은 경로의 파일을 둘 수 없다.
   it("archunit.properties 는 설치하지 않는다", async () => {
     await expect(access(join(repo, "src/test/resources/archunit.properties"))).rejects.toThrow();
