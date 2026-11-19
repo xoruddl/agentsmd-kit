@@ -13,16 +13,24 @@ com.example.app/
     controller/     HTTP 요청·응답
     dto/            요청·응답 DTO
     service/        유스케이스, 트랜잭션 경계
+      listener/     이벤트 리스너 (역할 하위 패키지)
     repository/     Spring Data 인터페이스
     domain/         엔티티, 값 객체, 도메인 규칙
+      event/        도메인 이벤트 (역할 하위 패키지)
     exception/      이 기능의 예외
   member/
+  alert/            API 가 없는 기능. 쓰는 레이어만 둔다
+    service/
   global/           설정, 전역 예외 처리, 보안 같은 기술 기반
     response/       공통 응답 ApiResponse, 결과 코드 인터페이스
     exception/      BusinessException, 공통 오류 코드, 전역 예외 처리
 ```
 
-- 필요 없는 하위 패키지는 만들지 않는다. (API 가 없는 기능에는 `controller/` 를 두지 않는다)
+- 최상위는 기능(도메인)으로 나눈다. 새 도메인 개념이 생기면 클래스가 몇 개 안 돼도 새 기능 패키지를 만든다.
+- 기능 안은 레이어(`controller`, `service`, `repository`, `domain`, `dto`, `exception`)로 나눈다. 쓰지 않는 레이어는 만들지 않는다. (API 가 없는 기능에는 `controller/` 를 두지 않는다)
+- 레이어 안에서 역할이 다른 클래스는 파일 수가 적어도 역할 하위 패키지로 나눈다. 예: `domain/event/`, `service/listener/`
+- 레이어 안에 기능을 만들지 않는다. 레이어 안에서 새 도메인 명사가 보이면(`order/service/` 의 `Alert*`) 최상위 기능 패키지로 꺼낸다.
+- 기능 경계가 애매하면 사람에게 묻는다.
 - `global` 에는 비즈니스 규칙을 두지 않는다. 두 기능이 같은 개념을 쓴다고 `global` 로 올리지 않고, 기능 경계를 먼저 다시 본다.
 - 외부 시스템 연동(결제, 메일 등)은 서비스가 쓰는 인터페이스를 `service` 에 두고, 구현은 `global/external/<시스템>` 에 둔다.
 
