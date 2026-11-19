@@ -40,7 +40,7 @@ export const springJavaPreset = {
     "엔티티를 API 요청·응답으로 쓰지 않는다. DTO(record)로 바꾼다.",
     "API 응답은 성공·실패 모두 공통 응답 `ApiResponse`(success·code·message·data)로 내리고, HTTP 상태 코드는 결과에 맞게 정확히 내린다.",
     "`@Transactional` 은 service 에 두고, 조회는 `readOnly = true`. 트랜잭션 안에서 외부 API 를 부르지 않는다.",
-    "ArchUnit 기준선(archunit_store), PackageSizeTest 의 큰 패키지 상한, 순환 허용 목록을 늘리지 않는다. 넘으면 패키지를 나누고, 역방향 의존은 도메인 이벤트로 끊는다.",
+    "ArchUnit 기준선(archunit_store), PackageSizeTest 의 큰 패키지 상한, 순환 허용 목록을 늘리지 않는다. 넘으면 패키지를 나누고, 순환은 의존 방향 정리 → 함께 쓰는 개념을 별도 기능으로 → 즉시 결과가 필요 없는 일만 도메인 이벤트 순으로 끊는다. 기능을 합쳐서 피하지 않는다.",
   ],
   nextSteps: [
     "LayerArchitectureTest 의 FEATURES_PACKAGE·GLOBAL_PACKAGE 를 프로젝트 패키지로 바꾸세요.",

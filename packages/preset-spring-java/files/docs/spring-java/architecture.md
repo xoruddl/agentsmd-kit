@@ -31,8 +31,33 @@ com.example.app/
 - 레이어 안에서 역할이 다른 클래스는 파일 수가 적어도 역할 하위 패키지로 나눈다. 예: `domain/event/`, `service/listener/`
 - 레이어 안에 기능을 만들지 않는다. 레이어 안에서 새 도메인 명사가 보이면(`order/service/` 의 `Alert*`) 최상위 기능 패키지로 꺼낸다.
 - 기능 경계가 애매하면 사람에게 묻는다.
-- `global` 에는 비즈니스 규칙을 두지 않는다. 두 기능이 같은 개념을 쓴다고 `global` 로 올리지 않고, 기능 경계를 먼저 다시 본다.
+- `global` 에는 비즈니스 규칙을 두지 않는다. 두 기능이 같은 개념을 쓴다고 `global` 로 올리지 않고, 그 개념을 별도 기능으로 둔다.
 - 외부 시스템 연동(결제, 메일 등)은 서비스가 쓰는 인터페이스를 `service` 에 두고, 구현은 `global/external/<시스템>` 에 둔다.
+
+## 클래스를 추가할 때
+
+패키지는 커진 뒤에 나누지 않고, 클래스를 추가할 때마다 위치를 정해서 자라게 한다. 위에서부터 답한다.
+
+1. **어느 기능의 개념인가?** 기존 기능에 없는 도메인 명사면 새 기능 패키지를 만든다.
+   두 기능이 함께 쓰는 개념(`Money`, `Address` 같은 값 객체 포함)은 어느 한쪽에 두거나 복사하지 않고 별도 기능으로 둔다.
+2. **어느 레이어인가?** 아래 이름 규칙의 접미사로 정한다.
+3. **같은 목적의 클래스가 있는가?** 있으면 함께 두고, 없으면 레이어 안에 목적 이름의 하위 패키지를 만든다.
+   기존 클래스도 함께 옮겨야 하면 파일 이동만 하는 별도 커밋으로 옮긴다. → Java 프리셋 `docs/java/package-structure.md` 의 "재구성 작업 방식"
+4. **새 의존이 기존 기능 의존의 역방향인가?** 그러면 순환이다. 아래 "순환을 끊는 순서" 를 따른다.
+
+| 이름 | 위치 |
+| --- | --- |
+| `XxxController` | `controller/` |
+| `XxxRequest`, `XxxResponse`, `XxxSuccessCode` | `dto/` |
+| `XxxService` | `service/` |
+| `XxxListener`, `XxxScheduler` | `service/listener/`, `service/scheduler/` |
+| 기능 전용 `@Configuration`·`@ConfigurationProperties` (`XxxConfig`, `XxxProperties`) | `service/config/`. 여러 기능이 쓰는 기술 설정은 `global/config/` |
+| `XxxRepository` | `repository/` |
+| 엔티티, 값 객체, `XxxPolicy` | `domain/` |
+| 도메인 이벤트. 일어난 일을 과거형으로 짓는다 (`OrderPlaced`) | `domain/event/` |
+| `XxxException`, `XxxErrorCode` | `exception/` |
+
+이름 규칙에 없는 역할은 접미사를 정하고 같은 방식으로 하위 패키지를 만든다. 하위 패키지 이름은 목적(`event`, `listener`, `policy`)으로 짓고, `util`·`common`·`etc` 처럼 목적이 없는 이름은 쓰지 않는다.
 
 ## 의존 방향
 
@@ -45,11 +70,20 @@ controller → service → repository
 - `domain` 은 다른 레이어를 모른다. Spring 에 의존하지 않는다. (JPA 매핑 어노테이션만 예외)
 - `global` 은 기능 패키지에 의존하지 않는다.
 - 기능 사이에 즉시 결과가 필요 없는 일은 도메인 이벤트(`ApplicationEventPublisher`, `@TransactionalEventListener`)로 나눈다.
-- 기능끼리 순환하지 않는다. 역방향이 필요하면 도메인 이벤트로 끊는다.
+- 기능끼리 순환하지 않는다. 순환이 생기면 아래 순서로 끊는다. 순환을 피하려고 기능을 한 패키지로 합치지 않는다.
 - 의존 방향, 클래스 위치, 기능 간 순환은 설치된 `src/test/java/LayerArchitectureTest.java` 가 검사한다. 패키지 크기는 Java 프리셋의 `PackageSizeTest` 가 검사한다.
   설치한 뒤 `LayerArchitectureTest` 의 `FEATURES_PACKAGE`, `GLOBAL_PACKAGE` 를 프로젝트 패키지로 바꾼다. → [testing.md](testing.md)
 - 순환 허용 목록(`LayerArchitectureTest` 의 `ignoreDependency`), 큰 패키지 상한(`PackageSizeTest` 의 `KNOWN_LARGE_PACKAGES`), ArchUnit 기준선(`archunit_store`)은 늘리거나 고치지 않는다.
-  넘으면 패키지를 나누고, 역방향 의존은 도메인 이벤트로 끊는다.
+  넘으면 패키지를 나누고, 순환은 아래 순서로 끊는다.
+
+### 순환을 끊는 순서
+
+1. **의존 방향을 한쪽으로 정리한다.** 상위 개념이 하위 개념을 부르고 반대로는 부르지 않는다.
+   예: 주문은 상품·회원을 부르고, 상품·회원은 주문을 모른다. 하위 기능에 필요한 값은 상위 기능이 인자로 넘긴다.
+2. **두 기능이 함께 쓰는 개념을 별도 기능으로 꺼낸다.** 두 기능이 그 기능만 바라보게 해서 서로를 모르게 한다.
+3. **즉시 결과가 필요 없는 일만 도메인 이벤트로 끊는다.** 결과를 돌려받으려고 이벤트를 주고받지 않는다.
+
+어느 방법도 맞지 않으면 기능 경계가 잘못 나뉜 신호다. 혼자 정하지 않고 사람에게 묻는다.
 
 ## 빈과 주입
 
@@ -57,6 +91,15 @@ controller → service → repository
 - 주입받는 필드는 `private final` 이다. Lombok 을 쓰면 `@RequiredArgsConstructor` 로 생성자를 만든다.
 - 구현이 하나뿐인 서비스에 인터페이스를 만들지 않는다. (`XxxServiceImpl` 금지)
 - 현재 시각은 `Clock` 빈을 주입받아 쓴다. 테스트에서 시각을 고정할 수 있다.
+
+## 서비스가 커질 때
+
+기능마다 서비스 하나(`OrderService`)로 시작하고, 커지면 유스케이스 단위로 나눈다.
+
+- 나눌 신호: 생성자 의존이 5개를 넘는다. 또는 서로 다른 필드·의존만 쓰는 메서드 묶음이 한 클래스에 있다.
+- 나누는 단위: 함께 바뀌는 유스케이스끼리 묶는다. 예: `OrderPlaceService`(주문·결제 요청), `OrderCancelService`(취소·환불), `OrderQueryService`(조회)
+- 나눈 서비스가 서로를 부르기 시작하면 공통 로직을 도메인 객체나 `XxxPolicy` 로 내린다.
+- 검사는 하지 않는다. 의존 수만으로는 나눌지 판단할 수 없어서 신호로만 쓴다.
 
 ## DTO 경계
 
