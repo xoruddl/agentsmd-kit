@@ -20,6 +20,7 @@ import com.tngtech.archunit.library.GeneralCodingRules;
 import com.tngtech.archunit.library.freeze.FreezingArchRule;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 /**
  * 바이트코드로 판단할 수 있는 Spring·JPA 코드 작성 규칙을 검사한다. 근거는 docs/spring-java/ 의 각 문서다.
@@ -44,6 +45,12 @@ class SpringCodingRulesTest {
     private static final String ENUMERATED = "jakarta.persistence.Enumerated";
     private static final String MANY_TO_ONE = "jakarta.persistence.ManyToOne";
     private static final String ONE_TO_ONE = "jakarta.persistence.OneToOne";
+
+    /** @RestController 는 @Controller 를 메타 어노테이션으로 가지므로 이 이름 하나로 둘 다 잡는다. */
+    private static final String CONTROLLER = "org.springframework.stereotype.Controller";
+
+    /** @GetMapping·@PostMapping 등은 @RequestMapping 을 메타 어노테이션으로 가지므로 이 이름 하나로 모두 잡는다. */
+    private static final String REQUEST_MAPPING = "org.springframework.web.bind.annotation.RequestMapping";
 
     /** Spring 과 Jakarta 의 @Transactional. 둘 다 같은 규칙으로 본다. */
     private static final List<String> TRANSACTIONAL_ANNOTATIONS =
@@ -97,6 +104,17 @@ class SpringCodingRulesTest {
             .should(notHavePublicSetters())
             .because("setter 로 상태를 바꾸면 불변식을 지킬 수 없다. 엔티티는 의도가 드러나는 메서드로 바꾸고,"
                     + " 값 객체(@Embeddable)는 바꾸지 않고 새로 만든다 → docs/spring-java/data-jpa.md")
+            .allowEmptyShould(true));
+
+    // 요청 매핑 메서드의 반환 타입(ResponseEntity<List<Order>> 같은 제네릭 인자 포함)과 파라미터를 본다.
+    // 매핑을 인터페이스에 두고 컨트롤러가 구현하는 구조는 컨트롤러 메서드에 매핑 어노테이션이 없어 잡지 못한다.
+    @ArchTest
+    static final ArchRule 컨트롤러는_엔티티를_요청이나_응답으로_쓰지_않는다 = FreezingArchRule.freeze(classes()
+            .that()
+            .areMetaAnnotatedWith(CONTROLLER)
+            .should(notUseEntitiesInRequestMappings())
+            .because("엔티티를 그대로 주고받으면 지연 로딩 예외, 순환 참조, 내부 필드 노출이 생긴다. 요청·응답 DTO 를 쓴다"
+                    + " → docs/spring-java/architecture.md")
             .allowEmptyShould(true));
 
     @ArchTest
@@ -188,6 +206,38 @@ class SpringCodingRulesTest {
                 && name.length() > 3
                 && name.startsWith("set")
                 && Character.isUpperCase(name.charAt(3));
+    }
+
+    /** 요청 매핑 메서드의 반환 타입이나 파라미터에 @Entity 타입이 있으면 위반이다. */
+    private static ArchCondition<JavaClass> notUseEntitiesInRequestMappings() {
+        return new ArchCondition<>("요청 매핑 메서드의 반환 타입과 파라미터에 @Entity 를 쓰지 않는다") {
+            @Override
+            public void check(JavaClass javaClass, ConditionEvents events) {
+                for (JavaMethod method : requestMappingMethods(javaClass)) {
+                    entityTypesIn(method).forEach(entity -> events.add(SimpleConditionEvent.violated(
+                            method,
+                            method.getDescription() + " 가 엔티티 " + entity.getSimpleName() + " 를 요청이나 응답으로 쓴다")));
+                }
+            }
+        };
+    }
+
+    /** 컴파일러가 만든 브리지·합성 메서드는 원래 메서드의 어노테이션을 복사하므로 빼야 같은 위반을 두 번 세지 않는다. */
+    private static List<JavaMethod> requestMappingMethods(JavaClass javaClass) {
+        return javaClass.getMethods().stream()
+                .filter(method -> method.isMetaAnnotatedWith(REQUEST_MAPPING))
+                .filter(method -> !method.getModifiers().contains(JavaModifier.BRIDGE))
+                .filter(method -> !method.getModifiers().contains(JavaModifier.SYNTHETIC))
+                .toList();
+    }
+
+    /** 반환 타입과 파라미터 타입, 그 제네릭 인자와 배열 원소 타입 가운데 @Entity 인 클래스. */
+    private static List<JavaClass> entityTypesIn(JavaMethod method) {
+        return Stream.concat(Stream.of(method.getReturnType()), method.getParameterTypes().stream())
+                .flatMap(type -> type.getAllInvolvedRawTypes().stream())
+                .filter(type -> type.isAnnotatedWith(ENTITY))
+                .distinct()
+                .toList();
     }
 
     /** 소스에 적은 어노테이션 속성의 enum 상수 이름. 적지 않았으면 비어 있다. */

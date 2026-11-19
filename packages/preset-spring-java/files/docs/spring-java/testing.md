@@ -39,11 +39,14 @@ Spring 컨텍스트를 띄우는 테스트는 느리다. 가능한 한 아래 �
 | `@Enumerated` 는 `EnumType.STRING` 만 쓴다. 값을 적지 않으면 기본값이 `ORDINAL` 이라 위반이다 | [data-jpa.md](data-jpa.md) |
 | `@ManyToOne`·`@OneToOne` 은 `fetch = FetchType.LAZY` 를 적는다. 적지 않으면 기본값이 즉시 로딩이라 위반이다 | [data-jpa.md](data-jpa.md) |
 | `@Entity`·`@Embeddable` 클래스에 `setXxx` public 메서드를 두지 않는다. Lombok `@Setter`·`@Data` 는 만들어진 메서드로 판단한다 | [data-jpa.md](data-jpa.md) |
+| 컨트롤러(`@Controller`·`@RestController`)의 요청 매핑 메서드는 반환 타입(제네릭 인자 포함)과 파라미터에 `@Entity` 를 쓰지 않는다 | [architecture.md](architecture.md) |
 | 이름이 `ServiceImpl` 로 끝나는 클래스를 두지 않는다 | [architecture.md](architecture.md) |
 
 `@Transactional` 규칙은 패키지 경로에 `controller`·`repository` 가 있는지로 레이어를 판단한다. `LayerArchitectureTest` 는 `FEATURES_PACKAGE.<기능>.<레이어>` 자리로 판단하므로 기준이 다르다.
 이 파일은 패키지 상수를 채우지 않아도 동작하게 하려고 단순 패턴을 쓴다. 두 테스트는 따로 실행되므로 판단이 어긋나도 이 규칙은 그대로 실패한다.
 기능 이름에 `controller`·`repository` 가 들어간 구조라면 이 규칙의 패키지 패턴을 프로젝트에 맞게 고친다.
+
+엔티티 규칙은 매핑 어노테이션(`@GetMapping` 등)이 붙은 컨트롤러 메서드만 본다. 매핑을 인터페이스에 두고 컨트롤러가 구현하는 구조는 잡지 못한다.
 
 `@ToString`·`@EqualsAndHashCode`, 로그 문자열 연결, 트랜잭션 안의 외부 호출처럼 바이트코드로 판단하기 어려운 규칙은 문서와 리뷰에 맡긴다.
 
