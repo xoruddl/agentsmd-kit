@@ -1,7 +1,9 @@
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.fields;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
+import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noMethods;
 
+import com.tngtech.archunit.base.DescribedPredicate;
 import com.tngtech.archunit.core.domain.JavaAnnotation;
 import com.tngtech.archunit.core.domain.JavaClass;
 import com.tngtech.archunit.core.domain.JavaEnumConstant;
@@ -56,6 +58,11 @@ class SpringCodingRulesTest {
     private static final List<String> TRANSACTIONAL_ANNOTATIONS =
             List.of("org.springframework.transaction.annotation.Transactional", "jakarta.transaction.Transactional");
 
+    /** 프록시로 동작하는 어노테이션. private 메서드에는 프록시가 적용되지 않아 조용히 무시된다. */
+    private static final List<String> PROXY_ANNOTATIONS = Stream.concat(
+                    TRANSACTIONAL_ANNOTATIONS.stream(), Stream.of("org.springframework.scheduling.annotation.Async"))
+            .toList();
+
     @ArchTest
     static final ArchRule 필드_주입을_쓰지_않는다 = FreezingArchRule.freeze(
             GeneralCodingRules.NO_CLASSES_SHOULD_USE_FIELD_INJECTION.because(
@@ -72,6 +79,18 @@ class SpringCodingRulesTest {
             .should(notBeTransactionalNorHaveTransactionalMethods())
             .because("트랜잭션 경계는 service 에 둔다. controller 에 두면 응답 직렬화까지 트랜잭션이 길어진다"
                     + " → docs/spring-java/data-jpa.md")
+            .allowEmptyShould(true));
+
+    @ArchTest
+    static final ArchRule private_메서드에_Transactional과_Async를_두지_않는다 = FreezingArchRule.freeze(noMethods()
+            .that()
+            .arePrivate()
+            .should()
+            .beAnnotatedWith(DescribedPredicate.describe(
+                    "@Transactional 이나 @Async",
+                    annotation -> PROXY_ANNOTATIONS.contains(annotation.getRawType().getName())))
+            .because("private 메서드에는 프록시가 적용되지 않아 트랜잭션·비동기 실행이 조용히 무시된다."
+                    + " public 메서드에 두고 다른 빈에서 부른다 → docs/spring-java/data-jpa.md")
             .allowEmptyShould(true));
 
     // @Enumerated 의 기본값은 ORDINAL 이라 값을 적지 않은 것도 위반이다. enum 순서를 바꾸면 저장된 데이터의 뜻이 달라진다.

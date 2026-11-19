@@ -74,6 +74,7 @@ spring:
 - 트랜잭션 안에서 외부 API 호출·메시지 발행을 하지 않는다. DB 커넥션을 오래 잡고, 롤백돼도 외부 호출은 되돌릴 수 없다.
   커밋 뒤에 할 일은 `@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)` 로 처리한다.
 - 같은 클래스 안에서 `this.method()` 로 부르면 `@Transactional` 이 적용되지 않는다. (프록시를 거치지 않는다)
+- `private` 메서드에 `@Transactional`·`@Async` 를 두지 않는다. 프록시가 적용되지 않아 조용히 무시된다.
 - checked 예외는 기본으로 롤백하지 않는다. 기능 예외는 unchecked 로 만든다.
 
 ## open-in-view

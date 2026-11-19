@@ -36,6 +36,7 @@ Spring 컨텍스트를 띄우는 테스트는 느리다. 가능한 한 아래 �
 | --- | --- |
 | 필드 주입(`@Autowired` 필드)을 쓰지 않는다 | [architecture.md](architecture.md) |
 | `@Transactional`(Spring·Jakarta)을 `..controller..`·`..repository..` 패키지의 클래스와 메서드에 두지 않는다 | [data-jpa.md](data-jpa.md) |
+| `private` 메서드에 `@Transactional`(Spring·Jakarta)·`@Async` 를 두지 않는다 | [data-jpa.md](data-jpa.md) |
 | `@Enumerated` 는 `EnumType.STRING` 만 쓴다. 값을 적지 않으면 기본값이 `ORDINAL` 이라 위반이다 | [data-jpa.md](data-jpa.md) |
 | `@ManyToOne`·`@OneToOne` 은 `fetch = FetchType.LAZY` 를 적는다. 적지 않으면 기본값이 즉시 로딩이라 위반이다 | [data-jpa.md](data-jpa.md) |
 | `@Entity`·`@Embeddable` 클래스에 `setXxx` public 메서드를 두지 않는다. Lombok `@Setter`·`@Data` 는 만들어진 메서드로 판단한다 | [data-jpa.md](data-jpa.md) |
